@@ -69,17 +69,9 @@ from datetime import timedelta
 
 from glob import glob
 
-#from pyraf import iraf
-#Note: ccdtype parameter in zero, dark, flatcombine and ccdproc cannot be 
-# edited from code. I must be edited using IRAF
 try:
-    from pyraf.iraf import noao
-    from pyraf.iraf import imred
-    from pyraf.iraf import ccdred
-    from pyraf.iraf import zerocombine
-    from pyraf.iraf import darkcombine
-    from pyraf.iraf import flatcombine
-    from pyraf.iraf import ccdproc
+    from pyraf import iraf
+    from iraf import imred, ccdred
 except Exception as e:
     print("{}. Pyraf is not installed?".format(e))
     exit(0)
@@ -588,9 +580,11 @@ class calibration():
         self.etc = myEnv.etc(verb=self.verb)
         self.fop = myEnv.file_op(verb=self.verb)
         
-    def the_zerocombine(self, in_file_list, out_file, method="median",
-                        rejection="minmax"):
+    def the_zerocombine(self, in_file_list, out_file, method="median", rejection="minmax", ccdtype="",
+                        gain="", rdnoise=""):
+
         self.etc.log("Zerocombine started for {} files using combine({}) and rejection({})".format(len(in_file_list), method, rejection))
+
         try:
             if self.fop.is_file(out_file):
                 self.fop.rm(out_file)
@@ -601,17 +595,25 @@ class calibration():
                     files.append(file)
             
             if not len(files) == 0:
-                self.fop.write_list("/tmp/myraf_blist", files)
-                    
-                zc = zerocombine
-                zc.input = "@\/tmp\/myraf_blist"
-                zc.output = out_file
-                zc.combine = method
-                zc.reject = rejection
-                zc.ccdtype = ""
-                zc.process = "no"
-                
-                zc._runCode()
+                biases = ",".join(files)
+                # Load packages
+                # Unlearn settings
+                iraf.imred.unlearn()
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+                iraf.ccdred.combine.unlearn()
+                iraf.ccdred.zerocombine.unlearn()
+
+                ccdred.instrument = "ccddb$kpno/camera.dat"
+                iraf.imred()
+                iraf.ccdred()
+
+                iraf.zerocombine(input=biases,
+                                 output=out_file,
+                                 combine=method,
+                                 reject=rejection,
+                                 ccdtype=ccdtype,
+                                 Stdout="/dev/null")
             else:
                 self.etc.log("No files to combine")
             
@@ -619,55 +621,52 @@ class calibration():
             self.etc.log(e)
             
     def the_darkcombine(self, in_file_list, out_file, zero=None,
-                        method="Median", rejection="minmax", scale="exposure"):
+                        method="median", rejection="minmax",
+                        ccdtype="", scale="exposure", overscan = "no", trim="no"):
         self.etc.log("Darkcombine started for {} files using combine({}), rejection({}) and scale({}) and zero({})".format(len(in_file_list), method, rejection, scale, zero))
         try:
             if self.fop.is_file(out_file):
                 self.fop.rm(out_file)
-                
+
             files = []
             for file in in_file_list:
                 if self.fit.is_fit(file):
                     files.append(file)
-            
+
             if not len(files) == 0:
-                self.fop.write_list("/tmp/myraf_dlist", files)
+                darks = ",".join(files)
+                # Load packages
+                # Unlearn settings
+                iraf.imred.unlearn()
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+                iraf.ccdred.combine.unlearn()
+                iraf.ccdred.darkcombine.unlearn()
 
-                dc = darkcombine
-                dc.input = "@\/tmp\/myraf_dlist"
-                dc.output = out_file
-                dc.combine = method
-                dc.reject = rejection
-                dc.ccdtype = ""
-                dc.scale = scale
-                
+                ccdred.instrument = "ccddb$kpno/camera.dat"
+                iraf.imred()
+                iraf.ccdred()
+
+                iraf.darkcombine(input=darks,
+                                 output=out_file,
+                                 combine=method,
+                                 reject=rejection,
+                                 ccdtype=ccdtype,
+                                 scale=scale,
+                                 process="no",
+                                 Stdout="/dev/null")
+
                 if zero is not None and self.fop.is_file(zero):
-                    cp = ccdproc
-                    cp.ccdtype = ""
-                    
-                    cp.fixpix = "no"
-                    cp.overscan = "no"
-                    cp.trim = "no"
-                    cp.zerocor = "yes"
-                    cp.darkcor = "no"
-                    cp.flatcor = "no"
-                    cp.zero = zero
-                    
-                    
-                    dc.process = "yes"
-                else:
-                    dc.process = "no"
-                
+                    iraf.ccdproc(images=darks, ccdtype='', fixpix='no', oversca=overscan, trim=trim, zerocor='yes',
+                                 darkcor='no', flatcor='no', zero=zero, Stdout="/dev/null")
 
-                dc._runCode()
-                
             else:
                 self.etc.log("No files to combine")
         except Exception as e:
             self.etc.log(e)
 
-    def the_flatcombine(self, in_file_list, out_file, dark=None, zero=None,
-                        method="Median", rejection="minmax", subset="yes"):
+    def the_flatcombine(self, in_file_list, out_file, dark=None, zero=None, ccdtype="",
+                        method="Median", rejection="minmax", subset="yes", overscan = "no", trim="no"):
         self.etc.log("Flatcombine started for {} files using combine({}), rejection({}) and subset=({}) and zero({}) and dark({})".format(len(in_file_list), method, rejection, subset, zero, dark))
         try:
             if self.fop.is_file("{}*".format(out_file)):
@@ -679,39 +678,44 @@ class calibration():
                     files.append(file)
             
             if not len(files) == 0:
-                self.fop.write_list("/tmp/myraf_flist", files)
-                
-                fc = flatcombine
-                fc.input = "@\/tmp\/myraf_flist"
-                fc.output = out_file
-                fc.combine = method
-                fc.reject = rejection
-                fc.ccdtype = ""
-                fc.subsets = subset
+                flats = ",".join(files)
+                # Load packages
+                # Unlearn settings
+                iraf.imred.unlearn()
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+                iraf.ccdred.combine.unlearn()
+                iraf.ccdred.flatcombine.unlearn()
+
+                ccdred.instrument = "ccddb$kpno/camera.dat"
+                iraf.imred()
+                iraf.ccdred()
+
+                iraf.flatcombine(input=flats,
+                                 output=out_file,
+                                 combine=method,
+                                 reject=rejection,
+                                 ccdtype=ccdtype,
+                                 subset=subset,
+                                 process="no",
+                                 Stdout="/dev/null")
+
                 if dark is not None or zero is not None:
-                    fc.process = "yes"
-                    cp = ccdproc
-                    cp.ccdtype = ""
-                    
-                    cp.fixpix = "no"
-                    cp.overscan = "no"
-                    cp.trim = "no"
-                    cp.flatcor = "no"
-                    cp.zerocor = "no"
-                    cp.darkcor = "no"
-                    
                     if zero is not None and self.fop.is_file(zero):
-                        cp.zerocor = "yes"
-                        cp.zero = zero
-                    
+                        zerocor='yes'
+                    else:
+                        zerocor = 'no'
+
                     if dark is not None and self.fop.is_file(dark):
-                        cp.darkcor = "yes"
-                        cp.dark = dark
-                        
-                else:
-                    fc.process = "no"
-                    
-                fc._runCode()
+                        darkcor = 'yes'
+                    else:
+                        darkcor = 'no'
+
+                    iraf.ccdproc(images=flats, ccdtype='', fixpix='no',
+                                 oversca=overscan, trim=trim, zerocor=zerocor,
+                                 darkcor=darkcor, flatcor='no', zero=zero, dark=dark,
+                                 Stdout="/dev/null")
+            self.etc.log("flatcombine is done!")
             
         except Exception as e:
             self.etc.log(e)

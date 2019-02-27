@@ -18,7 +18,7 @@ def save_directory(self):
 
 def save_file(self):
     filename = QtWidgets.QFileDialog.getSaveFileName(self,
-            "Output file", "", ("FITS file (*.Fit);;"))[0]
+            "Output file", "", ("FITS file (*.fit);;"))[0]
     
     return(filename)
     
@@ -40,7 +40,7 @@ def get_file_path(self):
 
 def add_files(self, flist):
     filename = QtWidgets.QFileDialog.getOpenFileNames(
-            self ,"Images...","",("Fit or Fits (*.fits *.fit)"))[0]
+            self ,"Images...","",("fits, fit or fts (*.fits *.fit *.fts)"))[0]
     it = flist.count() - 1
     for x in filename:
         it = it+1

@@ -1375,17 +1375,14 @@ class MyForm(QtWidgets.QWidget, Ui_Form):
                     if scl == "exposure":
                         new_file_list = []
                         for i in file_list:
-                            expt1 = self.fit.header(i, "EXPTIME")
-                            expt2 = self.fit.header(i, "EXPOSURE")
-                            expt3 = self.fit.header(
+                            expt = self.fit.header(
                                     i, self.ui.lineEdit_13.text())
-                            
-                            if expt1 is not None or expt2 is not None:
-                                new_file_list.append(i)
-                            elif expt3 is not None:
-                                self.fit.update_header(i, "EXPTIME", expt3[1])
-                                self.fit.update_header(i, "EXPOSURE", expt3[1])
-                                new_file_list.append(i)
+
+                            if expt is not None:
+                                self.fit.update_header(i, "EXPTIME", expt[1])
+                                self.fit.update_header(i, "EXPOSURE", expt[1])
+
+                            new_file_list.append(i)
                                 
                         file_list = new_file_list
                         
@@ -1466,7 +1463,6 @@ class MyForm(QtWidgets.QWidget, Ui_Form):
                         file_list = new_file_list
                         dest = "{}/{}".format(path, name)
                         
-                        
                     the_zero = None
                     if not g.is_list_empty(self, self.ui.listWidget_7):
                         answ = g.question(self, "Do you want Bias correction?")
@@ -1483,7 +1479,6 @@ class MyForm(QtWidgets.QWidget, Ui_Form):
                                 the_zero = "/tmp/myraf_bias.fits"
                             except Exception as e:
                                 self.etc.log(e)
-                            
                         
                     the_dark = None
                     if not g.is_list_empty(self, self.ui.listWidget_8):
@@ -2173,7 +2168,7 @@ class MyForm(QtWidgets.QWidget, Ui_Form):
                         circ.center = x, y
                         #Add iteration value as label
                         self.ui.disp_photometry.canvas.fig.gca().annotate(
-                                it, xy = (x, y), xytext=(int(ap)/3,int(ap)/3),
+                                it + 1, xy = (x, y), xytext=(int(ap)/3,int(ap)/3),
                                 textcoords='offset points', color = "red",
                                 fontsize = 10)
                     except Exception as e:
@@ -2217,7 +2212,7 @@ class MyForm(QtWidgets.QWidget, Ui_Form):
                             circ.center = x, y
                             #Add iteration value as label
                             self.ui.disp_photometry.canvas.fig.gca().annotate(
-                                    it, xy = (x, y),
+                                    it + 1, xy = (x, y),
                                     xytext=(int(ap)/3,int(ap)/3),
                                     textcoords='offset points', color = "red",
                                     fontsize = 10)
