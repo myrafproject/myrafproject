@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1218</width>
+    <height>765</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>776</width>
+    <height>587</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>MYRaf V3 - Beta</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_6">
+    <item row="0" column="0">
+     <widget class="QMdiArea" name="play_ground"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1218</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuData">
+     <property name="title">
+      <string>Import Data</string>
+     </property>
+     <addaction name="actionAddImage"/>
+     <addaction name="actionAddBias"/>
+     <addaction name="actionAddDark"/>
+     <addaction name="actionAddFlat"/>
+    </widget>
+    <widget class="QMenu" name="menuClear_Lists">
+     <property name="title">
+      <string>Clear List</string>
+     </property>
+     <addaction name="actionClear_All_Lists"/>
+     <addaction name="actionClear_Image_List_3"/>
+     <addaction name="actionClear_Bias_List_3"/>
+     <addaction name="actionClear_Dark_List_3"/>
+     <addaction name="actionClear_Flat_List_3"/>
+    </widget>
+    <addaction name="menuData"/>
+    <addaction name="menuClear_Lists"/>
+    <addaction name="actionClose_All_Windows"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuAnalyse">
+    <property name="title">
+     <string>Analyse</string>
+    </property>
+    <widget class="QMenu" name="menuCombine">
+     <property name="title">
+      <string>Combine</string>
+     </property>
+     <widget class="QMenu" name="menuIRAF_Combine">
+      <property name="title">
+       <string>IRAF Combine</string>
+      </property>
+      <addaction name="actionZerocombine"/>
+      <addaction name="actionDarkcombine"/>
+      <addaction name="actionFlatcombine"/>
+     </widget>
+     <addaction name="menuIRAF_Combine"/>
+     <addaction name="actionMedian"/>
+     <addaction name="actionAverage"/>
+     <addaction name="actionSum"/>
+     <addaction name="actionDifference"/>
+    </widget>
+    <widget class="QMenu" name="menuAlign">
+     <property name="title">
+      <string>Align</string>
+     </property>
+     <addaction name="actionAutoAlign"/>
+     <addaction name="actionManualAlign"/>
+    </widget>
+    <addaction name="menuCombine"/>
+    <addaction name="actionCalibration"/>
+    <addaction name="menuAlign"/>
+    <addaction name="actionPhotometry"/>
+    <addaction name="actionA_Track"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Editor</string>
+    </property>
+    <widget class="QMenu" name="menuHeader">
+     <property name="title">
+      <string>Header</string>
+     </property>
+     <addaction name="actionHedit"/>
+     <addaction name="actionHeader_Calculator"/>
+     <addaction name="actionHeader_Extractor"/>
+    </widget>
+    <addaction name="menuHeader"/>
+    <addaction name="actionObservatory"/>
+    <addaction name="actionCosmic"/>
+    <addaction name="actionWCS"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionCalibration_2"/>
+    <addaction name="actionPhotometry_2"/>
+    <addaction name="actionCosmic_Cleaner"/>
+    <addaction name="actionWCS_2"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <widget class="QMenu" name="menuHelp_2">
+     <property name="title">
+      <string>Help</string>
+     </property>
+     <widget class="QMenu" name="menuMYRaf">
+      <property name="title">
+       <string>MYRaf</string>
+      </property>
+      <addaction name="actionAnalyse_2"/>
+      <addaction name="actionEditor"/>
+     </widget>
+     <addaction name="menuMYRaf"/>
+     <addaction name="actionGinga_2"/>
+     <addaction name="actionAlipy_2"/>
+     <addaction name="actionLA_Cosmic_Cleaner_2"/>
+     <addaction name="actionAstrometry_net_2"/>
+    </widget>
+    <addaction name="menuHelp_2"/>
+    <addaction name="actionLicense"/>
+    <addaction name="actionCredits"/>
+    <addaction name="actionLog_Viewer"/>
+    <addaction name="actionAbout_MYRaf"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuAnalyse"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::NoDockWidgetFeatures</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::NoDockWidgetArea</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QTabWidget" name="file_containter">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Image</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0" colspan="3">
+          <widget class="QTreeWidget" name="image_list">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <column>
+            <property name="text">
+             <string>Attribute</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Value</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>137</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="image_remove">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="image_add">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Bias</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0" colspan="3">
+          <widget class="QTreeWidget" name="bias_list">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <column>
+            <property name="text">
+             <string>Attribute</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Value</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>137</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="bias_remove">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="bias_add">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_3">
+        <attribute name="title">
+         <string>Dark</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0" colspan="3">
+          <widget class="QTreeWidget" name="dark_list">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <column>
+            <property name="text">
+             <string>Attribute</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Value</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>137</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="dark_remove">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="dark_add">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_4">
+        <attribute name="title">
+         <string>Flat</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="0" colspan="3">
+          <widget class="QTreeWidget" name="flat_list">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <column>
+            <property name="text">
+             <string>Attribute</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Value</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>137</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="flat_remove">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="flat_add">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="annotation">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QProgressBar" name="progress">
+       <property name="value">
+        <number>24</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionCalibration">
+   <property name="text">
+    <string>Calibration</string>
+   </property>
+  </action>
+  <action name="actionPhotometry">
+   <property name="text">
+    <string>Photometry ...</string>
+   </property>
+  </action>
+  <action name="actionA_Track">
+   <property name="text">
+    <string>A-Track</string>
+   </property>
+  </action>
+  <action name="actionObservatory">
+   <property name="text">
+    <string>Observatory ...</string>
+   </property>
+  </action>
+  <action name="actionCosmic">
+   <property name="text">
+    <string>Cosmic Cleaner</string>
+   </property>
+  </action>
+  <action name="actionWCS">
+   <property name="text">
+    <string>WCS</string>
+   </property>
+  </action>
+  <action name="actionHedit">
+   <property name="text">
+    <string>Hedit ...</string>
+   </property>
+  </action>
+  <action name="actionHeader_Calculator">
+   <property name="text">
+    <string>Header Calculator ...</string>
+   </property>
+  </action>
+  <action name="actionHeader_Extractor">
+   <property name="text">
+    <string>Header Extractor ...</string>
+   </property>
+  </action>
+  <action name="actionCalibration_2">
+   <property name="text">
+    <string>Calibration</string>
+   </property>
+  </action>
+  <action name="actionPhotometry_2">
+   <property name="text">
+    <string>Photometry</string>
+   </property>
+  </action>
+  <action name="actionCosmic_Cleaner">
+   <property name="text">
+    <string>Cosmic Cleaner</string>
+   </property>
+  </action>
+  <action name="actionWCS_2">
+   <property name="text">
+    <string>WCS</string>
+   </property>
+  </action>
+  <action name="actionAbout_MYRaf">
+   <property name="text">
+    <string>About MYRaf ...</string>
+   </property>
+  </action>
+  <action name="actionGinga">
+   <property name="text">
+    <string>Ginga</string>
+   </property>
+  </action>
+  <action name="actionAlipy">
+   <property name="text">
+    <string>Alipy</string>
+   </property>
+  </action>
+  <action name="actionLA_Cosmic_Cleaner">
+   <property name="text">
+    <string>LA. Cosmic Cleaner</string>
+   </property>
+  </action>
+  <action name="actionAstrometry_net">
+   <property name="text">
+    <string>Astrometry.net</string>
+   </property>
+  </action>
+  <action name="actionLicense">
+   <property name="text">
+    <string>License ...</string>
+   </property>
+  </action>
+  <action name="actionCredits">
+   <property name="text">
+    <string>Credits ...</string>
+   </property>
+  </action>
+  <action name="actionLog_Viewer">
+   <property name="text">
+    <string>Log Viewer ...</string>
+   </property>
+  </action>
+  <action name="actionImage">
+   <property name="text">
+    <string>Image</string>
+   </property>
+  </action>
+  <action name="actionBias">
+   <property name="text">
+    <string>Bias</string>
+   </property>
+  </action>
+  <action name="actionDark">
+   <property name="text">
+    <string>Dark</string>
+   </property>
+  </action>
+  <action name="actionFlat">
+   <property name="text">
+    <string>Flat</string>
+   </property>
+  </action>
+  <action name="actionAddImage">
+   <property name="text">
+    <string>Image</string>
+   </property>
+  </action>
+  <action name="actionAddBias">
+   <property name="text">
+    <string>Bias</string>
+   </property>
+  </action>
+  <action name="actionAddDark">
+   <property name="text">
+    <string>Dark</string>
+   </property>
+  </action>
+  <action name="actionAddFlat">
+   <property name="text">
+    <string>Flat</string>
+   </property>
+  </action>
+  <action name="actionBias_Combine">
+   <property name="text">
+    <string>Bias Combine</string>
+   </property>
+  </action>
+  <action name="actionDark_Combine">
+   <property name="text">
+    <string>Dark Combine</string>
+   </property>
+  </action>
+  <action name="actionFlat_Combine">
+   <property name="text">
+    <string>Flat Combine</string>
+   </property>
+  </action>
+  <action name="actionMedian">
+   <property name="text">
+    <string>Median...</string>
+   </property>
+  </action>
+  <action name="actionAverage">
+   <property name="text">
+    <string>Average...</string>
+   </property>
+  </action>
+  <action name="actionSum">
+   <property name="text">
+    <string>Sum...</string>
+   </property>
+  </action>
+  <action name="actionDifference">
+   <property name="text">
+    <string>Difference ...</string>
+   </property>
+  </action>
+  <action name="actionGinga_2">
+   <property name="text">
+    <string>Ginga ...</string>
+   </property>
+  </action>
+  <action name="actionAlipy_2">
+   <property name="text">
+    <string>Alipy ...</string>
+   </property>
+  </action>
+  <action name="actionLA_Cosmic_Cleaner_2">
+   <property name="text">
+    <string>LA. Cosmic Cleaner ...</string>
+   </property>
+  </action>
+  <action name="actionAstrometry_net_2">
+   <property name="text">
+    <string>Astrometry.net ...</string>
+   </property>
+  </action>
+  <action name="actionEditor">
+   <property name="text">
+    <string>Editor</string>
+   </property>
+  </action>
+  <action name="actionCombine">
+   <property name="text">
+    <string>Combine</string>
+   </property>
+  </action>
+  <action name="actionCalibration_3">
+   <property name="text">
+    <string>Calibration</string>
+   </property>
+  </action>
+  <action name="actionAnalyse_2">
+   <property name="text">
+    <string>Analyse</string>
+   </property>
+  </action>
+  <action name="actionClose_All_Windows">
+   <property name="text">
+    <string>Close All Open Windows</string>
+   </property>
+  </action>
+  <action name="actionClear_All_Lists">
+   <property name="text">
+    <string>Clear All Lists</string>
+   </property>
+  </action>
+  <action name="actionClear_Image_List">
+   <property name="text">
+    <string>Clear Image List</string>
+   </property>
+  </action>
+  <action name="actionClear_Bias_List">
+   <property name="text">
+    <string>Clear Bias List</string>
+   </property>
+  </action>
+  <action name="actionClear_Dark_List">
+   <property name="text">
+    <string>Clear Dark List</string>
+   </property>
+  </action>
+  <action name="actionClear_Flat_List">
+   <property name="text">
+    <string>Clear Flat List</string>
+   </property>
+  </action>
+  <action name="actionClear_Image_L_st">
+   <property name="text">
+    <string>Clear Image Lİst</string>
+   </property>
+  </action>
+  <action name="actionClear_Bias_List_2">
+   <property name="text">
+    <string>Clear Bias List</string>
+   </property>
+  </action>
+  <action name="actionClear_Dark_L_st">
+   <property name="text">
+    <string>Clear Dark Lİst</string>
+   </property>
+  </action>
+  <action name="actionClear_Flat_List_2">
+   <property name="text">
+    <string>Clear Flat List</string>
+   </property>
+  </action>
+  <action name="actionClear_Image_List_2">
+   <property name="text">
+    <string>Clear Image List</string>
+   </property>
+  </action>
+  <action name="actionClear_Image_List_3">
+   <property name="text">
+    <string>Clear Image List</string>
+   </property>
+  </action>
+  <action name="actionClear_Bias_List_3">
+   <property name="text">
+    <string>Clear Bias List</string>
+   </property>
+  </action>
+  <action name="actionClear_Dark_List_3">
+   <property name="text">
+    <string>Clear Dark List</string>
+   </property>
+  </action>
+  <action name="actionClear_Flat_List_3">
+   <property name="text">
+    <string>Clear Flat List</string>
+   </property>
+  </action>
+  <action name="actionZerocombine">
+   <property name="text">
+    <string>Zerocombine...</string>
+   </property>
+  </action>
+  <action name="actionDarlcombine">
+   <property name="text">
+    <string>Darlcombine</string>
+   </property>
+  </action>
+  <action name="actionFlatcombine">
+   <property name="text">
+    <string>Flatcombine...</string>
+   </property>
+  </action>
+  <action name="actionDarkcombine">
+   <property name="text">
+    <string>Darkcombine...</string>
+   </property>
+  </action>
+  <action name="actionManualAlign">
+   <property name="text">
+    <string>Manual...</string>
+   </property>
+  </action>
+  <action name="actionAutoAlign">
+   <property name="text">
+    <string>Auto</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
