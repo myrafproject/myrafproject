@@ -7,8 +7,9 @@ Created on Fri May  3 14:35:56 2019
 try:
     from sep import Background
     from sep import sum_circle
-except:
-    print("Can't import sep.")
+except Exception as e:
+    
+    print("Can't import sep: {}".format(e))
     exit(0)
 
 try:
@@ -45,15 +46,12 @@ except:
     print("Can't import pyraf/iraf.")
     exit(0)
 
-    
-
 try:
     import alipy
     from alipy import imgcat
 except:
     print("Can't import alipy.")
     exit(0)
-
 
 from . import env
 from . import cosm
@@ -280,13 +278,14 @@ class Astronomy:
             pass
             
         def align(self, image, ref, output):
-            identifications = alipy.ident.run(ref, image, visu=False)
+            identifications = alipy.ident.run(ref, [image], visu=False,
+                                              sexkeepcat=False, verbose=False)
             outputshape = alipy.align.shape(ref)
             for the_id in identifications:
                 if the_id.ok == True:
                     the_id.ukn.name, the_id.trans, the_id.medfluxratio
                     alipy.align.affineremap(the_id.ukn.filepath, the_id.trans,
-                                            shape=outputshape)
+                                            shape=outputshape, outdir=output)
                 
         def star_finder(self, image, max_star=500):
             self.logger.log("Star finder started for {}".format(image))

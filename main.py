@@ -423,11 +423,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                         self.open_window("proc")
                         for it, file in enumerate(files):
                             self.proc_window.progress_annotation.setProperty("text", "Aligning: {}".format(file))
-                            pn, fn = self.fop.get_base_name(file)
-                            out_file = "{}/{}".format(out_dir, fn)
-                            if self.fop.is_file(out_file):
-                                self.fop.rm(out_file)
-                            self.fts.align(file, ref, out_file)
+                            self.fts.align(file, ref, out_dir)
                             self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
                             
                         for wind in self.play_ground.subWindowList():
