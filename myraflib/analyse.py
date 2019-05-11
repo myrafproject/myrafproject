@@ -2,36 +2,57 @@
 """
 Created on Fri May  3 14:35:56 2019
 
-@author: msh
+@author: msh, yk
 """
+try:
+    from sep import Background
+    from sep import sum_circle
+except:
+    print("Can't import sep.")
+    exit(0)
 
-from sep import Background
-from sep import sum_circle
+try:
+    from numpy import min as nmin
+    from numpy import max as nmax
+    from numpy import mean as nmea
+    from numpy import median as nmed
+    from numpy import sum as nsum
+    from numpy import std as nstd
+    from numpy import array as ar
+    from numpy import rot90
+    from numpy import log10
+    from numpy import log
+    from numpy import float64
+    from numpy import power
+    from numpy import sqrt
+    from numpy import argmin
+except:
+    print("Can't import numpy.")
+    exit(0)
 
-from numpy import min as nmin
-from numpy import max as nmax
-from numpy import mean as nmea
-from numpy import median as nmed
-from numpy import sum as nsum
-from numpy import std as nstd
-from numpy import array as ar
-from numpy import rot90
-from numpy import log10
-from numpy import log
-from numpy import float64
-from numpy import power
-from numpy import sqrt
-from numpy import argmin
+try:
+    from astropy.io import fits as fts
+    from astropy.time import Time as tm
+except:
+    print("Can't import astropy.")
+    exit(0)
 
-from astropy.io import fits as fts
-from astropy.time import Time as tm
+try:
+    from pyraf import iraf
+    from iraf import imred
+    from iraf import ccdred
+except:
+    print("Can't import pyraf/iraf.")
+    exit(0)
 
-from pyraf import iraf
-from iraf import imred
-from iraf import ccdred
+    
 
-import alipy
-from alipy import imgcat
+try:
+    import alipy
+    from alipy import imgcat
+except:
+    print("Can't import alipy.")
+    exit(0)
 
 
 from . import env

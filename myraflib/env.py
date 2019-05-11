@@ -2,47 +2,89 @@
 """
 Created on Fri May  3 14:43:58 2019
 
-@author: msh
+@author: msh, yk
 """
+try:
+    import string
+except:
+    print("Can't import string?")
+    exit(0)
 
-import string
+try:
+    import random
+except:
+    print("Can't import random?")
+    exit(0)
 
-import random
+try:
+    from numpy import genfromtxt
+    from numpy import savetxt
+    from numpy import array as ar
+except:
+    print("Can't import numpy.")
+    exit(0)
 
-from numpy import genfromtxt
-from numpy import savetxt
-from numpy import array as ar
+try:
+    from os.path import expanduser
+    from os.path import exists
+    from os.path import isfile
+    from os.path import dirname
+    from os.path import basename
+    from os.path import realpath
+    from os.path import splitext
+    from os.path import abspath
+    from os.path import getsize
+    from os import remove
+    from os import mkdir
+except:
+    print("Can't import os?")
+    exit(0)
 
-from os.path import expanduser
-from os.path import exists
-from os.path import isfile
-from os.path import dirname
-from os.path import basename
-from os.path import realpath
-from os.path import splitext
-from os.path import abspath
-from os.path import getsize
+try:
+    from glob import glob
+except:
+    print("Can't import glob?")
+    exit(0)
 
-from os import remove
-from os import mkdir
+try:
+    from shutil import copy2
+    from shutil import move
+except:
+    print("Can't import shutil?")
+    exit(0)
 
-from glob import glob
+try:
+    from datetime import datetime
+except:
+    print("Can't import datetime?")
+    exit(0)
 
-from shutil import copy2
-from shutil import move
+try:
+    from getpass import getuser
+except:
+    print("Can't import getpass?")
+    exit(0)
 
-from datetime import datetime
+try:
+    from platform import uname
+    from platform import system
+except:
+    print("Can't import platform?")
+    exit(0)
 
-from getpass import getuser
+try:
+    from inspect import currentframe
+    from inspect import getouterframes
+except:
+    print("Can't import inspect?")
+    exit(0)
 
-from platform import uname
-from platform import system
-
-from inspect import currentframe
-from inspect import getouterframes
-
-import tempfile
-
+try:
+    import tempfile
+except:
+    print("Can't import tempfile?")
+    exit(0)
+    
 class Logger():
     def __init__(self, verb=True, debugger=False):
         self.verb = verb

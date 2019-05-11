@@ -2,48 +2,75 @@
 """
 Created on Fri May  3 12:15:11 2019
 
-@author: msh
+@author: msh, yk
 """
+try:
+    from sys import argv
+except:
+    print("Can't import sys?")
+    exit(0)
 
-from sys import argv
+try:
+    import argparse
+except:
+    print("Can't import argparse.")
+    exit(0)
 
-import argparse
+try:
+    from PyQt5 import QtWidgets
+    from PyQt5 import QtCore
+except:
+    print("Can't import PyQt5.")
+    exit(0)
 
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+try:
+    from gui import myraf
+    from gui import display
+    from gui import animate
+    from gui import photometry
+    from gui import observatory
+    from gui import header_editor
+    from gui import header_calculator
+    from gui import header_extractor
+    from gui import help_analyse
+    from gui import help_editor
+    from gui import help_licence
+    from gui import help_credits
+    from gui import help_logger
+    from gui import help_aboutmyraf
+    from gui import help_help_ginga
+    from gui import help_help_alipy
+    from gui import help_help_ccleaner
+    from gui import help_help_astrometrynet
+    from gui import combine_subtraction
+    from gui import setting_calibration
+    from gui import setting_photometry
+    from gui import setting_cosmiccleaner
+    from gui import myraf_progress
+    from gui import func
+    from gui import align_manual
+except:
+    print("Can't import GUIs. MYRaf is not installed properly.")
+    exit(0)
 
-from gui import myraf
-from gui import display
-from gui import animate
-from gui import photometry
-from gui import observatory
-from gui import header_editor
-from gui import header_calculator
-from gui import header_extractor
-from gui import help_analyse
-from gui import help_editor
-from gui import help_licence
-from gui import help_credits
-from gui import help_logger
-from gui import help_aboutmyraf
-from gui import help_help_ginga
-from gui import help_help_alipy
-from gui import help_help_ccleaner
-from gui import help_help_astrometrynet
-from gui import combine_subtraction
-from gui import setting_calibration
-from gui import setting_photometry
-from gui import setting_cosmiccleaner
-from gui import myraf_progress
-from gui import func
-from gui import align_manual
+try:
+    from fPlot import FitsPlot
+except:
+    print("Can't import fPlot. MYRaf is not installed properly.")
+    exit(0)
 
-from fPlot import FitsPlot
+try:
+    from matplotlib.patches import Circle
+except:
+    print("Can't import matplotlib.")
+    exit(0)
 
-from matplotlib.patches import Circle
-
-from myraflib import analyse
-from myraflib import env
+try:
+    from myraflib import analyse
+    from myraflib import env
+except:
+    print("Can't import myraflib. MYRaf is not installed properly.")
+    exit(0)
 
 class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
     def __init__(self, parent=None, verb=False, debugger=False):
