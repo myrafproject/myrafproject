@@ -139,7 +139,8 @@ class Logger():
                 log_file.write("Time: {}\n".format(self.time_stamp()))
                 log_file.write("System Info: {}\n".format(self.system_info()))
                 log_file.write("Log: {}\n".format(text))
-                log_file.write("Function: {}\n\n\n".format(self.caller_function()))
+                log_file.write("Function: {}\n\n\n".format(
+                        self.caller_function()))
                 log_file.close()
                 self.mini_log(text)
         except Exception as e:

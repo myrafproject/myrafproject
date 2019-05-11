@@ -259,15 +259,24 @@ class Astronomy:
         def solve_field(self, file, out_file):
             pass
             
-        def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0, sigma_clip=5, sigma_fraction=0.3, object_limit=5, max_iter=4, mask=False):
+        def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0,
+                           sigma_clip=5, sigma_fraction=0.3, object_limit=5,
+                           max_iter=4, mask=False):
+            
             data, header = cosm.fromfits(image)
             if data.ndim == 2:
-                cos = cosm.cosmicsimage(data, gain=gain, readnoise=readout_noise, sigclip=sigma_clip, sigfrac=sigma_fraction, objlim=object_limit, verbose=self.verb)
+                cos = cosm.cosmicsimage(data, gain=gain,
+                                        readnoise=readout_noise,
+                                        sigclip=sigma_clip,
+                                        sigfrac=sigma_fraction,
+                                        objlim=object_limit, verbose=self.verb)
+                
                 cos.run(maxiter=max_iter)
                 cosm.tofits(output, cos.cleanarray, header)
                 if mask:
                     pn, fn, ex = self.fop.split_file_name(output)
-                    cosm.tofits("{}/{}_mask{}".format(pn, fn, ex), cos.mask, header)
+                    cosm.tofits("{}/{}_mask{}".format(pn, fn, ex),
+                                cos.mask, header)
             pass
             
         def align(self, image, ref, output):
@@ -276,14 +285,16 @@ class Astronomy:
             for the_id in identifications:
                 if the_id.ok == True:
                     the_id.ukn.name, the_id.trans, the_id.medfluxratio
-                    alipy.align.affineremap(the_id.ukn.filepath, the_id.trans, shape=outputshape)
+                    alipy.align.affineremap(the_id.ukn.filepath, the_id.trans,
+                                            shape=outputshape)
                 
         def star_finder(self, image, max_star=500):
             self.logger.log("Star finder started for {}".format(image))
             try:
                 img = imgcat.ImgCat(image)
-                img.makecat(rerun=True, keepcat=True, verbose=self.verb)
-                img.makestarlist(skipsaturated=False, n=max_star, verbose=self.verb)
+                img.makecat(rerun=True, keepcat=False, verbose=self.verb)
+                img.makestarlist(skipsaturated=False, n=max_star,
+                                 verbose=self.verb)
                 ret = []
                 for star in img.starlist:
                     ret.append([star.x, star.y, star.fwhm])
@@ -409,7 +420,8 @@ class Astronomy:
                 self.logger.log(e)
                 
         def update_header(self, src, key, value):
-            self.logger.log("Updating {}'s Header, {}={}".format(src, key, value))
+            self.logger.log("Updating {}'s Header, {}={}".format(src,
+                            key, value))
             try:
                 hdu = fts.open(src, mode='update')
                 hdu[0].header[key] = value
@@ -433,19 +445,25 @@ class Astronomy:
             self.logger.log("Writeing data to file({})".format(dest))
             try:
                 if ow and self.fop.is_file(dest):
-                    self.logger.log("Over Write is Enabled for {}".format(dest))
+                    self.logger.log("Over Write is Enabled for {}".format(
+                            dest))
                 fts.writeto(dest, data, header=header, overwrite=ow)
             except Exception as e:
                 self.logger.log(e)
                 
-        def photometry(self, file, x_coor, y_coor, zmag=25.0, aper_radius=15.0, gain=1.21):
+        def photometry(self, file, x_coor, y_coor, zmag=25.0,
+                       aper_radius=15.0, gain=1.21):
             try:
                 data = self.data(file)
                 bkg = Background(data)
                 data_sub = data - bkg
-                flx, ferr, flag = sum_circle(data_sub, x_coor, y_coor, aper_radius, err=bkg.globalrms, gain=gain)
+                flx, ferr, flag = sum_circle(data_sub, x_coor, y_coor,
+                                             aper_radius, err=bkg.globalrms,
+                                             gain=gain)
                 mag, merr = self.sma.flux_to_mag(flx, ferr)
-                return(str(x_coor), str(y_coor), str(float(flx)), str(float(ferr)), str(float(flag)), str(mag + zmag), str(merr))
+                return(str(x_coor), str(y_coor), str(float(flx)),
+                       str(float(ferr)), str(float(flag)),
+                       str(mag + zmag), str(merr))
             except Exception as e:
                 self.logger.log(e)
         
