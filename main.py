@@ -6,7 +6,6 @@ Created on Fri May  3 12:15:11 2019
 """
 
 from sys import argv
-from sys import version_info
 
 import argparse
 
@@ -160,6 +159,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.actionFlatcombine.triggered.connect(lambda: (
                 self.flat_combine(file_requested=False)))
         self.actionCosmic.triggered.connect(lambda: (self.cclean()))
+        self.actionWCS.triggered.connect(lambda: (self.solve()))
+        
         
         
         self.actionClose_All_Windows.triggered.connect(lambda: (
@@ -203,17 +204,175 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.flat_list.installEventFilter(self)
         self.play_ground.installEventFilter(self)
         
+    def solve(self):
+        files = self.fnk_deve.get_from_tree(self.image_list)
+        if len(files) > 0:
+            out_dir = self.fnk_file.save_directory()
+            if out_dir is not None and not out_dir == "":
+                self.open_window("proc")
+                for it, file in enumerate(files):
+                    self.proc_window.progress_annotation.setProperty("text", "Scolving: {}".format(file))
+                    pn, fn = self.fop.get_base_name(file)
+                    out_file = "{}/{}".format(out_dir, fn)
+                    self.fts.solve_field(file, out_file)
+                    self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
+                    
+                for wind in self.play_ground.subWindowList():
+                    if wind.windowTitle() == "MYRaf Progress":
+                        wind.close()
+        else:
+            self.logger.log("No Image to Clean")
+            QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
+                                           ("No Image to Clean"))
+        
+    def get_gain(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "gain":
+                        return(float(ln[1]))
+                        
+                return(2.2)
+            else:
+                return(2.2)
+        except Exception as e:
+            self.logger.log(e)
+            return(2.2)
+            
+    def get_reno(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "reno":
+                        return(float(ln[1]))
+                        
+                return(10.0)
+            else:
+                return(10.0)
+        except Exception as e:
+            self.logger.log(e)
+            return(10.0)
+            
+    def get_sicl(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "sicl":
+                        return(float(ln[1]))
+                        
+                return(5.0)
+            else:
+                return(5.0)
+        except Exception as e:
+            self.logger.log(e)
+            return(5.0)
+            
+    def get_sifr(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "sifr":
+                        return(float(ln[1]))
+                        
+                return(0.3)
+            else:
+                return(0.3)
+        except Exception as e:
+            self.logger.log(e)
+            return(0.3)
+            
+    def get_obli(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "obli":
+                        return(float(ln[1]))
+                        
+                return(5.0)
+            else:
+                return(5.0)
+        except Exception as e:
+            self.logger.log(e)
+            return(5.0)
+            
+    def get_mait(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "mait":
+                        return(int(ln[1]))
+                        
+                return(4)
+            else:
+                return(4)
+        except Exception as e:
+            self.logger.log(e)
+            return(4)
+            
+    def get_crma(self):
+        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
+        try:
+            if self.fop.is_file(set_file):
+                setting_file = open(set_file, "r")
+                
+                for line in setting_file:
+                    ln = line.replace("\n", "").split("|")
+                    if ln[0] == "crma":
+                        return(ln[1] == "True")
+                return(False)
+            else:
+                return(False)
+        except Exception as e:
+            self.logger.log(e)
+            return(False)
+        
     def cclean(self):
         files = self.fnk_deve.get_from_tree(self.image_list)
         if len(files) > 0:
             out_dir = self.fnk_file.save_directory()
-            if out_dir is not None and not out_dir == []:
+            if out_dir is not None and not out_dir == "":
+                gain = self.get_gain()
+                reno = self.get_reno()
+                sicl = self.get_sicl()
+                sifr = self.get_sifr()
+                obli = self.get_obli()
+                mait = self.get_mait()
+                crma = self.get_crma()
                 self.open_window("proc")
                 for it, file in enumerate(files):
                     self.proc_window.progress_annotation.setProperty("text", "Cleaning: {}".format(file))
                     pn, fn = self.fop.get_base_name(file)
                     out_file = "{}/{}".format(out_dir, fn)
-                    self.fts.cosmic_cleaner(file, out_file)
+                    self.fts.cosmic_cleaner(file, out_file, gain=gain,
+                                            readout_noise=reno,
+                                            sigma_clip=sicl,
+                                            sigma_fraction=sifr,
+                                            object_limit=obli,
+                                            max_iter=mait, mask=crma)
                     self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
                     
                 for wind in self.play_ground.subWindowList():
@@ -233,7 +392,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     
                     ref = self.image_list.currentItem().text(0)
                     out_dir = self.fnk_file.save_directory()
-                    if out_dir is not None and not out_dir == []:
+                    if out_dir is not None and not out_dir == "":
                         self.open_window("proc")
                         for it, file in enumerate(files):
                             self.proc_window.progress_annotation.setProperty("text", "Aligning: {}".format(file))
@@ -812,7 +971,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         files = self.fnk_deve.get_from_tree(device, selected=True)
         if len(files) > 1:
             self.open_window("animate", arg=files)
-        else:
+        elif len(files) == 1:
             self.logger.log("Trying to animate one file. Redirecting to Display")
             self.open_window("display", arg=[files[0], True])
         
@@ -1252,10 +1411,13 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
         
         self.fts = analyse.Astronomy.Fits(verb=self.verb,
                                           debugger=self.debugger)
+        self.coo = analyse.Astronomy.Coordinates(verb=self.verb,
+                                           debugger=self.debugger)
         self.sar = analyse.Statistics.Array(verb=self.verb,
                                             debugger=self.debugger)
         self.sma = analyse.Statistics.Math(verb=self.verb,
                                            debugger=self.debugger)
+        
         
         self.set_file = "{}_photometry.set".format(self.logger.setting_file)
         
@@ -1273,8 +1435,10 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
         
         
         self.photometry_coordinates.installEventFilter(self)
+        self.photometry_display.installEventFilter(self)
         
         self.artist = []
+        self.artist_fwhm = []
         
         self.image = image
         self.data = None
@@ -1353,7 +1517,44 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             menu.exec_(event.globalPos())
             return(True)
             
+        elif (event.type() == QtCore.QEvent.ContextMenu and
+            source is self.photometry_display):
+            menu = QtWidgets.QMenu()
+            menu.addAction('FWHM', lambda: (self.get_fwhm()))
+            menu.exec_(event.globalPos())
+            return(True)
+            
         return super(PhotometryWindow, self).eventFilter(source, event)
+    
+    def get_fwhm(self):
+        if self.image is not None:
+            sources = self.fts.star_finder(self.image, max_star=15000)
+            x, y = self.display_photometry.get_xy()
+            if sources is not None:
+                index = self.coo.find_closest(sources, [x, y])
+                if index is not None:
+                    found_x = sources[index][0]
+                    found_y = sources[index][1]
+                    circ = Circle((found_x, found_y), 10, edgecolor="#FFFF00", facecolor="none")
+                    self.artist_fwhm.append(self.photometry_display.canvas.fig.gca( ).add_artist(circ))
+                    circ.center = found_x, found_y
+                    self.artist_fwhm.append(self.photometry_display.canvas.fig.gca().annotate("Obj", xy = (found_x, found_y), color = "#FFFF00", fontsize = 10))
+                    self.photometry_display.canvas.draw()
+                    QtWidgets.QMessageBox.information(
+                            self, ("MYRaf Information"),
+                            ("FWHM: {}".format(sources[index][2])))
+                    for art in self.artist_fwhm:
+                        art.remove()
+                    self.artist_fwhm = []
+                    self.photometry_display.canvas.draw()
+            else:
+                self.logger.log("Could't find any source(s)")
+                QtWidgets.QMessageBox.critical(
+                        self, ("MYRaf Error"), ("Could't find any source(s)"))
+        else:
+            self.logger.log("No image file was given")
+            QtWidgets.QMessageBox.critical(
+                    self, ("MYRaf Error"), ("No image file was given"))
     
     def rm_line(self):
         self.fnk_deve.rm(self.photometry_coordinates)
@@ -1672,7 +1873,6 @@ class HEditorWindow(QtWidgets.QWidget, header_editor.Ui_Form):
         self.fnk_deve.replace_list_con(self.header_hlist, header_list)
         self.fnk_deve.c_replace_list_con(self.header_listOfExisting,
                                          header_list)
-        
         self.reload_log()
         
     def closeEvent(self, event):

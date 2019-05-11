@@ -19,8 +19,12 @@ from numpy import rot90
 from numpy import log10
 from numpy import log
 from numpy import float64
+from numpy import power
+from numpy import sqrt
+from numpy import argmin
 
 from astropy.io import fits as fts
+from astropy.time import Time as tm
 
 from pyraf import iraf
 from iraf import imred
@@ -28,6 +32,7 @@ from iraf import ccdred
 
 import alipy
 from alipy import imgcat
+
 
 from . import env
 from . import cosm
@@ -40,6 +45,23 @@ class Astronomy:
         def __init__(self, verb=False, debugger=False):
             self.verb = verb
             self.debugger = debugger
+        
+        def jd(self, utc):
+            if utc is not None:
+                try:
+                    ret = tm(utc, scale='utc')
+                    return(ret.jd)
+                except Exception as e:
+                    self.etc.log(e)
+            else:
+                self.logger.log("False Type: The value is not date")
+                
+        def jd_r(self, jd):
+            try:
+                t = tm(jd, format='jd', scale='tai')
+                return(t.to_datetime())
+            except Exception as e:
+                self.logger.log(e)
         
     
     class Iraf:
@@ -213,15 +235,18 @@ class Astronomy:
             self.fop = env.File(verb=self.verb, debugger=self.debugger)
             self.sma = Statistics.Math(verb=self.verb, debugger=self.debugger)
             
-        def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0, sigma_clip=5, sigma_fraction=0.3, ObjectLimit=5, max_iter=4, mask=False):
+        def solve_field(self, file, out_file):
+            pass
+            
+        def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0, sigma_clip=5, sigma_fraction=0.3, object_limit=5, max_iter=4, mask=False):
             data, header = cosm.fromfits(image)
-            print(data.ndim)
             if data.ndim == 2:
-                cos = cosm.cosmicsimage(data, gain=gain, readnoise=readout_noise, sigclip=sigma_clip, sigfrac=sigma_fraction, objlim=ObjectLimit, verbose=self.verb)
+                cos = cosm.cosmicsimage(data, gain=gain, readnoise=readout_noise, sigclip=sigma_clip, sigfrac=sigma_fraction, objlim=object_limit, verbose=self.verb)
                 cos.run(maxiter=max_iter)
                 cosm.tofits(output, cos.cleanarray, header)
                 if mask:
-                    cosm.tofits("{}.mask".format(output), cos.mask, header)
+                    pn, fn, ex = self.fop.split_file_name(output)
+                    cosm.tofits("{}/{}_mask{}".format(pn, fn, ex), cos.mask, header)
             pass
             
         def align(self, image, ref, output):
@@ -240,9 +265,9 @@ class Astronomy:
                 img.makestarlist(skipsaturated=False, n=max_star, verbose=self.verb)
                 ret = []
                 for star in img.starlist:
-                    ret.append([star.x, star.y])
+                    ret.append([star.x, star.y, star.fwhm])
                     
-                return(ret)
+                return(ar(ret))
             except Exception as e:
                 self.logger.log(e)
                 
@@ -407,6 +432,22 @@ class Astronomy:
         def __init__(self, verb=False, debugger=False):
             self.verb = verb
             self.debugger = debugger
+            
+        def phtsical_distence(self, coord1, coord2):
+            try:
+                return(sqrt(power(coord1[0] - coord2[0], 2) +
+                            power(coord1[1] - coord2[1], 2)))
+            except Exception as e:
+                self.logger.log(e)
+                
+        def find_closest(self, coordinates, coord):
+            try:
+                dists = sqrt(power(coordinates[:, 0] - coord[0], 2) +
+                             power(coordinates[:, 1] - coord[1], 2))
+                if dists is not None:
+                    return(argmin(dists))
+            except Exception as e:
+                self.logger.log(e)
     
     class Query:
         def __init__(self, verb=False, debugger=False):
