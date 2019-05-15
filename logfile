@@ -1982,3 +1982,20 @@ May 11 17:01: IMCOMBINE
   /home/msh/Desktop/2013-09-13/Bias/Bias-010.fit
 
   Output image = /tmp/myraf_zerocombine_FXVKFBU4EV.fits, ncombine = 10
+
+May 13 12:10: IMCOMBINE
+  combine = average, scale = none, zero = none, weight = none
+  blank = 0.
+                Images 
+  /home/msh/Desktop/2013-09-13/Bias/Bias-001.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-002.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-003.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-004.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-005.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-006.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-007.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-008.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-009.fit
+  /home/msh/Desktop/2013-09-13/Bias/Bias-010.fit
+
+  Output image = /tmp/myraf_zerocombine_US6UZS6NPA.fits, ncombine = 10

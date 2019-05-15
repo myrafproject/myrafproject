@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\myraf.ui'
+# Form implementation generated from reading ui file 'C:\Users\msh\Documents\GitHub\myrafproject\gui\myraf.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -55,7 +55,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.dockWidget = QtWidgets.QDockWidget(MainWindow)
-        self.dockWidget.setFeatures(QtWidgets.QDockWidget.NoDockWidgetFeatures)
+        self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable)
         self.dockWidget.setAllowedAreas(QtCore.Qt.NoDockWidgetArea)
         self.dockWidget.setObjectName("dockWidget")
         self.dockWidgetContents = QtWidgets.QWidget()
@@ -352,6 +352,7 @@ class Ui_MainWindow(object):
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.menuHelp_2.setTitle(_translate("MainWindow", "Help"))
         self.menuMYRaf.setTitle(_translate("MainWindow", "MYRaf"))
+        self.dockWidget.setWindowTitle(_translate("MainWindow", "Files"))
         self.image_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
         self.image_list.headerItem().setText(1, _translate("MainWindow", "Value"))
         self.image_remove.setText(_translate("MainWindow", "Remove"))

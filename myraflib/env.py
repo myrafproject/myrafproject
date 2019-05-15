@@ -11,6 +11,13 @@ except:
     exit(0)
 
 try:
+    from json import dump
+    from json import loads
+except:
+    print("Can't import json?")
+    exit(0)
+    
+try:
     import random
 except:
     print("Can't import random?")
@@ -94,7 +101,27 @@ class Logger():
         self.mini_log_file = abspath("{}/mlog.my".format(self.log_dir))
         self.tmp_dir = tempfile.gettempdir()
         
+        
         self.setting_file = abspath("{}/.myset".format(expanduser("~")))
+        
+        self.cos_set_file = abspath("{}/.myset_cosmiccleaner.set".format(expanduser("~")))
+        self.cos_set = {"gain": 2.2, "reno": 10.0, "sicl": 5.5, "sifr": 0.3,
+                        "obli": 5.0, "mait": 2, "crma": False}
+        
+        self.pho_set_file = abspath("{}/.myset_photometry.set".format(expanduser("~")))
+        self.pho_set = {"std_mag": False, "std_mag_nomad": True,
+                        "std_mag_usno": True, "std_mag_gaia": True,
+                        "std_mag_radius": 10.0, "datapar_exposure": "exptime",
+                        "datapar_filter": "subset", "photpar_aperture": 20.0,
+                        "photpar_zmag": 25.0, "photpar_gain": "gain",
+                        "wcs_ra": "ra", "wcs_dec": "dec",
+                        "lot_obse": "observat", "lot_time": "JD",
+                        "stf_thr": 2.0, "stf_max": 500, "header_to_use": ""}
+        
+        self.cal_set_file = abspath("{}/.myset_calibration.set".format(expanduser("~")))
+        self.cal_set = {"b_combine": 1, "b_rejection": 0,
+                        "d_combine": 0, "d_rejection": 0, "d_scale": 1,
+                        "f_combine": 0, "f_rejection": 0}
         
         self.observat_dir = abspath("./observat/")
         
@@ -330,3 +357,65 @@ class File():
             f.write("{}\n".format(i))
         
         f.close()
+        
+    def write_json(self, file, dic):
+        try:
+            with open(file, 'w') as set_file:
+                dump(dic, set_file)
+        except Exception as e:
+            print("hata")
+            self.logger.log(e)
+            
+    def read_json(self, file):
+        try:
+            with open(file, 'r') as myfile:
+                data=myfile.read()
+                
+            settings = loads(data)
+            
+            return(settings)
+        except Exception as e:
+            self.logger.log(e)
+            
+    def write_set(self, dic, typ):
+        if typ == "cos":
+            self.write_json(self.logger.cos_set_file, dic)
+        elif typ == "pho":
+            self.write_json(self.logger.pho_set_file, dic)
+        elif typ == "cal":
+            self.write_json(self.logger.cal_set_file, dic)
+            
+            
+    def read_set(self, typ):
+        if typ == "cos":
+            try:
+                dic = self.read_json(self.logger.cos_set_file)
+                for key, value in dic.items():
+                    if value is None:
+                        dic[value] = self.logger.cos_set[value]
+                return(dic)
+            except Exception as e:
+                self.logger.log(e)
+                return(self.logger.cos_set)
+                
+        elif typ == "pho":
+            try:
+                dic = self.read_json(self.logger.pho_set_file)
+                for key, value in dic.items():
+                    if value is None:
+                        dic[value] = self.logger.pho_set[value]
+                return(dic)
+            except Exception as e:
+                self.logger.log(e)
+                return(self.logger.pho_set)
+                
+        elif typ == "cal":
+            try:
+                dic = self.read_json(self.logger.cal_set_file)
+                for key, value in dic.items():
+                    if value is None:
+                        dic[value] = self.logger.cal_set[value]
+                return(dic)
+            except Exception as e:
+                self.logger.log(e)
+                return(self.logger.cal_set)

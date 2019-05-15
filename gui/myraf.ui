@@ -160,10 +160,13 @@
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="features">
-    <set>QDockWidget::NoDockWidgetFeatures</set>
+    <set>QDockWidget::DockWidgetFloatable</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::NoDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Files</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>

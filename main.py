@@ -252,146 +252,55 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
                                            ("No Image to Clean"))
         
-    def get_gain(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "gain":
-                        return(float(ln[1]))
-                        
-                return(2.2)
-            else:
-                return(2.2)
-        except Exception as e:
-            self.logger.log(e)
-            return(2.2)
-            
-    def get_reno(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "reno":
-                        return(float(ln[1]))
-                        
-                return(10.0)
-            else:
-                return(10.0)
-        except Exception as e:
-            self.logger.log(e)
-            return(10.0)
-            
-    def get_sicl(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "sicl":
-                        return(float(ln[1]))
-                        
-                return(5.0)
-            else:
-                return(5.0)
-        except Exception as e:
-            self.logger.log(e)
-            return(5.0)
-            
-    def get_sifr(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "sifr":
-                        return(float(ln[1]))
-                        
-                return(0.3)
-            else:
-                return(0.3)
-        except Exception as e:
-            self.logger.log(e)
-            return(0.3)
-            
-    def get_obli(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "obli":
-                        return(float(ln[1]))
-                        
-                return(5.0)
-            else:
-                return(5.0)
-        except Exception as e:
-            self.logger.log(e)
-            return(5.0)
-            
-    def get_mait(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "mait":
-                        return(int(ln[1]))
-                        
-                return(4)
-            else:
-                return(4)
-        except Exception as e:
-            self.logger.log(e)
-            return(4)
-            
-    def get_crma(self):
-        set_file = "{}_cosmiccleaner.set".format(self.logger.setting_file)
-        try:
-            if self.fop.is_file(set_file):
-                setting_file = open(set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "crma":
-                        return(ln[1] == "True")
-                return(False)
-            else:
-                return(False)
-        except Exception as e:
-            self.logger.log(e)
-            return(False)
-        
     def cclean(self):
         files = self.fnk_deve.get_from_tree(self.image_list)
         if len(files) > 0:
             out_dir = self.fnk_file.save_directory()
             if out_dir is not None and not out_dir == "":
-                gain = self.get_gain()
-                reno = self.get_reno()
-                sicl = self.get_sicl()
-                sifr = self.get_sifr()
-                obli = self.get_obli()
-                mait = self.get_mait()
-                crma = self.get_crma()
+                try:
+                    settings = self.fop.read_set("cos")
+                    gain = settings['gain']
+                    if gain is None:
+                        gain = self.logger.cos_set['gain']
+                            
+                    reno = settings['reno']
+                    if reno is None:
+                        reno = self.logger.cos_set['reno']
+                            
+                    sicl = settings['sicl']
+                    if sicl is None:
+                        sicl = self.logger.cos_set['sicl']
+                            
+                    sifr = settings['sifr']
+                    if sifr is None:
+                        sifr = self.logger.cos_set['sifr']
+                            
+                    obli = settings['obli']
+                    if obli is None:
+                        obli = self.logger.cos_set['obli']
+                            
+                    mait = settings['mait']
+                    if mait is None:
+                        mait = self.logger.cos_set['mait']
+                            
+                    crma = settings['crma']
+                    if crma is None:
+                        crma = self.logger.cos_set['crma']
+                except Exception as e:
+                    self.logger.log(e)
+                    settings = self.logger.cos_set
+                    gain = settings['gain']
+                    reno = settings['reno']
+                    sicl = settings['sicl']
+                    sifr = settings['sifr']
+                    obli = settings['obli']
+                    mait = settings['mait']
+                    crma = settings['crma']
+                    
                 self.open_window("proc")
                 for it, file in enumerate(files):
-                    self.proc_window.progress_annotation.setProperty("text", "Cleaning: {}".format(file))
+                    self.proc_window.progress_annotation.setProperty(
+                            "text", "Cleaning: {}".format(file))
                     pn, fn = self.fop.get_base_name(file)
                     out_file = "{}/{}".format(out_dir, fn)
                     self.fts.cosmic_cleaner(file, out_file, gain=gain,
@@ -400,7 +309,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                             sigma_fraction=sifr,
                                             object_limit=obli,
                                             max_iter=mait, mask=crma)
-                    self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
+                    self.proc_window.progress_progressBar.setProperty(
+                            "value", 100 *(it + 1) / (len(files)))
                     
                 for wind in self.play_ground.subWindowList():
                     if wind.windowTitle() == "MYRaf Progress":
@@ -422,9 +332,11 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     if out_dir is not None and not out_dir == "":
                         self.open_window("proc")
                         for it, file in enumerate(files):
-                            self.proc_window.progress_annotation.setProperty("text", "Aligning: {}".format(file))
+                            self.proc_window.progress_annotation.setProperty(
+                                    "text", "Aligning: {}".format(file))
                             self.fts.align(file, ref, out_dir)
-                            self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
+                            self.proc_window.progress_progressBar.setProperty(
+                                    "value", 100 *(it + 1) / (len(files)))
                             
                         for wind in self.play_ground.subWindowList():
                             if wind.windowTitle() == "MYRaf Progress":
@@ -884,7 +796,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Remove', lambda: (self.rm_data("image")))
             menu.addSeparator()
             menu.addAction('Animate', lambda: (self.animate(self.image_list)))
-            menu.addSeparator()
             menu.addAction('Display..', lambda: (self.display(
                     self.image_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -942,7 +853,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Remove', lambda: (self.rm_data("bias")))
             menu.addSeparator()
             menu.addAction('Animate', lambda: (self.animate(self.bias_list)))
-            menu.addSeparator()
             menu.addAction('Display..', lambda: (self.display(
                     self.bias_list, False)))
             menu.addAction('Display in New Window', lambda: (
@@ -957,7 +867,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Remove', lambda: (self.rm_data("dark")))
             menu.addSeparator()
             menu.addAction('Animate', lambda: (self.animate(self.dark_list)))
-            menu.addSeparator()
             menu.addAction('Display..', lambda: (self.display(
                     self.dark_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -972,7 +881,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Remove', lambda: (self.rm_data("flat")))
             menu.addSeparator()
             menu.addAction('Animate', lambda: (self.animate(self.flat_list)))
-            menu.addSeparator()
             menu.addAction('Display..', lambda: (self.display(
                     self.flat_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -1479,14 +1387,37 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 out_file = self.fnk_file.save_file(file_type="All (*.*)")
                 if out_file is not None and not out_file == "":
                     f2w = open(out_file, "w")
-                    aperture = self.get_aperture()
-                    gain = self.get_gain()
-                    zmag = self.get_zmag()
-                    wanted_headers = self.get_headers()
+                    settings = self.fop.read_set("pho")
+                    try:
+                        aperture = settings['photpar_aperture']
+                        if aperture is None:
+                            aperture = self.logger.pho_set['photpar_aperture']
+                            
+                        gain = settings['photpar_gain']
+                        if gain is None:
+                            gain = self.logger.pho_set['photpar_gain']
+                            
+                        zmag = settings['photpar_zmag']
+                        if zmag is None:
+                            zmag = self.logger.pho_set['photpar_zmag']
+                            
+                        wanted_headers = settings['header_to_use']
+                        if wanted_headers is None:
+                            wanted_headers = self.logger.pho_set['header_to_use']
+                            
+                    except Exception as e:
+                        self.logger.log(e)
+                        settings = self.logger.pho_set
+                        aperture = settings['photpar_aperture']
+                        gain = settings['photpar_gain']
+                        zmag = settings['photpar_zmag']
+                        wanted_headers = settings['header_to_use']
+                        
+                    wanted_headers = wanted_headers.split(",")
                     if wanted_headers == ['']:
-                        file_header = "x_coor,y_coor,flx,ferr,flag,mag,merr"
+                        file_header = "file,x_coor,y_coor,flx,ferr,flag,mag,merr"
                     else:
-                        file_header = "x_coor,y_coor,flx,ferr,flag,mag,merr,{}".format(",".join(wanted_headers))
+                        file_header = "file,x_coor,y_coor,flx,ferr,flag,mag,merr,{}".format(",".join(wanted_headers))
                     f2w.write("{}\n".format(file_header))
                     for it, file in enumerate(files):
                         use_header = []
@@ -1498,7 +1429,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                             x, y = float(x), float(y)
                             
                             gvalue = self.fts.header(file, gain)
-                            if gvalue is not None or gvalue == 0:
+                            if gvalue is None or gvalue == 0:
                                 gvalue = 1.21
                                 
                             phot = self.fts.photometry(
@@ -1617,74 +1548,6 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             self.logger.log("No image file was given")
             QtWidgets.QMessageBox.critical(
                     self, ("MYRaf Error"), ("No image file was given"))
-    
-    def get_aperture(self):
-        try:
-            if self.fop.is_file(self.set_file):
-                setting_file = open(self.set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "photpar_aperture":
-                        return(float(ln[1]))
-                        
-                return(20)
-            else:
-                return(20)
-        except Exception as e:
-            self.logger.log(e)
-            return(20)
-            
-    def get_headers(self):
-        try:
-            if self.fop.is_file(self.set_file):
-                setting_file = open(self.set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "header_to_use":
-                        return(ln[1].split(","))
-                        
-                return([''])
-            else:
-                return([''])
-        except Exception as e:
-            self.logger.log(e)
-            return([''])
-            
-    def get_gain(self):
-        try:
-            if self.fop.is_file(self.set_file):
-                setting_file = open(self.set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "photpar_gain":
-                        return(ln[1])
-                        
-                return("gain")
-            else:
-                return("gain")
-        except Exception as e:
-            self.logger.log(e)
-            return("gain")
-            
-    def get_zmag(self):
-        try:
-            if self.fop.is_file(self.set_file):
-                setting_file = open(self.set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "photpar_zmag":
-                        return(float(ln[1]))
-                        
-                return(25.0)
-            else:
-                return(25.0)
-        except Exception as e:
-            self.logger.log(e)
-            return(25.0)
             
     def plot_coordinates(self):
         coords = self.fnk_deve.list_of_selected(self.photometry_coordinates)
@@ -2364,34 +2227,50 @@ class SetCalibrationWindow(QtWidgets.QWidget, setting_calibration.Ui_Form):
     def closeEvent(self, event):
         self.parent.scalibration_window = None
         
+    def load_default(self):
+        settings = self.logger.cal_set
+        
+        self.fop.write_set(settings, "cal")
+        
+        self.setting_calibration_z_combine.setCurrentIndex(
+                settings['b_combine'])
+        self.setting_calibration_z_rejection.setCurrentIndex(
+                settings['b_rejection'])
+        
+        self.setting_calibration_d_combine.setCurrentIndex(
+                settings['d_combine'])
+        self.setting_calibration_d_rejection.setCurrentIndex(
+                settings['d_rejection'])
+        self.setting_calibration_d_scale.setCurrentIndex(
+                settings['d_scale'])
+        
+        self.setting_calibration_f_combine.setCurrentIndex(
+                settings['f_combine'])
+        self.setting_calibration_f_rejection.setCurrentIndex(
+                settings['f_rejection'])
     def load(self):
-        if self.fop.is_file(self.file):
-            file = open(self.file, "r")
-            for line in file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "b_combine":
-                    self.setting_calibration_z_combine.setCurrentIndex(
-                            int(ln[1]))
-                elif ln[0] == "b_rejection":
-                    self.setting_calibration_z_rejection.setCurrentIndex(
-                            int(ln[1]))
-                    
-                elif ln[0] == "d_combine":
-                    self.setting_calibration_d_combine.setCurrentIndex(
-                            int(ln[1]))
-                elif ln[0] == "d_rejection":
-                    self.setting_calibration_d_rejection.setCurrentIndex(
-                            int(ln[1]))
-                elif ln[0] == "d_scale":
-                    self.setting_calibration_d_scale.setCurrentIndex(
-                            int(ln[1]))
-                    
-                elif ln[0] == "f_combine":
-                    self.setting_calibration_f_combine.setCurrentIndex(
-                            int(ln[1]))
-                elif ln[0] == "f_rejection":
-                    self.setting_calibration_f_rejection.setCurrentIndex(
-                            int(ln[1]))
+        try:
+            settings = self.fop.read_set("cal")
+            self.setting_calibration_z_combine.setCurrentIndex(
+                    settings['b_combine'])
+            self.setting_calibration_z_rejection.setCurrentIndex(
+                    settings['b_rejection'])
+            
+            self.setting_calibration_d_combine.setCurrentIndex(
+                    settings['d_combine'])
+            self.setting_calibration_d_rejection.setCurrentIndex(
+                    settings['d_rejection'])
+            self.setting_calibration_d_scale.setCurrentIndex(
+                    settings['d_scale'])
+            
+            self.setting_calibration_f_combine.setCurrentIndex(
+                    settings['f_combine'])
+            self.setting_calibration_f_rejection.setCurrentIndex(
+                    settings['f_rejection'])
+        except Exception as e:
+            self.logger.log(e)
+            self.load_default()
+            
                     
         self.reload_log()
         
@@ -2406,16 +2285,12 @@ class SetCalibrationWindow(QtWidgets.QWidget, setting_calibration.Ui_Form):
         f_combine = self.setting_calibration_f_combine.currentIndex()
         f_rejection = self.setting_calibration_f_rejection.currentIndex()
         
-        file = open(self.file, "w")
-        file.write("b_combine|{}\n".format(b_combine))
-        file.write("b_rejection|{}\n".format(b_rejection))
-        file.write("d_combine|{}\n".format(d_combine))
-        file.write("d_rejection|{}\n".format(d_rejection))
-        file.write("d_scale|{}\n".format(d_scale))
-        file.write("f_combine|{}\n".format(f_combine))
-        file.write("f_rejection|{}\n".format(f_rejection))
-        file.close()
+        cal_set = {"b_combine": b_combine, "b_rejection": b_rejection,
+                   "d_combine": d_combine, "d_rejection": d_rejection,
+                   "d_scale": d_scale, "f_combine": f_combine,
+                   "f_rejection": f_rejection}
         
+        self.fop.write_set(cal_set, "cal")
         self.reload_log()
         
     
@@ -2481,55 +2356,77 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
     def closeEvent(self, event):
         self.parent.sphotometry_window = None
         
+    def load_default(self):
+        settings = self.logger.pho_set
+        
+        self.fop.write_set(settings, "pho")
+        
+        self.setting_phot_std.setChecked(settings['std_mag'])
+        self.setting_phot_std_nomad.setChecked(settings['std_mag_nomad'])
+        self.setting_phot_std_usno.setChecked(settings['std_mag_usno'])
+        self.setting_phot_std_gaia.setChecked(settings['std_mag_gaia'])
+        self.setting_photo_std_radius.setValue(settings['std_mag_radius'])
+        
+        self.setting_phot_datapar_exposure.setProperty(
+                "text", settings['datapar_exposure'])
+        self.setting_phot_datapar_filter.setProperty(
+                "text", settings['datapar_filter'])
+        self.setting_phot_photpar_aperture.setValue(
+                settings['photpar_aperture'])
+        self.setting_phot_photpar_zmag.setValue(settings['photpar_zmag'])
+        self.setting_phot_photpar_gain.setProperty(
+                "text", settings['photpar_gain'])
+        
+        self.setting_phot_wcs_ra.setProperty("text", settings['wcs_ra'])
+        self.setting_phot_wcs_dec.setProperty("text", settings['wcs_dec'])
+        
+        self.setting_phot_tlc_observatory.setProperty(
+                "text", settings['lot_obse'])
+        self.setting_phot_tlc_time.setProperty("text", settings['lot_time'])
+        
+        self.setting_phot_starf_max.setValue(settings['stf_max'])
+        
+        if not settings['header_to_use'] == "":
+            headers = settings['header_to_use'].split(",")
+            self.fnk_deve.replace_list_con(self.setting_phot_hex_use, headers)
+        
     def load(self):
-        if self.fop.is_file(self.file):
-            file = open(self.file, "r")
-            for line in file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "std_mag":
-                    self.setting_phot_std.setChecked(ln[1] == "True")
-                elif ln[0] == "std_mag_nomad":
-                    self.setting_phot_std_nomad.setChecked(ln[1] == "True")
-                elif ln[0] == "std_mag_usno":
-                    self.setting_phot_std_usno.setChecked(ln[1] == "True")
-                elif ln[0] == "std_mag_gaia":
-                    self.setting_phot_std_gaia.setChecked(ln[1] == "True")
-                elif ln[0] == "std_mag_radius":
-                    self.setting_photo_std_radius.setValue(float(ln[1]))
-                    
-                elif ln[0] == "datapar_exposure":
-                    self.setting_phot_datapar_exposure.setProperty("text",
-                                                                   ln[1])
-                elif ln[0] == "datapar_filter":
-                    self.setting_phot_datapar_filter.setProperty("text", ln[1])
-                    
-                elif ln[0] == "photpar_aperture":
-                    self.setting_phot_photpar_aperture.setValue(float(ln[1]))
-                elif ln[0] == "photpar_zmag":
-                    self.setting_phot_photpar_zmag.setValue(float(ln[1]))
-                elif ln[0] == "photpar_gain":
-                    self.setting_phot_photpar_gain.setProperty("text", ln[1])
-                    
-                elif ln[0] == "wcs_ra":
-                    self.setting_phot_wcs_ra.setProperty("text", ln[1])
-                elif ln[0] == "wcs_dec":
-                    self.setting_phot_wcs_dec.setProperty("text", ln[1])
-                    
-                elif ln[0] == "lot_obse":
-                    self.setting_phot_tlc_observatory.setProperty("text",
-                                                                  ln[1])
-                elif ln[0] == "lot_time":
-                    self.setting_phot_tlc_time.setProperty("text", ln[1])
-                    
-                elif ln[0] == "stf_max":
-                    self.setting_phot_starf_max.setValue(float(ln[1]))
-                    
-                elif ln[0] == "header_to_use":
-                    if not ln[1] == "":
-                        headers = ln[1].split(",")
-                        self.fnk_deve.replace_list_con(
-                                self.setting_phot_hex_use, headers)
-                    
+        try:
+            settings = self.fop.read_set("pho")
+            self.setting_phot_std.setChecked(settings['std_mag'])
+            self.setting_phot_std_nomad.setChecked(settings['std_mag_nomad'])
+            self.setting_phot_std_usno.setChecked(settings['std_mag_usno'])
+            self.setting_phot_std_gaia.setChecked(settings['std_mag_gaia'])
+            self.setting_photo_std_radius.setValue(settings['std_mag_radius'])
+            
+            self.setting_phot_datapar_exposure.setProperty(
+                    "text", settings['datapar_exposure'])
+            self.setting_phot_datapar_filter.setProperty(
+                    "text", settings['datapar_filter'])
+            self.setting_phot_photpar_aperture.setValue(
+                    settings['photpar_aperture'])
+            self.setting_phot_photpar_zmag.setValue(settings['photpar_zmag'])
+            self.setting_phot_photpar_gain.setProperty(
+                    "text", settings['photpar_gain'])
+            
+            self.setting_phot_wcs_ra.setProperty("text", settings['wcs_ra'])
+            self.setting_phot_wcs_dec.setProperty("text", settings['wcs_dec'])
+            
+            self.setting_phot_tlc_observatory.setProperty(
+                    "text", settings['lot_obse'])
+            self.setting_phot_tlc_time.setProperty(
+                    "text", settings['lot_time'])
+            
+            self.setting_phot_starf_max.setValue(settings['stf_max'])
+            
+            if not settings['header_to_use'] == "":
+                headers = settings['header_to_use'].split(",")
+                self.fnk_deve.replace_list_con(
+                        self.setting_phot_hex_use, headers)
+        except Exception as e:
+            self.logger.log(e)
+            
+        
         self.reload_log()
         
     def save(self):
@@ -2559,30 +2456,25 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
                 self.setting_phot_hex_use))
         
         
-        file = open(self.file, "w")
-        file.write("std_mag|{}\n".format(std_mag))
-        file.write("std_mag_nomad|{}\n".format(std_mag_nomad))
-        file.write("std_mag_usno|{}\n".format(std_mag_usno))
-        file.write("std_mag_gaia|{}\n".format(std_mag_gaia))
-        file.write("std_mag_radius|{}\n".format(std_mag_radius))
         
-        file.write("datapar_exposure|{}\n".format(datapar_exposure))
-        file.write("datapar_filter|{}\n".format(datapar_filter))
+        pho_set = {"std_mag": std_mag, "std_mag_nomad": std_mag_nomad,
+                   "std_mag_usno": std_mag_usno, "std_mag_gaia": std_mag_gaia,
+                   "std_mag_radius": std_mag_radius,
+                   
+                   "datapar_exposure": datapar_exposure,
+                   "datapar_filter": datapar_filter,
+                   
+                   "photpar_aperture": photpar_aperture,
+                   "photpar_zmag": photpar_zmag, "photpar_gain": photpar_gain,
+                   
+                   "wcs_ra": wcs_ra, "wcs_dec": wcs_dec,
+                   
+                   "lot_obse": lot_obse, "lot_time": lot_time,
+                   "stf_max": stf_max,
+                   
+                   "header_to_use": header_to_use}
         
-        file.write("photpar_aperture|{}\n".format(photpar_aperture))
-        file.write("photpar_zmag|{}\n".format(photpar_zmag))
-        file.write("photpar_gain|{}\n".format(photpar_gain))
-        
-        file.write("wcs_ra|{}\n".format(wcs_ra))
-        file.write("wcs_dec|{}\n".format(wcs_dec))
-        
-        file.write("lot_obse|{}\n".format(lot_obse))
-        file.write("lot_time|{}\n".format(lot_time))
-        
-        file.write("stf_max|{}\n".format(stf_max))
-        
-        file.write("header_to_use|{}\n".format(header_to_use))
-        file.close()
+        self.fop.write_set(pho_set, "pho")
         
         self.reload_log()
         
@@ -2612,25 +2504,30 @@ class SetCCleanerWindow(QtWidgets.QWidget, setting_cosmiccleaner.Ui_Form):
     def closeEvent(self, event):
         self.parent.sccleaner_window = None
         
+    def load_default(self):
+        settings = self.logger.cos_set
+        self.setting_cclener_gain.setValue(settings["gain"])
+        self.setting_cclener_readnoise.setValue(settings["reno"])
+        self.setting_cclener_sigmaclip.setValue(settings["sicl"])
+        self.setting_cclener_sigmafraction.setValue(settings["sifr"])
+        self.setting_cclener_objectlimit.setValue(settings["obli"])
+        self.setting_cclener_maxiteration.setValue(settings["mait"])
+        self.setting_cclener_createmask.setChecked(settings["crma"])
+        
     def load(self):
-        if self.fop.is_file(self.file):
-            file = open(self.file, "r")
-            for line in file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "gain":
-                    self.setting_cclener_gain.setValue(float(ln[1]))
-                elif ln[0] == "reno":
-                    self.setting_cclener_readnoise.setValue(float(ln[1]))
-                elif ln[0] == "sicl":
-                    self.setting_cclener_sigmaclip.setValue(float(ln[1]))
-                elif ln[0] == "sifr":
-                    self.setting_cclener_sigmafraction.setValue(float(ln[1]))
-                elif ln[0] == "obli":
-                    self.setting_cclener_objectlimit.setValue(float(ln[1]))
-                elif ln[0] == "mait":
-                    self.setting_cclener_maxiteration.setValue(float(ln[1]))
-                elif ln[0] == "crma":
-                    self.setting_cclener_createmask.setChecked(ln[1] == "True")
+        try:
+            settings = self.fop.read_set("cos")
+            
+            self.setting_cclener_gain.setValue(settings["gain"])
+            self.setting_cclener_readnoise.setValue(settings["reno"])
+            self.setting_cclener_sigmaclip.setValue(settings["sicl"])
+            self.setting_cclener_sigmafraction.setValue(settings["sifr"])
+            self.setting_cclener_objectlimit.setValue(settings["obli"])
+            self.setting_cclener_maxiteration.setValue(settings["mait"])
+            self.setting_cclener_createmask.setChecked(settings["crma"])
+        except Exception as e:
+            self.logger.log(e)
+            self.load_default()
                     
         self.reload_log()
     
@@ -2643,15 +2540,14 @@ class SetCCleanerWindow(QtWidgets.QWidget, setting_cosmiccleaner.Ui_Form):
         mait = self.setting_cclener_maxiteration.value()
         crma = self.setting_cclener_createmask.isChecked()
         
-        file = open(self.file, "w")
-        file.write("gain|{}\n".format(gain))
-        file.write("reno|{}\n".format(reno))
-        file.write("sicl|{}\n".format(sicl))
-        file.write("sifr|{}\n".format(sifr))
-        file.write("obli|{}\n".format(obli))
-        file.write("mait|{}\n".format(mait))
-        file.write("crma|{}\n".format(crma))
-        file.close()
+        
+        cos_set = {"gain": gain, "reno": reno,
+                        "sicl": sicl, "sifr": sifr,
+                        "obli": obli, "mait": mait, "crma": crma}
+        
+        
+        self.fop.write_set(cos_set, "cos")
+
         
         self.reload_log()
     
