@@ -11,6 +11,14 @@ except:
     exit(0)
 
 try:
+    from subprocess import Popen
+    from subprocess import PIPE
+    from subprocess import CalledProcessError
+except:
+    print("Can't import subprocess?")
+    exit(0)
+    
+try:
     from json import dump
     from json import loads
 except:
@@ -125,6 +133,18 @@ class Logger():
                         "f_combine": 0, "f_rejection": 0}
         
         self.observat_dir = abspath("./observat/")
+        
+    def execute(self, cmd):
+        try:
+            p = Popen(cmd, stdout=PIPE, universal_newlines=True)
+            for stdout_line in iter(p.stdout.readline, ""):
+                yield stdout_line 
+            p.stdout.close()
+            return_code = p.wait()
+            if return_code:
+                raise CalledProcessError(return_code, cmd)
+        except Exception as e:
+            self.log(e)
         
     def random_string(self, length):
         return(''.join(random.choices(

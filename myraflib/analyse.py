@@ -11,7 +11,7 @@ except Exception as e:
     
     print("Can't import sep: {}".format(e))
     exit(0)
-
+    
 try:
     from numpy import min as nmin
     from numpy import max as nmax
@@ -255,8 +255,9 @@ class Astronomy:
             self.sma = Statistics.Math(verb=self.verb, debugger=self.debugger)
             
         def solve_field(self, file, out_file):
-            pass
-            
+            for output in self.logger.execute(["solve-field", file]):
+                self.logger.log(output.strip())
+                
         def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0,
                            sigma_clip=5, sigma_fraction=0.3, object_limit=5,
                            max_iter=4, mask=False):

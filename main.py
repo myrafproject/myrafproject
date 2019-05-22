@@ -187,7 +187,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.flat_combine(file_requested=False)))
         self.actionCosmic.triggered.connect(lambda: (self.cclean()))
         self.actionWCS.triggered.connect(lambda: (self.solve()))
-        
+        self.actionA_Track.triggered.connect(lambda: (
+                QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
+                                               ("Not ready yet"))))        
         
         
         self.actionClose_All_Windows.triggered.connect(lambda: (
@@ -232,12 +234,14 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.play_ground.installEventFilter(self)
         
     def solve(self):
+        print("solve")
         files = self.fnk_deve.get_from_tree(self.image_list)
         if len(files) > 0:
             out_dir = self.fnk_file.save_directory()
             if out_dir is not None and not out_dir == "":
                 self.open_window("proc")
                 for it, file in enumerate(files):
+                    print(file)
                     self.proc_window.progress_annotation.setProperty("text", "Scolving: {}".format(file))
                     pn, fn = self.fop.get_base_name(file)
                     out_file = "{}/{}".format(out_dir, fn)
@@ -248,9 +252,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     if wind.windowTitle() == "MYRaf Progress":
                         wind.close()
         else:
-            self.logger.log("No Image to Clean")
+            self.logger.log("No Image to Solve")
             QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
-                                           ("No Image to Clean"))
+                                           ("No Image to Solve"))
         
     def cclean(self):
         files = self.fnk_deve.get_from_tree(self.image_list)
