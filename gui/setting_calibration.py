@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\setting_calibration.ui'
+# Form implementation generated from reading ui file 'setting_calibration.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(253, 357)
+        Form.resize(306, 447)
         Form.setMinimumSize(QtCore.QSize(253, 357))
         self.gridLayout_3 = QtWidgets.QGridLayout(Form)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.groupBox_21 = QtWidgets.QGroupBox(Form)
-        self.groupBox_21.setMaximumSize(QtCore.QSize(16777215, 81))
+        self.groupBox_21.setMaximumSize(QtCore.QSize(16777215, 114))
         self.groupBox_21.setObjectName("groupBox_21")
         self.gridLayout_37 = QtWidgets.QGridLayout(self.groupBox_21)
         self.gridLayout_37.setObjectName("gridLayout_37")
@@ -41,6 +42,7 @@ class Ui_Form(object):
         self.gridLayout_37.addLayout(self.gridLayout_54, 0, 0, 1, 1)
         self.gridLayout_3.addWidget(self.groupBox_21, 0, 0, 1, 2)
         self.groupBox_22 = QtWidgets.QGroupBox(Form)
+        self.groupBox_22.setMaximumSize(QtCore.QSize(16777215, 149))
         self.groupBox_22.setObjectName("groupBox_22")
         self.gridLayout_38 = QtWidgets.QGridLayout(self.groupBox_22)
         self.gridLayout_38.setObjectName("gridLayout_38")
@@ -73,6 +75,7 @@ class Ui_Form(object):
         self.gridLayout_38.addLayout(self.gridLayout_56, 0, 0, 1, 1)
         self.gridLayout_3.addWidget(self.groupBox_22, 1, 0, 1, 2)
         self.groupBox_23 = QtWidgets.QGroupBox(Form)
+        self.groupBox_23.setMaximumSize(QtCore.QSize(16777215, 114))
         self.groupBox_23.setObjectName("groupBox_23")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox_23)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -144,3 +147,14 @@ class Ui_Form(object):
         self.setting_calibration_f_rejection.setItemText(1, _translate("Form", "minmax"))
         self.setting_calibration_save.setText(_translate("Form", "Save"))
 
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())

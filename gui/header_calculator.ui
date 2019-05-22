@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>339</width>
-    <height>439</height>
+    <width>359</width>
+    <height>578</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,14 +16,14 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="2">
     <widget class="QGroupBox" name="hcalc_jd">
-     <property name="minimumSize">
+     <property name="maximumSize">
       <size>
-       <width>321</width>
-       <height>53</height>
+       <width>16777215</width>
+       <height>76</height>
       </size>
      </property>
      <property name="title">
-      <string>JD Calculator</string>
+      <string>&amp;JD Calculator</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -44,10 +44,10 @@
    </item>
    <item row="1" column="0" colspan="2">
     <widget class="QGroupBox" name="hcalc_airmass">
-     <property name="minimumSize">
+     <property name="maximumSize">
       <size>
-       <width>321</width>
-       <height>131</height>
+       <width>16777215</width>
+       <height>190</height>
       </size>
      </property>
      <property name="title">
@@ -102,14 +102,14 @@
    </item>
    <item row="2" column="0" colspan="2">
     <widget class="QGroupBox" name="hcalc_imexamine">
-     <property name="minimumSize">
+     <property name="maximumSize">
       <size>
-       <width>321</width>
-       <height>50</height>
+       <width>16777215</width>
+       <height>66</height>
       </size>
      </property>
      <property name="title">
-      <string>Imexamine</string>
+      <string>Ime&amp;xamine</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -170,10 +170,10 @@
    </item>
    <item row="3" column="0" colspan="2">
     <widget class="QGroupBox" name="hcalc_time">
-     <property name="minimumSize">
+     <property name="maximumSize">
       <size>
-       <width>321</width>
-       <height>79</height>
+       <width>16777215</width>
+       <height>114</height>
       </size>
      </property>
      <property name="title">

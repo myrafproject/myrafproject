@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\animate.ui'
+# Form implementation generated from reading ui file 'animate.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -15,8 +16,7 @@ class Ui_Form(object):
         self.gridLayout_4 = QtWidgets.QGridLayout(Form)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.groupBox = QtWidgets.QGroupBox(Form)
-        self.groupBox.setMinimumSize(QtCore.QSize(611, 131))
-        self.groupBox.setMaximumSize(QtCore.QSize(16777215, 131))
+        self.groupBox.setMaximumSize(QtCore.QSize(16777215, 188))
         self.groupBox.setObjectName("groupBox")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -117,4 +117,15 @@ class Ui_Form(object):
         self.animate_goNext.setText(_translate("Form", ">"))
         self.animate_goLast.setText(_translate("Form", ">>"))
 
+
 from gingawidgetFile import gingaWidget
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())

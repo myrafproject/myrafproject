@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\display.ui'
+# Form implementation generated from reading ui file 'display.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(557, 580)
+        Form.resize(583, 654)
         self.gridLayout_3 = QtWidgets.QGridLayout(Form)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.groupBox = QtWidgets.QGroupBox(Form)
         self.groupBox.setMinimumSize(QtCore.QSize(471, 111))
-        self.groupBox.setMaximumSize(QtCore.QSize(16777215, 111))
+        self.groupBox.setMaximumSize(QtCore.QSize(16777215, 182))
         self.groupBox.setObjectName("groupBox")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -39,28 +40,28 @@ class Ui_Form(object):
         self.label_2.setMaximumSize(QtCore.QSize(50, 20))
         self.label_2.setObjectName("label_2")
         self.gridLayout_2.addWidget(self.label_2, 1, 0, 1, 1)
-        self.display_x = QtWidgets.QLineEdit(self.groupBox)
-        self.display_x.setEnabled(False)
-        self.display_x.setObjectName("display_x")
-        self.gridLayout_2.addWidget(self.display_x, 1, 1, 1, 1)
         self.label_3 = QtWidgets.QLabel(self.groupBox)
         self.label_3.setMinimumSize(QtCore.QSize(50, 20))
         self.label_3.setMaximumSize(QtCore.QSize(50, 20))
         self.label_3.setObjectName("label_3")
         self.gridLayout_2.addWidget(self.label_3, 2, 0, 1, 1)
-        self.display_y = QtWidgets.QLineEdit(self.groupBox)
-        self.display_y.setEnabled(False)
-        self.display_y.setObjectName("display_y")
-        self.gridLayout_2.addWidget(self.display_y, 2, 1, 1, 1)
         self.label_4 = QtWidgets.QLabel(self.groupBox)
         self.label_4.setMinimumSize(QtCore.QSize(50, 20))
         self.label_4.setMaximumSize(QtCore.QSize(50, 20))
         self.label_4.setObjectName("label_4")
         self.gridLayout_2.addWidget(self.label_4, 3, 0, 1, 1)
+        self.display_x = QtWidgets.QLineEdit(self.groupBox)
+        self.display_x.setEnabled(False)
+        self.display_x.setObjectName("display_x")
+        self.gridLayout_2.addWidget(self.display_x, 1, 1, 1, 2)
+        self.display_y = QtWidgets.QLineEdit(self.groupBox)
+        self.display_y.setEnabled(False)
+        self.display_y.setObjectName("display_y")
+        self.gridLayout_2.addWidget(self.display_y, 2, 1, 1, 2)
         self.display_value = QtWidgets.QLineEdit(self.groupBox)
         self.display_value.setEnabled(False)
         self.display_value.setObjectName("display_value")
-        self.gridLayout_2.addWidget(self.display_value, 3, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.display_value, 3, 1, 1, 2)
         self.gridLayout_3.addWidget(self.groupBox, 0, 0, 1, 1)
         self.groupBox_2 = QtWidgets.QGroupBox(Form)
         self.groupBox_2.setObjectName("groupBox_2")
@@ -86,4 +87,15 @@ class Ui_Form(object):
         self.label_4.setText(_translate("Form", "Value"))
         self.groupBox_2.setTitle(_translate("Form", "Image"))
 
+
 from gingawidgetFile import gingaWidget
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())

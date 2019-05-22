@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\setting_cosmiccleaner.ui'
+# Form implementation generated from reading ui file 'setting_cosmiccleaner.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(283, 226)
+        Form.resize(277, 303)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.label_84 = QtWidgets.QLabel(Form)
@@ -19,8 +20,7 @@ class Ui_Form(object):
         self.label_84.setObjectName("label_84")
         self.gridLayout.addWidget(self.label_84, 0, 0, 1, 1)
         self.setting_cclener_gain = QtWidgets.QDoubleSpinBox(Form)
-        self.setting_cclener_gain.setMinimumSize(QtCore.QSize(194, 20))
-        self.setting_cclener_gain.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.setting_cclener_gain.setMaximumSize(QtCore.QSize(16777215, 32))
         self.setting_cclener_gain.setDecimals(7)
         self.setting_cclener_gain.setMaximum(100000000.0)
         self.setting_cclener_gain.setSingleStep(0.1)
@@ -32,8 +32,7 @@ class Ui_Form(object):
         self.label_85.setObjectName("label_85")
         self.gridLayout.addWidget(self.label_85, 1, 0, 1, 1)
         self.setting_cclener_readnoise = QtWidgets.QDoubleSpinBox(Form)
-        self.setting_cclener_readnoise.setMinimumSize(QtCore.QSize(194, 20))
-        self.setting_cclener_readnoise.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.setting_cclener_readnoise.setMaximumSize(QtCore.QSize(16777215, 32))
         self.setting_cclener_readnoise.setDecimals(7)
         self.setting_cclener_readnoise.setMaximum(100000000.0)
         self.setting_cclener_readnoise.setSingleStep(0.1)
@@ -45,8 +44,7 @@ class Ui_Form(object):
         self.label_86.setObjectName("label_86")
         self.gridLayout.addWidget(self.label_86, 2, 0, 1, 1)
         self.setting_cclener_sigmaclip = QtWidgets.QDoubleSpinBox(Form)
-        self.setting_cclener_sigmaclip.setMinimumSize(QtCore.QSize(194, 20))
-        self.setting_cclener_sigmaclip.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.setting_cclener_sigmaclip.setMaximumSize(QtCore.QSize(16777215, 32))
         self.setting_cclener_sigmaclip.setDecimals(7)
         self.setting_cclener_sigmaclip.setMaximum(100000000.0)
         self.setting_cclener_sigmaclip.setSingleStep(0.1)
@@ -58,8 +56,7 @@ class Ui_Form(object):
         self.label_87.setObjectName("label_87")
         self.gridLayout.addWidget(self.label_87, 3, 0, 1, 1)
         self.setting_cclener_sigmafraction = QtWidgets.QDoubleSpinBox(Form)
-        self.setting_cclener_sigmafraction.setMinimumSize(QtCore.QSize(194, 20))
-        self.setting_cclener_sigmafraction.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.setting_cclener_sigmafraction.setMaximumSize(QtCore.QSize(16777215, 32))
         self.setting_cclener_sigmafraction.setDecimals(7)
         self.setting_cclener_sigmafraction.setMaximum(100000000.0)
         self.setting_cclener_sigmafraction.setSingleStep(0.1)
@@ -71,8 +68,7 @@ class Ui_Form(object):
         self.label_88.setObjectName("label_88")
         self.gridLayout.addWidget(self.label_88, 4, 0, 1, 1)
         self.setting_cclener_objectlimit = QtWidgets.QDoubleSpinBox(Form)
-        self.setting_cclener_objectlimit.setMinimumSize(QtCore.QSize(194, 20))
-        self.setting_cclener_objectlimit.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.setting_cclener_objectlimit.setMaximumSize(QtCore.QSize(16777215, 32))
         self.setting_cclener_objectlimit.setDecimals(7)
         self.setting_cclener_objectlimit.setMaximum(100000000.0)
         self.setting_cclener_objectlimit.setSingleStep(0.1)
@@ -84,8 +80,7 @@ class Ui_Form(object):
         self.label_89.setObjectName("label_89")
         self.gridLayout.addWidget(self.label_89, 5, 0, 1, 1)
         self.setting_cclener_maxiteration = QtWidgets.QSpinBox(Form)
-        self.setting_cclener_maxiteration.setMinimumSize(QtCore.QSize(194, 20))
-        self.setting_cclener_maxiteration.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.setting_cclener_maxiteration.setMaximumSize(QtCore.QSize(16777215, 32))
         self.setting_cclener_maxiteration.setMinimum(2)
         self.setting_cclener_maxiteration.setProperty("value", 4)
         self.setting_cclener_maxiteration.setObjectName("setting_cclener_maxiteration")
@@ -120,3 +115,14 @@ class Ui_Form(object):
         self.setting_cclener_createmask.setText(_translate("Form", "Save Mask files"))
         self.setting_cclener_save.setText(_translate("Form", "Save"))
 
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())

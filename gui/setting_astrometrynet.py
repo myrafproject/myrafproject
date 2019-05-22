@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\setting_astrometrynet.ui'
+# Form implementation generated from reading ui file 'setting_astrometrynet.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(269, 155)
+        Form.resize(334, 200)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.setting_astrometry_online = QtWidgets.QGroupBox(Form)
-        self.setting_astrometry_online.setMinimumSize(QtCore.QSize(251, 102))
-        self.setting_astrometry_online.setMaximumSize(QtCore.QSize(16777215, 102))
+        self.setting_astrometry_online.setMaximumSize(QtCore.QSize(16777215, 142))
         self.setting_astrometry_online.setCheckable(True)
         self.setting_astrometry_online.setObjectName("setting_astrometry_online")
         self.gridLayout_21 = QtWidgets.QGridLayout(self.setting_astrometry_online)
@@ -53,10 +53,21 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Astrometry.net Settings"))
-        self.setting_astrometry_online.setTitle(_translate("Form", "Go Online"))
+        self.setting_astrometry_online.setTitle(_translate("Form", "&Go Online"))
         self.label_73.setText(_translate("Form", "Api Key"))
         self.setting_astrometry_online_server.setText(_translate("Form", "http://nova.astrometry.net/api/"))
         self.label_72.setText(_translate("Form", "Server"))
         self.setting_astrometry_online_compress.setText(_translate("Form", "Compress before upload"))
         self.setting_astrometry_save.setText(_translate("Form", "Save"))
 
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())

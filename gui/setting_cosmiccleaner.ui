@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>283</width>
-    <height>226</height>
+    <width>277</width>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,16 +29,10 @@
    </item>
    <item row="0" column="1" colspan="2">
     <widget class="QDoubleSpinBox" name="setting_cclener_gain">
-     <property name="minimumSize">
-      <size>
-       <width>194</width>
-       <height>20</height>
-      </size>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>20</height>
+       <height>32</height>
       </size>
      </property>
      <property name="decimals">
@@ -70,16 +64,10 @@
    </item>
    <item row="1" column="1" colspan="2">
     <widget class="QDoubleSpinBox" name="setting_cclener_readnoise">
-     <property name="minimumSize">
-      <size>
-       <width>194</width>
-       <height>20</height>
-      </size>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>20</height>
+       <height>32</height>
       </size>
      </property>
      <property name="decimals">
@@ -111,16 +99,10 @@
    </item>
    <item row="2" column="1" colspan="2">
     <widget class="QDoubleSpinBox" name="setting_cclener_sigmaclip">
-     <property name="minimumSize">
-      <size>
-       <width>194</width>
-       <height>20</height>
-      </size>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>20</height>
+       <height>32</height>
       </size>
      </property>
      <property name="decimals">
@@ -152,16 +134,10 @@
    </item>
    <item row="3" column="1" colspan="2">
     <widget class="QDoubleSpinBox" name="setting_cclener_sigmafraction">
-     <property name="minimumSize">
-      <size>
-       <width>194</width>
-       <height>20</height>
-      </size>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>20</height>
+       <height>32</height>
       </size>
      </property>
      <property name="decimals">
@@ -193,16 +169,10 @@
    </item>
    <item row="4" column="1" colspan="2">
     <widget class="QDoubleSpinBox" name="setting_cclener_objectlimit">
-     <property name="minimumSize">
-      <size>
-       <width>194</width>
-       <height>20</height>
-      </size>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>20</height>
+       <height>32</height>
       </size>
      </property>
      <property name="decimals">
@@ -234,16 +204,10 @@
    </item>
    <item row="5" column="1" colspan="2">
     <widget class="QSpinBox" name="setting_cclener_maxiteration">
-     <property name="minimumSize">
-      <size>
-       <width>194</width>
-       <height>20</height>
-      </size>
-     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>20</height>
+       <height>32</height>
       </size>
      </property>
      <property name="minimum">

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>460</width>
-    <height>448</height>
+    <width>486</width>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,18 +16,6 @@
   <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0">
     <widget class="QGroupBox" name="setting_phot_std">
-     <property name="minimumSize">
-      <size>
-       <width>201</width>
-       <height>76</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>76</height>
-      </size>
-     </property>
      <property name="title">
       <string>Standard Magnitudes</string>
      </property>
@@ -93,18 +81,6 @@
    </item>
    <item row="0" column="1" colspan="2">
     <widget class="QGroupBox" name="groupBox_20">
-     <property name="minimumSize">
-      <size>
-       <width>234</width>
-       <height>79</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>79</height>
-      </size>
-     </property>
      <property name="title">
       <string>WCS</string>
      </property>
@@ -142,18 +118,6 @@
    </item>
    <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox_13">
-     <property name="minimumSize">
-      <size>
-       <width>198</width>
-       <height>79</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>79</height>
-      </size>
-     </property>
      <property name="title">
       <string>DataPars</string>
      </property>
@@ -234,18 +198,6 @@
    </item>
    <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox_15">
-     <property name="minimumSize">
-      <size>
-       <width>202</width>
-       <height>105</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>105</height>
-      </size>
-     </property>
      <property name="title">
       <string>PhotPars</string>
      </property>
@@ -306,18 +258,6 @@
    </item>
    <item row="2" column="1" colspan="2">
     <widget class="QGroupBox" name="setting_">
-     <property name="minimumSize">
-      <size>
-       <width>221</width>
-       <height>105</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>105</height>
-      </size>
-     </property>
      <property name="title">
       <string>Star finder</string>
      </property>

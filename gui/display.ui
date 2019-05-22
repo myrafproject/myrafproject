@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>557</width>
-    <height>580</height>
+    <width>583</width>
+    <height>654</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>111</height>
+       <height>182</height>
       </size>
      </property>
      <property name="title">
@@ -96,13 +96,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="display_x">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_3">
         <property name="minimumSize">
@@ -119,13 +112,6 @@
         </property>
         <property name="text">
          <string>Y</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="display_y">
-        <property name="enabled">
-         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -148,7 +134,21 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="1" column="1" colspan="2">
+       <widget class="QLineEdit" name="display_x">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLineEdit" name="display_y">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
        <widget class="QLineEdit" name="display_value">
         <property name="enabled">
          <bool>false</bool>

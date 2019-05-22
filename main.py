@@ -1424,7 +1424,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                         if not wanted_headers == ['']:
                             for wanted_header in wanted_headers:
                                 use_header.append(str(self.fts.header(file, wanted_header)))
-                        for coord in coords:
+                        for it2, coord in enumerate(coords):
                             x, y = coord.split(" - ")
                             x, y = float(x), float(y)
                             
@@ -1442,8 +1442,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                                     wirte_line = "{},{},{}\n".format(file, ",".join(phot), ",".join(use_header))
                                     
                             f2w.write(wirte_line)
-                            
-                        self.photometry_progress.setProperty("value", 100 * (it + 1)/(len(files)))
+                            perc = 100 * ((it2 + 1) + len(coords) * (it))/(len(files) * len(coords))
+                            self.photometry_progress.setProperty("value", perc)
                     f2w.close()
                     
             else:
@@ -1555,8 +1555,21 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             for art in self.artist:
                 art.remove()
             self.artist = []
-            aperture = self.get_aperture()
+            
+            settings = self.fop.read_set("pho")
+            try:
+                aperture = settings['photpar_aperture']
+                if aperture is None:
+                    aperture = self.logger.pho_set['photpar_aperture']
+                    
+            except Exception as e:
+                self.logger.log(e)
+                settings = self.logger.pho_set
+                aperture = settings['photpar_aperture']
+                
+            print(aperture)
             for it, coord in enumerate(coords):
+                print(coord)
                 x, y = coord.split(" - ")
                 x, y = float(x), float(y)
                 circ = Circle((x, y), aperture, edgecolor="#00FFFF",
@@ -1567,7 +1580,9 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 self.artist.append(self.photometry_display.canvas.fig.gca(
                         ).annotate("s{}".format(str(it)), xy = (x, y),
                                   color = "#00FFFF", fontsize = 10))
+
             self.photometry_display.canvas.draw()
+
         else:
             self.logger.log("No coordinates to plot")
             QtWidgets.QMessageBox.critical(
@@ -1924,9 +1939,12 @@ class LoggerWindow(QtWidgets.QWidget, help_logger.Ui_Form):
         self.load()
         
     def file_size(self):
-        mlog_size = self.fop.get_size(self.logger.mini_log_file) / 1048576
-        log_size = self.fop.get_size(self.logger.log_file) / 1048576
-        
+        mlog_size = 0.
+        log_size = 0.
+        if self.fop.is_file(self.logger.mini_log_file):
+            mlog_size = self.fop.get_size(self.logger.mini_log_file) / 1048576
+        if self.fop.is_file(self.logger.log_file):
+            log_size = self.fop.get_size(self.logger.log_file) / 1048576
         self.logger_annotation.setProperty(
                 "text", "Total Temperory File size is: {:.2} MB".format(
                         mlog_size + log_size))
@@ -1938,10 +1956,11 @@ class LoggerWindow(QtWidgets.QWidget, help_logger.Ui_Form):
             self.fop.cp(self.logger.log_file, directory)
         
     def load(self):
-        tmp_file = open(self.logger.mini_log_file, "r")
         write_arr = []
-        for line in tmp_file:
-            write_arr.append(line.replace("\n", ""))
+        if self.fop.is_file(self.logger.mini_log_file):
+            tmp_file = open(self.logger.mini_log_file, "r")
+            for line in tmp_file:
+                write_arr.append(line.replace("\n", ""))
             
         self.fnk_deve.replace_list_con(self.help_logger_list, write_arr)
         self.help_logger_list.scrollToBottom()
@@ -2586,10 +2605,9 @@ class SubtractionWindow(QtWidgets.QWidget, combine_subtraction.Ui_Form):
             the_file = "{}/myraf_diff_{}.fits".format(self.logger.tmp_dir,
                         self.logger.random_string(10))
             self.fts.write(the_file, diff)
-            self.display_window = DisplayWindow(self.parent, the_file)
-            self.parent.play_ground.addSubWindow(self.display_window)
-            self.display_window.show()
             
+            self.parent.open_window("display", [the_file, True])
+
         self.reload_log()
         
     def closeEvent(self, event):

@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\setting_photometry.ui'
+# Form implementation generated from reading ui file 'setting_photometry.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(460, 448)
+        Form.resize(486, 606)
         self.gridLayout_8 = QtWidgets.QGridLayout(Form)
         self.gridLayout_8.setObjectName("gridLayout_8")
         self.setting_phot_std = QtWidgets.QGroupBox(Form)
-        self.setting_phot_std.setMinimumSize(QtCore.QSize(201, 76))
-        self.setting_phot_std.setMaximumSize(QtCore.QSize(16777215, 76))
         self.setting_phot_std.setCheckable(True)
         self.setting_phot_std.setObjectName("setting_phot_std")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.setting_phot_std)
@@ -45,8 +44,6 @@ class Ui_Form(object):
         self.gridLayout_3.addWidget(self.setting_photo_std_radius, 1, 1, 1, 2)
         self.gridLayout_8.addWidget(self.setting_phot_std, 0, 0, 1, 1)
         self.groupBox_20 = QtWidgets.QGroupBox(Form)
-        self.groupBox_20.setMinimumSize(QtCore.QSize(234, 79))
-        self.groupBox_20.setMaximumSize(QtCore.QSize(16777215, 79))
         self.groupBox_20.setObjectName("groupBox_20")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.groupBox_20)
         self.gridLayout_4.setObjectName("gridLayout_4")
@@ -64,8 +61,6 @@ class Ui_Form(object):
         self.gridLayout_4.addWidget(self.setting_phot_wcs_dec, 1, 1, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox_20, 0, 1, 1, 2)
         self.groupBox_13 = QtWidgets.QGroupBox(Form)
-        self.groupBox_13.setMinimumSize(QtCore.QSize(198, 79))
-        self.groupBox_13.setMaximumSize(QtCore.QSize(16777215, 79))
         self.groupBox_13.setObjectName("groupBox_13")
         self.gridLayout = QtWidgets.QGridLayout(self.groupBox_13)
         self.gridLayout.setObjectName("gridLayout")
@@ -101,8 +96,6 @@ class Ui_Form(object):
         self.gridLayout_5.addWidget(self.setting_phot_tlc_time, 1, 1, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox_17, 1, 1, 1, 2)
         self.groupBox_15 = QtWidgets.QGroupBox(Form)
-        self.groupBox_15.setMinimumSize(QtCore.QSize(202, 105))
-        self.groupBox_15.setMaximumSize(QtCore.QSize(16777215, 105))
         self.groupBox_15.setObjectName("groupBox_15")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox_15)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -131,8 +124,6 @@ class Ui_Form(object):
         self.gridLayout_2.addWidget(self.setting_phot_photpar_gain, 2, 1, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox_15, 2, 0, 1, 1)
         self.setting_ = QtWidgets.QGroupBox(Form)
-        self.setting_.setMinimumSize(QtCore.QSize(221, 105))
-        self.setting_.setMaximumSize(QtCore.QSize(16777215, 105))
         self.setting_.setObjectName("setting_")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.setting_)
         self.gridLayout_6.setObjectName("gridLayout_6")
@@ -220,3 +211,14 @@ class Ui_Form(object):
         self.setting_phot_hex_update.setText(_translate("Form", "Update List"))
         self.setting_phot_save.setText(_translate("Form", "Save"))
 
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())

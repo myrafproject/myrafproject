@@ -465,6 +465,26 @@ class Astronomy:
                        str(mag + zmag), str(merr))
             except Exception as e:
                 self.logger.log(e)
+                
+        def mphotometry(self, file, coors, zmag=25.0,
+                       apertures=[10.0 ,15.0], gain=1.21):
+            try:
+                data = self.data(file)
+                bkg = Background(data)
+                data_sub = data - bkg
+                ret = []
+                for coor in coors:
+                    try:
+                        x_coor, y_coor = list(map(int, coor))
+                        for aper in apertures:
+                            flx, ferr, flag = sum_circle(data_sub, x_coor, y_coor, aper, err=bkg.globalrms, gain=gain)
+                            mag, merr = self.sma.flux_to_mag(flx, ferr)
+                            ret.append([str(x_coor), str(y_coor), str(aper), str(float(flx)), str(float(ferr)), str(float(flag)), str(mag + zmag), str(merr)])
+                    except Exception as e:
+                        self.logger.log(e)
+                return(ret)
+            except Exception as e:
+                self.logger.log(e)
         
     class Coordinates:
         def __init__(self, verb=False, debugger=False):

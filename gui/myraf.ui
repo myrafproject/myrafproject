@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>1218</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -41,7 +41,7 @@
     </property>
     <widget class="QMenu" name="menuData">
      <property name="title">
-      <string>Import Data</string>
+      <string>&amp;Import Data</string>
      </property>
      <addaction name="actionAddImage"/>
      <addaction name="actionAddBias"/>
@@ -50,7 +50,7 @@
     </widget>
     <widget class="QMenu" name="menuClear_Lists">
      <property name="title">
-      <string>Clear List</string>
+      <string>&amp;Clear List</string>
      </property>
      <addaction name="actionClear_All_Lists"/>
      <addaction name="actionClear_Image_List_3"/>
@@ -65,15 +65,15 @@
    </widget>
    <widget class="QMenu" name="menuAnalyse">
     <property name="title">
-     <string>Analyse</string>
+     <string>A&amp;nalyse</string>
     </property>
     <widget class="QMenu" name="menuCombine">
      <property name="title">
-      <string>Combine</string>
+      <string>&amp;Combine</string>
      </property>
      <widget class="QMenu" name="menuIRAF_Combine">
       <property name="title">
-       <string>IRAF Combine</string>
+       <string>&amp;IRAF Combine</string>
       </property>
       <addaction name="actionZerocombine"/>
       <addaction name="actionDarkcombine"/>
@@ -87,7 +87,7 @@
     </widget>
     <widget class="QMenu" name="menuAlign">
      <property name="title">
-      <string>Align</string>
+      <string>&amp;Align</string>
      </property>
      <addaction name="actionAutoAlign"/>
      <addaction name="actionManualAlign"/>
@@ -100,11 +100,11 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Editor</string>
+     <string>E&amp;ditor</string>
     </property>
     <widget class="QMenu" name="menuHeader">
      <property name="title">
-      <string>Header</string>
+      <string>&amp;Header</string>
      </property>
      <addaction name="actionHedit"/>
      <addaction name="actionHeader_Calculator"/>
@@ -117,7 +117,7 @@
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>Settin&amp;gs</string>
     </property>
     <addaction name="actionCalibration_2"/>
     <addaction name="actionPhotometry_2"/>
@@ -130,12 +130,13 @@
     </property>
     <widget class="QMenu" name="menuHelp_2">
      <property name="title">
-      <string>Help</string>
+      <string>&amp;Help</string>
      </property>
      <widget class="QMenu" name="menuMYRaf">
       <property name="title">
-       <string>MYRaf</string>
+       <string>&amp;MYRaf</string>
       </property>
+      <addaction name="actionMain"/>
       <addaction name="actionAnalyse_2"/>
       <addaction name="actionEditor"/>
      </widget>
@@ -160,16 +161,16 @@
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable</set>
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="allowedAreas">
-    <set>Qt::NoDockWidgetArea</set>
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Files</string>
+    <string>Fi&amp;les</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QGridLayout" name="gridLayout">
@@ -403,77 +404,77 @@
   </widget>
   <action name="actionQuit">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
   </action>
   <action name="actionCalibration">
    <property name="text">
-    <string>Calibration</string>
+    <string>Ca&amp;libration</string>
    </property>
   </action>
   <action name="actionPhotometry">
    <property name="text">
-    <string>Photometry ...</string>
+    <string>&amp;Photometry ...</string>
    </property>
   </action>
   <action name="actionA_Track">
    <property name="text">
-    <string>A-Track</string>
+    <string>A-T&amp;rack</string>
    </property>
   </action>
   <action name="actionObservatory">
    <property name="text">
-    <string>Observatory ...</string>
+    <string>&amp;Observatory ...</string>
    </property>
   </action>
   <action name="actionCosmic">
    <property name="text">
-    <string>Cosmic Cleaner</string>
+    <string>&amp;Cosmic Cleaner</string>
    </property>
   </action>
   <action name="actionWCS">
    <property name="text">
-    <string>WCS</string>
+    <string>&amp;WCS</string>
    </property>
   </action>
   <action name="actionHedit">
    <property name="text">
-    <string>Hedit ...</string>
+    <string>&amp;Hedit ...</string>
    </property>
   </action>
   <action name="actionHeader_Calculator">
    <property name="text">
-    <string>Header Calculator ...</string>
+    <string>Header &amp;Calculator ...</string>
    </property>
   </action>
   <action name="actionHeader_Extractor">
    <property name="text">
-    <string>Header Extractor ...</string>
+    <string>Header &amp;Extractor ...</string>
    </property>
   </action>
   <action name="actionCalibration_2">
    <property name="text">
-    <string>Calibration</string>
+    <string>&amp;Calibration</string>
    </property>
   </action>
   <action name="actionPhotometry_2">
    <property name="text">
-    <string>Photometry</string>
+    <string>&amp;Photometry</string>
    </property>
   </action>
   <action name="actionCosmic_Cleaner">
    <property name="text">
-    <string>Cosmic Cleaner</string>
+    <string>C&amp;osmic Cleaner</string>
    </property>
   </action>
   <action name="actionWCS_2">
    <property name="text">
-    <string>WCS</string>
+    <string>&amp;WCS</string>
    </property>
   </action>
   <action name="actionAbout_MYRaf">
    <property name="text">
-    <string>About MYRaf ...</string>
+    <string>&amp;About MYRaf ...</string>
    </property>
   </action>
   <action name="actionGinga">
@@ -498,17 +499,17 @@
   </action>
   <action name="actionLicense">
    <property name="text">
-    <string>License ...</string>
+    <string>&amp;License ...</string>
    </property>
   </action>
   <action name="actionCredits">
    <property name="text">
-    <string>Credits ...</string>
+    <string>&amp;Credits ...</string>
    </property>
   </action>
   <action name="actionLog_Viewer">
    <property name="text">
-    <string>Log Viewer ...</string>
+    <string>Log &amp;Viewer ...</string>
    </property>
   </action>
   <action name="actionImage">
@@ -533,22 +534,22 @@
   </action>
   <action name="actionAddImage">
    <property name="text">
-    <string>Image</string>
+    <string>&amp;Image</string>
    </property>
   </action>
   <action name="actionAddBias">
    <property name="text">
-    <string>Bias</string>
+    <string>&amp;Bias</string>
    </property>
   </action>
   <action name="actionAddDark">
    <property name="text">
-    <string>Dark</string>
+    <string>&amp;Dark</string>
    </property>
   </action>
   <action name="actionAddFlat">
    <property name="text">
-    <string>Flat</string>
+    <string>&amp;Flat</string>
    </property>
   </action>
   <action name="actionBias_Combine">
@@ -568,47 +569,47 @@
   </action>
   <action name="actionMedian">
    <property name="text">
-    <string>Median...</string>
+    <string>&amp;Median...</string>
    </property>
   </action>
   <action name="actionAverage">
    <property name="text">
-    <string>Average...</string>
+    <string>&amp;Average...</string>
    </property>
   </action>
   <action name="actionSum">
    <property name="text">
-    <string>Sum...</string>
+    <string>&amp;Sum...</string>
    </property>
   </action>
   <action name="actionDifference">
    <property name="text">
-    <string>Difference ...</string>
+    <string>&amp;Difference ...</string>
    </property>
   </action>
   <action name="actionGinga_2">
    <property name="text">
-    <string>Ginga ...</string>
+    <string>&amp;Ginga ...</string>
    </property>
   </action>
   <action name="actionAlipy_2">
    <property name="text">
-    <string>Alipy ...</string>
+    <string>&amp;Alipy ...</string>
    </property>
   </action>
   <action name="actionLA_Cosmic_Cleaner_2">
    <property name="text">
-    <string>LA. Cosmic Cleaner ...</string>
+    <string>&amp;LA. Cosmic Cleaner ...</string>
    </property>
   </action>
   <action name="actionAstrometry_net_2">
    <property name="text">
-    <string>Astrometry.net ...</string>
+    <string>Astrometry.&amp;net ...</string>
    </property>
   </action>
   <action name="actionEditor">
    <property name="text">
-    <string>Editor</string>
+    <string>&amp;Editor</string>
    </property>
   </action>
   <action name="actionCombine">
@@ -623,17 +624,17 @@
   </action>
   <action name="actionAnalyse_2">
    <property name="text">
-    <string>Analyse</string>
+    <string>&amp;Analyse</string>
    </property>
   </action>
   <action name="actionClose_All_Windows">
    <property name="text">
-    <string>Close All Open Windows</string>
+    <string>Close All &amp;Open Windows</string>
    </property>
   </action>
   <action name="actionClear_All_Lists">
    <property name="text">
-    <string>Clear All Lists</string>
+    <string>&amp;Clear All Lists</string>
    </property>
   </action>
   <action name="actionClear_Image_List">
@@ -683,27 +684,27 @@
   </action>
   <action name="actionClear_Image_List_3">
    <property name="text">
-    <string>Clear Image List</string>
+    <string>Clear &amp;Image List</string>
    </property>
   </action>
   <action name="actionClear_Bias_List_3">
    <property name="text">
-    <string>Clear Bias List</string>
+    <string>Clear &amp;Bias List</string>
    </property>
   </action>
   <action name="actionClear_Dark_List_3">
    <property name="text">
-    <string>Clear Dark List</string>
+    <string>Clear &amp;Dark List</string>
    </property>
   </action>
   <action name="actionClear_Flat_List_3">
    <property name="text">
-    <string>Clear Flat List</string>
+    <string>Clear &amp;Flat List</string>
    </property>
   </action>
   <action name="actionZerocombine">
    <property name="text">
-    <string>Zerocombine...</string>
+    <string>&amp;Zerocombine...</string>
    </property>
   </action>
   <action name="actionDarlcombine">
@@ -713,22 +714,27 @@
   </action>
   <action name="actionFlatcombine">
    <property name="text">
-    <string>Flatcombine...</string>
+    <string>&amp;Flatcombine...</string>
    </property>
   </action>
   <action name="actionDarkcombine">
    <property name="text">
-    <string>Darkcombine...</string>
+    <string>&amp;Darkcombine...</string>
    </property>
   </action>
   <action name="actionManualAlign">
    <property name="text">
-    <string>Manual...</string>
+    <string>&amp;Manual...</string>
    </property>
   </action>
   <action name="actionAutoAlign">
    <property name="text">
-    <string>Auto</string>
+    <string>&amp;Auto</string>
+   </property>
+  </action>
+  <action name="actionMain">
+   <property name="text">
+    <string>Main</string>
    </property>
   </action>
  </widget>

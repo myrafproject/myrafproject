@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\msh\OneDrive\Belgeler\the_myraf\gui\header_calculator.ui'
+# Form implementation generated from reading ui file 'header_calculator.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(339, 439)
+        Form.resize(359, 578)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.hcalc_jd = QtWidgets.QGroupBox(Form)
-        self.hcalc_jd.setMinimumSize(QtCore.QSize(321, 53))
+        self.hcalc_jd.setMaximumSize(QtCore.QSize(16777215, 76))
         self.hcalc_jd.setCheckable(True)
         self.hcalc_jd.setObjectName("hcalc_jd")
         self.gridLayout_77 = QtWidgets.QGridLayout(self.hcalc_jd)
@@ -28,7 +29,7 @@ class Ui_Form(object):
         self.gridLayout_77.addWidget(self.hcalc_jd_time, 0, 1, 1, 1)
         self.gridLayout.addWidget(self.hcalc_jd, 0, 0, 1, 2)
         self.hcalc_airmass = QtWidgets.QGroupBox(Form)
-        self.hcalc_airmass.setMinimumSize(QtCore.QSize(321, 131))
+        self.hcalc_airmass.setMaximumSize(QtCore.QSize(16777215, 190))
         self.hcalc_airmass.setCheckable(True)
         self.hcalc_airmass.setObjectName("hcalc_airmass")
         self.gridLayout_78 = QtWidgets.QGridLayout(self.hcalc_airmass)
@@ -59,7 +60,7 @@ class Ui_Form(object):
         self.gridLayout_78.addWidget(self.hcalc_airmass_observatory, 3, 1, 1, 1)
         self.gridLayout.addWidget(self.hcalc_airmass, 1, 0, 1, 2)
         self.hcalc_imexamine = QtWidgets.QGroupBox(Form)
-        self.hcalc_imexamine.setMinimumSize(QtCore.QSize(321, 50))
+        self.hcalc_imexamine.setMaximumSize(QtCore.QSize(16777215, 66))
         self.hcalc_imexamine.setCheckable(True)
         self.hcalc_imexamine.setObjectName("hcalc_imexamine")
         self.gridLayout_51 = QtWidgets.QGridLayout(self.hcalc_imexamine)
@@ -86,7 +87,7 @@ class Ui_Form(object):
         self.gridLayout_51.addWidget(self.hcalc_imexamine_max, 0, 4, 1, 1)
         self.gridLayout.addWidget(self.hcalc_imexamine, 2, 0, 1, 2)
         self.hcalc_time = QtWidgets.QGroupBox(Form)
-        self.hcalc_time.setMinimumSize(QtCore.QSize(321, 79))
+        self.hcalc_time.setMaximumSize(QtCore.QSize(16777215, 114))
         self.hcalc_time.setCheckable(True)
         self.hcalc_time.setObjectName("hcalc_time")
         self.gridLayout_59 = QtWidgets.QGridLayout(self.hcalc_time)
@@ -146,14 +147,14 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Header Calculator"))
-        self.hcalc_jd.setTitle(_translate("Form", "JD Calculator"))
+        self.hcalc_jd.setTitle(_translate("Form", "&JD Calculator"))
         self.label_51.setText(_translate("Form", "Time In Header"))
         self.hcalc_airmass.setTitle(_translate("Form", "Airmass Calculator"))
         self.label_59.setText(_translate("Form", "Time In Header"))
         self.label_52.setText(_translate("Form", "RA In Header"))
         self.label_53.setText(_translate("Form", "DEC In Header"))
         self.label_60.setText(_translate("Form", "Observatory"))
-        self.hcalc_imexamine.setTitle(_translate("Form", "Imexamine"))
+        self.hcalc_imexamine.setTitle(_translate("Form", "Ime&xamine"))
         self.hcalc_imexamine_mean.setText(_translate("Form", "Mean"))
         self.hcalc_imexamine_median.setText(_translate("Form", "Median"))
         self.hcalc_imexamine_stdv.setText(_translate("Form", "STDV"))
@@ -169,3 +170,14 @@ class Ui_Form(object):
         self.hcalc_prefix.setText(_translate("Form", "my"))
         self.hcalc_go.setText(_translate("Form", ":go"))
 
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())
