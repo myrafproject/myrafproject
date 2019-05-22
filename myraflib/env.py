@@ -112,11 +112,12 @@ class Logger():
         self.pho_set = {"std_mag": False, "std_mag_nomad": True,
                         "std_mag_usno": True, "std_mag_gaia": True,
                         "std_mag_radius": 10.0, "datapar_exposure": "exptime",
-                        "datapar_filter": "subset", "photpar_aperture": 20.0,
-                        "photpar_zmag": 25.0, "photpar_gain": "gain",
-                        "wcs_ra": "ra", "wcs_dec": "dec",
-                        "lot_obse": "observat", "lot_time": "JD",
-                        "stf_thr": 2.0, "stf_max": 500, "header_to_use": ""}
+                        "datapar_filter": "subset",
+                        "photpar_aperture": "10.0, 15.0", "photpar_zmag": 25.0,
+                        "photpar_gain": "gain", "wcs_ra": "ra",
+                        "wcs_dec": "dec", "lot_obse": "observat",
+                        "lot_time": "JD", "stf_thr": 2.0, "stf_max": 500,
+                        "header_to_use": ""}
         
         self.cal_set_file = abspath("{}/.myset_calibration.set".format(expanduser("~")))
         self.cal_set = {"b_combine": 1, "b_rejection": 0,

@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QGroupBox" name="setting_phot_std">
      <property name="title">
-      <string>Standard Magnitudes</string>
+      <string>S&amp;tandard Magnitudes</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -209,19 +209,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="setting_phot_photpar_aperture">
-        <property name="minimum">
-         <double>1.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>100.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>10.000000000000000</double>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_45">
         <property name="text">
@@ -250,6 +237,13 @@
        <widget class="QLineEdit" name="setting_phot_photpar_gain">
         <property name="text">
          <string>gain</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="setting_phot_photpar_aperture">
+        <property name="text">
+         <string>10.0,15.0</string>
         </property>
        </widget>
       </item>

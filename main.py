@@ -1390,8 +1390,12 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                     settings = self.fop.read_set("pho")
                     try:
                         aperture = settings['photpar_aperture']
+                        aperture = aperture.split(",")
+                        aperture = list(map(float, aperture))
                         if aperture is None:
                             aperture = self.logger.pho_set['photpar_aperture']
+                            aperture = aperture.split(",")
+                            aperture = list(map(float, aperture))
                             
                         gain = settings['photpar_gain']
                         if gain is None:
@@ -1408,41 +1412,42 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                     except Exception as e:
                         self.logger.log(e)
                         settings = self.logger.pho_set
-                        aperture = settings['photpar_aperture']
+                        aperture = settings['photpar_aperture']#list(map(int, coor))
+                        aperture = aperture.split(",")
+                        aperture = list(map(float, aperture))
                         gain = settings['photpar_gain']
                         zmag = settings['photpar_zmag']
                         wanted_headers = settings['header_to_use']
                         
                     wanted_headers = wanted_headers.split(",")
                     if wanted_headers == ['']:
-                        file_header = "file,x_coor,y_coor,flx,ferr,flag,mag,merr"
+                        file_header = "file,x_coor,y_coor,aperture,flx,ferr,flag,mag,merr"
                     else:
-                        file_header = "file,x_coor,y_coor,flx,ferr,flag,mag,merr,{}".format(",".join(wanted_headers))
+                        file_header = "file,x_coor,y_coor,aperture,flx,ferr,flag,mag,merr,{}".format(",".join(wanted_headers))
                     f2w.write("{}\n".format(file_header))
+                    use_coords = []
+                    for coord in coords:
+                        x, y = coord.split(" - ")
+                        use_coords.append([float(x), float(y)])
                     for it, file in enumerate(files):
                         use_header = []
                         if not wanted_headers == ['']:
                             for wanted_header in wanted_headers:
                                 use_header.append(str(self.fts.header(file, wanted_header)))
-                        for it2, coord in enumerate(coords):
-                            x, y = coord.split(" - ")
-                            x, y = float(x), float(y)
-                            
-                            gvalue = self.fts.header(file, gain)
-                            if gvalue is None or gvalue == 0:
-                                gvalue = 1.21
                                 
-                            phot = self.fts.photometry(
-                                    file, x, y, zmag=zmag,
-                                    aper_radius=aperture, gain=gvalue)
+                        gvalue = self.fts.header(file, gain)
+                        if gvalue is None or gvalue == 0:
+                            gvalue = 1.21
+                        
+                        phot = self.fts.mphotometry(file, use_coords, zmag=zmag, apertures=aperture, gain=gvalue)
+                        for ph in phot:
                             if phot is not None:
                                 if use_header == []:
-                                    wirte_line = "{},{}\n".format(file, ",".join(phot))
+                                    wirte_line = "{},{}\n".format(file, ",".join(ph))
                                 else:
-                                    wirte_line = "{},{},{}\n".format(file, ",".join(phot), ",".join(use_header))
-                                    
+                                    wirte_line = "{},{},{}\n".format(file, ",".join(ph), ",".join(use_header))    
                             f2w.write(wirte_line)
-                            perc = 100 * ((it2 + 1) + len(coords) * (it))/(len(files) * len(coords))
+                            perc = 100 * (it + 1) / (len(files))
                             self.photometry_progress.setProperty("value", perc)
                     f2w.close()
                     
@@ -2390,8 +2395,8 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
                 "text", settings['datapar_exposure'])
         self.setting_phot_datapar_filter.setProperty(
                 "text", settings['datapar_filter'])
-        self.setting_phot_photpar_aperture.setValue(
-                settings['photpar_aperture'])
+        self.setting_phot_photpar_aperture.setProperty(
+                "text", settings['photpar_aperture'])
         self.setting_phot_photpar_zmag.setValue(settings['photpar_zmag'])
         self.setting_phot_photpar_gain.setProperty(
                 "text", settings['photpar_gain'])
@@ -2422,8 +2427,8 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
                     "text", settings['datapar_exposure'])
             self.setting_phot_datapar_filter.setProperty(
                     "text", settings['datapar_filter'])
-            self.setting_phot_photpar_aperture.setValue(
-                    settings['photpar_aperture'])
+            self.setting_phot_photpar_aperture.setProperty(
+                "text", settings['photpar_aperture'])
             self.setting_phot_photpar_zmag.setValue(settings['photpar_zmag'])
             self.setting_phot_photpar_gain.setProperty(
                     "text", settings['photpar_gain'])
@@ -2458,7 +2463,7 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         datapar_exposure = self.setting_phot_datapar_exposure.text()
         datapar_filter = self.setting_phot_datapar_filter.text()
         
-        photpar_aperture = self.setting_phot_photpar_aperture.value()
+        photpar_aperture = self.setting_phot_photpar_aperture.text()
         photpar_zmag = self.setting_phot_photpar_zmag.value()
         photpar_gain = self.setting_phot_photpar_gain.text()
         
