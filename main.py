@@ -1616,10 +1616,83 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
         self.observatory_reload.clicked.connect(lambda: (
                 self.reload_observatories()))
         
+        self.observatory_add.clicked.connect(lambda: (
+                self.create_observatory()))
+        
+#        self.observatory_list.clicked.connect(lambda: (
+#                self.list_clicked(self.remove_observatory)))
+        
+        self.observatory_remove.clicked.connect(lambda: (
+                self.remove_observatory()))
+        
+    def remove_observatory(self):
+        if self.observatory_list.currentItem() is not None:
+            files = self.fnk_deve.list_of_selected(self.observatory_list)
+            for file in files:
+                file_to_delete = "{}/{}".format(self.logger.obs_dir, file)
+                self.fop.rm(file_to_delete)
+                
+            self.reload_observatories()
+        else:
+            self.logger.log("Please select an observatory to delete")
+        
+    def create_observatory(self):
+        try:
+            observatory = self.observatory_abbreviation.text()
+            name = self.observatory_name.text()
+            longitude = self.observatory_longitude.text()
+            latitude = self.observatory_latitude.text()
+            altitude = self.observatory_altitude.text()
+            timezone = self.observatory_timezone.text()
+            commendation = self.observatory_commend.toPlainText()
+            
+            if not (observatory.strip() == "" or
+                    name.strip() == "" or
+                    longitude.strip() == "" or
+                    latitude.strip() == "" or
+                    altitude.strip() == "" or
+                    timezone.strip() == ""):
+                
+                observat = {"observatory":observatory.strip(),
+                            "name":name.strip(),
+                            "longitude":longitude.strip(),
+                            "latitude":latitude.strip(),
+                            "altitude":altitude.strip(),
+                            "timezone":timezone.strip(),
+                            "commendation":commendation.strip()}
+                
+                file_name = "{}/{}".format(self.logger.obs_dir, observatory)
+                
+                self.fop.write_json(file_name, observat)
+                
+                self.observatory_abbreviation.setText("")
+                self.observatory_name.setText("")
+                self.observatory_longitude.setText("")
+                self.observatory_latitude.setText("")
+                self.observatory_altitude.setText("")
+                self.observatory_timezone.setText("")
+                self.observatory_commend.setPlainText("")
+            
+                self.reload_observatories()
+            else:
+                self.logger.log("At least one value is empty.")
+                QtWidgets.QMessageBox.critical(
+                        self, ("MYRaf Error"), ("All fields must be filled."))
+        except Exception as e:
+            self.logger.log(e)
+        
     def reload_observatories(self):
+        
         observatories = self.fop.list_of_observatories()
-        if observatories is not None and not observatories == []:
-            self.fnk_deve.add(self.observatory_list, observatories)
+        if observatories is not None:
+            
+            observats = []
+            
+            for observat in observatories:
+                pn, fn = self.fop.get_base_name(observat)
+                observats.append(fn)
+            
+            self.fnk_deve.replace_list_con(self.observatory_list, observats)
         else:
             self.logger.log("No observatory found")
         
