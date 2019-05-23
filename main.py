@@ -71,7 +71,8 @@ try:
     from myraflib import analyse
     from myraflib import env
 except Exception as e:
-    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
+    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(
+            e))
     exit(0)
 
 class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
@@ -113,8 +114,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.albategnius_window = None
         
         self.logger.log("Creating objects")
-        self.fts = analyse.Astronomy.Fits(verb=self.verb, debugger=self.debugger)
-        self.ira = analyse.Astronomy.Iraf(verb=self.verb, debugger=self.debugger)
+        self.fts = analyse.Astronomy.Fits(verb=self.verb,
+                                          debugger=self.debugger)
+        self.ira = analyse.Astronomy.Iraf(verb=self.verb,
+                                          debugger=self.debugger)
         self.fop = env.File(verb=self.verb, debugger=self.debugger)
         self.fnk_file = func.Files(self, self.logger)
         self.fnk_deve = func.Devices(self, self.logger)
@@ -473,7 +476,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 bias_count = len(self.fnk_deve.get_from_tree(self.bias_list))
                 dark_count = len(self.fnk_deve.get_from_tree(self.dark_list))
                 out_file = "{}/myraf_flatcombine_{}.fits".format(
-                                self.logger.tmp_dir, self.logger.random_string(10))
+                                self.logger.tmp_dir,
+                                self.logger.random_string(10))
                 
                 
                 dark = [None, None]
@@ -558,15 +562,18 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 out_dir = self.fnk_file.save_directory()
                 if out_dir is not None and not out_dir == "":
                     for it, file in enumerate(files):
-                        self.proc_window.progress_annotation.setProperty("text", "Calibrating: {}".format(file))
+                        self.proc_window.progress_annotation.setProperty(
+                                "text", "Calibrating: {}".format(file))
                         path, file_name = self.fop.get_base_name(file)
                         out_file = "{}/{}".format(out_dir, file_name)
                         if self.fop.is_file(out_file):
                             self.fop.rm(out_file)
                         if self.ira.ccdproc(file, out_file, zero, dark, flat):
-                            self.fts.update_header( file, "MYCORR", "calibration done @ {} using MYRaf V3 Beta".format(self.logger.time_stamp()))
+                            self.fts.update_header(file, "MYCORR","calibration done @ {} using MYRaf V3 Beta".format(self.logger.time_stamp()))
                             
-                        self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
+                        proc = 100 *(it + 1) / (len(files))
+                        self.proc_window.progress_progressBar.setProperty(
+                                "value", proc)
                         
                 for wind in self.play_ground.subWindowList():
                     if wind.windowTitle() == "MYRaf Progress":
@@ -823,7 +830,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if len(files) > 1:
             self.open_window("animate", arg=files)
         elif len(files) == 1:
-            self.logger.log("Trying to animate one file. Redirecting to Display")
+            self.logger.log(
+                    "Trying to animate one file. Redirecting to Display")
             self.open_window("display", arg=[files[0], True])
         
         
@@ -1117,7 +1125,8 @@ class AnimateWindow(QtWidgets.QWidget, animate.Ui_Form):
         self.animate_goFirst.clicked.connect(lambda: (self.show_first()))
         self.animate_playPause.clicked.connect(lambda: (self.play_pause()))
         
-        self.animate_display.canvas.fig.canvas.mpl_connect('motion_notify_event', self.onpick)
+        self.animate_display.canvas.fig.canvas.mpl_connect(
+                'motion_notify_event', self.onpick)
         
     def onpick(self, event):
         x, y = self.disp.get_xy()
@@ -1315,7 +1324,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     def get_pho_set(self):
         settings = self.fop.read_set("pho")
         try:
-            settings['photpar_aperture'] = list(map(float, settings['photpar_aperture'].split(",")))
+            settings['photpar_aperture'] = list(map(float,
+                    settings['photpar_aperture'].split(",")))
         except Exception as e:
             self.logger.log("{}. Using default settings".format(e))
             settings['photpar_aperture'] = list(map(float,
@@ -1346,22 +1356,28 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                         use_header = []
                         if not wanted_headers == ['']:
                             for wanted_header in wanted_headers:
-                                use_header.append(str(self.fts.header(file, wanted_header)))
+                                use_header.append(
+                                        str(self.fts.header(file,
+                                                            wanted_header)))
                                 
                         gvalue = self.fts.header(file, the_set["photpar_gain"])
                         if gvalue is None or gvalue == 0:
                             gvalue = 1.21
                         
-                        phot = self.fts.mphotometry(file, use_coords,
-                                                    zmag=the_set["photpar_zmag"],
-                                                    apertures=the_set["photpar_aperture"], 
-                                                    gain=gvalue)
+                        phot = self.fts.mphotometry(
+                                file, use_coords,
+                                zmag=the_set["photpar_zmag"],
+                                apertures=the_set["photpar_aperture"],
+                                gain=gvalue)
                         for ph in phot:
                             if phot is not None:
                                 if use_header == []:
-                                    wirte_line = "{},{}\n".format(file, ",".join(ph))
+                                    wirte_line = "{},{}\n".format(
+                                            file, ",".join(ph))
                                 else:
-                                    wirte_line = "{},{},{}\n".format(file, ",".join(ph), ",".join(use_header))    
+                                    wirte_line = "{},{},{}\n".format(
+                                            file, ",".join(ph),
+                                            ",".join(use_header))    
                             f2w.write(wirte_line)
                             
                         perc = 100 * (it + 1) / (len(files))
@@ -1411,10 +1427,16 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 if index is not None:
                     found_x = sources[index][0]
                     found_y = sources[index][1]
-                    circ = Circle((found_x, found_y), 10, edgecolor="#FFFF00", facecolor="none")
-                    self.artist_fwhm.append(self.photometry_display.canvas.fig.gca( ).add_artist(circ))
+                    circ = Circle((found_x, found_y), 10, edgecolor="#FFFF00",
+                                  facecolor="none")
+                    self.artist_fwhm.append(
+                            self.photometry_display.canvas.fig.gca(
+                                    ).add_artist(circ))
                     circ.center = found_x, found_y
-                    self.artist_fwhm.append(self.photometry_display.canvas.fig.gca().annotate("Obj", xy = (found_x, found_y), color = "#FFFF00", fontsize = 10))
+                    self.artist_fwhm.append(
+                            self.photometry_display.canvas.fig.gca().annotate(
+                                    "Obj", xy = (found_x, found_y),
+                                    color = "#FFFF00", fontsize = 10))
                     self.photometry_display.canvas.draw()
                     QtWidgets.QMessageBox.information(
                             self, ("MYRaf Information"),
@@ -1460,8 +1482,10 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             if sources is not None:
                 use_sources = []
                 for source in sources:
-                    use_sources.append("{:.2f} - {:.2f}".format(source[0], source[1]))
-                self.fnk_deve.replace_list_con(self.photometry_coordinates, use_sources)
+                    use_sources.append("{:.2f} - {:.2f}".format(source[0],
+                                       source[1]))
+                self.fnk_deve.replace_list_con(self.photometry_coordinates,
+                                               use_sources)
             else:
                 self.logger.log("Could't find any source(s)")
                 QtWidgets.QMessageBox.critical(
@@ -1582,6 +1606,22 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
         
         self.verb = verb
         self.debugger = debugger
+        
+        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+        self.fop = env.File(verb=self.verb, debugger=self.debugger)
+        self.fnk_deve = func.Devices(self, self.logger)
+        
+        self.reload_observatories()
+        
+        self.observatory_reload.clicked.connect(lambda: (
+                self.reload_observatories()))
+        
+    def reload_observatories(self):
+        observatories = self.fop.list_of_observatories()
+        if observatories is not None and not observatories == []:
+            self.fnk_deve.add(self.observatory_list, observatories)
+        else:
+            self.logger.log("No observatory found")
         
     def reload_log(self):
         if self.parent.logger_window is not None:
@@ -1710,8 +1750,10 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
         self.verb = verb
         self.debugger = debugger
         
-        self.fts = analyse.Astronomy.Fits(verb=self.verb, debugger=self.debugger)
-        self.atm = analyse.Astronomy.Time(verb=self.verb, debugger=self.debugger)
+        self.fts = analyse.Astronomy.Fits(verb=self.verb,
+                                          debugger=self.debugger)
+        self.atm = analyse.Astronomy.Time(verb=self.verb,
+                                          debugger=self.debugger)
         
         self.hcalc_progress.setProperty("value", 0)
         
@@ -1720,7 +1762,8 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
         
         self.hcalc_go.clicked.connect(lambda: (self.calculate()))
         
-        self.hcalc_jd_time.currentIndexChanged.connect(lambda: (self.time_change(self.hcalc_jd_time)))
+        self.hcalc_jd_time.currentIndexChanged.connect(lambda: (
+                self.time_change(self.hcalc_jd_time)))
     
     def time_change(self, dev):
         if dev is not None:
@@ -1752,10 +1795,13 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                         if utc is not None:
                             jd = self.atm.jd(utc)
                             if jd is not None:
-                                self.fts.update_header(file, "{}_jd".format(prefx), jd)
+                                self.fts.update_header(file,
+                                                       "{}_jd".format(prefx),
+                                                       jd)
                             else:
                                 self.logger.log(
-                                        "Cannot calculate JD for ({})".format(utc))
+                                        "Cannot calculate JD for ({})".format(
+                                                utc))
                     if do_airmass:
                         pass
                     
@@ -2192,8 +2238,8 @@ class AlignManualWindow(QtWidgets.QWidget, align_manual.Ui_Form):
                         if self.fop.is_file(out_file):
                             self.fop.rm(out_file)
                         self.ira.imshift(file, out_file, dx, dy)
-                        
-                        self.manualAlign_progress.setProperty("value", 100 * (it + 1) / len(files))
+                        proc = 100 * (it + 1) / len(files)
+                        self.manualAlign_progress.setProperty("value", proc)
         else:
             self.logger.log("No Image to Align")
             QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
@@ -2212,14 +2258,16 @@ class AlignManualWindow(QtWidgets.QWidget, align_manual.Ui_Form):
             new_row = self.parent.image_list.currentIndex().row() + 1
             lenght = len(self.fnk_deve.get_from_tree(self.parent.image_list))
             new_row = new_row % (lenght)
-            self.parent.image_list.setCurrentItem(self.parent.image_list.topLevelItem(new_row))
+            self.parent.image_list.setCurrentItem(
+                    self.parent.image_list.topLevelItem(new_row))
             path = self.parent.image_list.currentItem().text(0)
             self.show_me(path)
 
     def show_first_file(self):
         files = self.fnk_deve.get_from_tree(self.parent.image_list)
         if files is not None and not files == []:
-            self.parent.image_list.setCurrentItem(self.parent.image_list.topLevelItem(0))
+            self.parent.image_list.setCurrentItem(
+                    self.parent.image_list.topLevelItem(0))
             if self.parent.image_list.currentItem() is not None:
                 file = self.parent.image_list.currentItem().text(0)
                 self.show_me(file)
@@ -2355,7 +2403,8 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         
         self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
         self.fop = env.File(verb=self.verb, debugger=self.debugger)
-        self.fts = analyse.Astronomy.Fits(verb=self.verb, debugger=self.debugger)
+        self.fts = analyse.Astronomy.Fits(verb=self.verb,
+                                          debugger=self.debugger)
         self.fnk_deve = func.Devices(self, self.logger)
         
         self.file = "{}_photometry.set".format(self.logger.setting_file)
@@ -2369,9 +2418,11 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         self.load()
         
     def add_head(self):
-        wanted_headers = self.fnk_deve.list_of_selected(self.setting_phot_hex_available)
+        wanted_headers = self.fnk_deve.list_of_selected(
+                self.setting_phot_hex_available)
         if not wanted_headers == []:
-            already_using_h = self.fnk_deve.list_of_list(self.setting_phot_hex_use)
+            already_using_h = self.fnk_deve.list_of_list(
+                    self.setting_phot_hex_use)
             diff = set(wanted_headers) - set(already_using_h)
             if not diff == []:
                 self.fnk_deve.add(self.setting_phot_hex_use, diff)
@@ -2625,16 +2676,20 @@ class SetAstrometryWindow(QtWidgets.QWidget, setting_astrometrynet.Ui_Form):
     def load_default(self):
         settings = self.logger.cos_ast
         self.setting_astrometry_online.setChecked(settings["online"])
-        self.setting_astrometry_online_server.setProperty("text", settings['server'])
-        self.setting_astrometry_online_apikey.setProperty("text", settings['apike'])
+        self.setting_astrometry_online_server.setProperty(
+                "text", settings['server'])
+        self.setting_astrometry_online_apikey.setProperty(
+                "text", settings['apike'])
         
     def load(self):
         try:
             settings = self.fop.read_set("ast")
             
             self.setting_astrometry_online.setChecked(settings["online"])
-            self.setting_astrometry_online_server.setProperty("text", settings['server'])
-            self.setting_astrometry_online_apikey.setProperty("text", settings['apike'])
+            self.setting_astrometry_online_server.setProperty(
+                    "text", settings['server'])
+            self.setting_astrometry_online_apikey.setProperty(
+                    "text", settings['apike'])
             
         except Exception as e:
             self.logger.log(e)

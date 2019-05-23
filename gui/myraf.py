@@ -447,7 +447,7 @@ class Ui_MainWindow(object):
         self.actionManualAlign.setText(_translate("MainWindow", "&Manual..."))
         self.actionAutoAlign.setText(_translate("MainWindow", "&Auto"))
         self.actionMain.setText(_translate("MainWindow", "&Main"))
-        self.actionAlbatenius.setText(_translate("MainWindow", "Albatenius"))
+        self.actionAlbatenius.setText(_translate("MainWindow", "Al&batenius ..."))
 
 
 

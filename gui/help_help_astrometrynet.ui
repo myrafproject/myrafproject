@@ -16,17 +16,11 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QTextBrowser" name="textBrowser_7">
-     <property name="minimumSize">
-      <size>
-       <width>611</width>
-       <height>441</height>
-      </size>
-     </property>
      <property name="html">
       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'verdana,arial,Bitstream Vera Sans,helvetica,sans-serif'; font-size:12pt; color:#000000;&quot;&gt;If you have astronomical imaging of the sky with celestial coordinates you do not know—or do not trust—then &lt;/span&gt;&lt;span style=&quot; font-family:'verdana,arial,Bitstream Vera Sans,helvetica,sans-serif'; font-size:12pt; font-style:italic; color:#000000;&quot;&gt;Astrometry.net&lt;/span&gt;&lt;span style=&quot; font-family:'verdana,arial,Bitstream Vera Sans,helvetica,sans-serif'; font-size:12pt; color:#000000;&quot;&gt; is for you. Input an image and we'll give you back astrometric calibration meta-data, plus lists of known objects falling inside the field of view.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'verdana,arial,Bitstream Vera Sans,helvetica,sans-serif'; font-size:12pt; color:#000000;&quot;&gt;We have built this astrometric calibration service to create correct, standards-compliant astrometric meta-data for every useful astronomical image ever taken, past and future, in any state of archival disarray. We hope this will help organize, annotate and make searchable all the world's astronomical information.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'verdana,arial,Bitstream Vera Sans,helvetica,sans-serif'; font-size:12pt; color:#000000;&quot;&gt;http://astrometry.net/&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

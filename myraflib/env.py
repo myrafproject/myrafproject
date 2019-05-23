@@ -105,11 +105,17 @@ class Logger():
         self.verb = verb
         self.debugger = debugger
         self.log_dir = abspath("{}/mylog/".format(expanduser("~")))
+        self.obs_dir = abspath("{}/myobservat/".format(expanduser("~")))
         self.log_file = abspath("{}/log.my".format(self.log_dir))
         self.mini_log_file = abspath("{}/mlog.my".format(self.log_dir))
         self.tmp_dir = tempfile.gettempdir()
         
-        
+        if not(exists(self.log_dir) and not isfile(self.log_dir)):
+            mkdir(self.log_dir)
+            
+        if not(exists(self.obs_dir) and not isfile(self.obs_dir)):
+            mkdir(self.obs_dir)
+            
         self.setting_file = abspath("{}/.myset".format(expanduser("~")))
         
         self.cos_set_file = abspath("{}/.myset_cosmiccleaner.set".format(
@@ -246,6 +252,16 @@ class File():
         self.debugger = debugger
         self.logger = Logger(verb=self.verb, debugger=self.debugger)
             
+    def list_of_observatories(self):
+        try:
+            if self.is_dir(self.logger.obs_dir):
+                observatories = self.list_of_fiels(self.logger.obs_dir, "*")
+                return(observatories)
+            else:
+                self.mkdir(self.logger.obs_dir)
+        except Exception as e:
+            self.logger.log(e)
+        
     def temp_cleaner(self):
         files = self.list_of_fiels(self.logger.tmp_dir, "myraf*.fits")
         for file in files:
