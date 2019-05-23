@@ -6,37 +6,37 @@ Created on Fri May  3 14:43:58 2019
 """
 try:
     import string
-except:
-    print("Can't import string?")
+except Exception as e:
+    print("{}: Can't import string?".format(e))
     exit(0)
 
 try:
     from subprocess import Popen
     from subprocess import PIPE
     from subprocess import CalledProcessError
-except:
-    print("Can't import subprocess?")
+except Exception as e:
+    print("{}: Can't import subprocess?".format(e))
     exit(0)
     
 try:
     from json import dump
     from json import loads
-except:
-    print("Can't import json?")
+except Exception as e:
+    print("{}: Can't import json?".format(e))
     exit(0)
     
 try:
     import random
-except:
-    print("Can't import random?")
+except Exception as e:
+    print("{}: Can't import random?".format(e))
     exit(0)
 
 try:
     from numpy import genfromtxt
     from numpy import savetxt
     from numpy import array as ar
-except:
-    print("Can't import numpy.")
+except Exception as e:
+    print("{}: Can't import numpy.".format(e))
     exit(0)
 
 try:
@@ -51,53 +51,53 @@ try:
     from os.path import getsize
     from os import remove
     from os import mkdir
-except:
-    print("Can't import os?")
+except Exception as e:
+    print("{}: Can't import os?".format(e))
     exit(0)
 
 try:
     from glob import glob
-except:
-    print("Can't import glob?")
+except Exception as e:
+    print("{}: Can't import glob?".format(e))
     exit(0)
 
 try:
     from shutil import copy2
     from shutil import move
-except:
-    print("Can't import shutil?")
+except Exception as e:
+    print("{}: Can't import shutil?".format(e))
     exit(0)
 
 try:
     from datetime import datetime
-except:
-    print("Can't import datetime?")
+except Exception as e:
+    print("{}: Can't import datetime?".format(e))
     exit(0)
 
 try:
     from getpass import getuser
-except:
-    print("Can't import getpass?")
+except Exception as e:
+    print("{}: Can't import getpass?".format(e))
     exit(0)
 
 try:
     from platform import uname
     from platform import system
-except:
-    print("Can't import platform?")
+except Exception as e:
+    print("{}: Can't import platform?".format(e))
     exit(0)
 
 try:
     from inspect import currentframe
     from inspect import getouterframes
-except:
-    print("Can't import inspect?")
+except Exception as e:
+    print("{}: Can't import inspect?".format(e))
     exit(0)
 
 try:
     import tempfile
-except:
-    print("Can't import tempfile?")
+except Exception as e:
+    print("{}: Can't import tempfile?".format(e))
     exit(0)
     
 class Logger():

@@ -28,6 +28,9 @@
      <property name="checkable">
       <bool>true</bool>
      </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
      <layout class="QGridLayout" name="gridLayout_77">
       <item row="0" column="0">
        <widget class="QLabel" name="label_51">
@@ -51,10 +54,13 @@
       </size>
      </property>
      <property name="title">
-      <string>Airmass Calculator</string>
+      <string>Airmass Ca&amp;lculator</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_78">
       <item row="0" column="0">
@@ -113,6 +119,9 @@
      </property>
      <property name="checkable">
       <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_51">
       <item row="0" column="0">
@@ -177,10 +186,13 @@
       </size>
      </property>
      <property name="title">
-      <string>Time Calculator</string>
+      <string>&amp;Time Calculator</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_59">
       <item row="0" column="0" colspan="2">
@@ -215,7 +227,7 @@
          <double>0.001000000000000</double>
         </property>
         <property name="value">
-         <double>3.000000000000000</double>
+         <double>-3.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -252,6 +264,9 @@
     <widget class="QLineEdit" name="hcalc_prefix">
      <property name="text">
       <string>my</string>
+     </property>
+     <property name="maxLength">
+      <number>2</number>
      </property>
     </widget>
    </item>

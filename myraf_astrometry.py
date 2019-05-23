@@ -15,17 +15,34 @@ except ImportError:
     from urlparse import urlparse
     from urllib import urlencode, quote
     from urllib2 import urlopen, Request, HTTPError
+except Exception as e:
+    print("{}: Can't import urllib.".format(e))
+    exit(0)
 
 #from exceptions import Exception
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.application  import MIMEApplication
+try:
+    from email.mime.base import MIMEBase
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.application  import MIMEApplication
+    
+    from email.encoders import encode_noop
+except Exception as e:
+    print("{}: Can't import email.".format(e))
+    exit(0)
 
-from email.encoders import encode_noop
+try:
+    import json
+except Exception as e:
+    print("{}: Can't import json.".format(e))
+    exit(0)
 
-from myraflib import env
+try:
+    from myraflib import env
+except Exception as e:
+    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
+    exit(0)
 
-import json
+
 def json2python(data):
     try:
         return json.loads(data)

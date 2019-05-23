@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="Albatenius">
+    <file>../media/Albategnius.jpeg</file>
+    <file>../media/Albategnius_50p.jpeg</file>
+  </qresource>
+</RCC>

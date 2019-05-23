@@ -7,13 +7,20 @@
 #                Mohammad Niaei Shameoni (mshemuni@myrafproject.org).
 # This is open-source software licensed under a GPLv3 license.
 
-from myraflib import env
-
-from ginga.mplw.ImageViewCanvasMpl import ImageViewCanvas
-from ginga.mplw.FigureCanvasQt import setup_Qt
-from ginga.AstroImage import AstroImage
-from ginga.misc import log
-
+try:
+    from myraflib import env
+except Exception as e:
+    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
+    exit(0)
+    
+try:
+    from ginga.mplw.ImageViewCanvasMpl import ImageViewCanvas
+    from ginga.mplw.FigureCanvasQt import setup_Qt
+    from ginga.AstroImage import AstroImage
+    from ginga.misc import log
+except Exception as e:
+    print("{}: Can't import ginga.".format(e))
+    exit(0)
 
 class FitsPlot(object):
     def __init__(self, chartDev, verb=False, debugger=False):

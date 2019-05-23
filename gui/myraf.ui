@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MYRaf V3 - Beta</string>
+   <string>MYRaf (V3 - Beta) Albatenius</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_6">
@@ -151,6 +151,7 @@
     <addaction name="actionCredits"/>
     <addaction name="actionLog_Viewer"/>
     <addaction name="actionAbout_MYRaf"/>
+    <addaction name="actionAlbatenius"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAnalyse"/>
@@ -734,7 +735,12 @@
   </action>
   <action name="actionMain">
    <property name="text">
-    <string>Main</string>
+    <string>&amp;Main</string>
+   </property>
+  </action>
+  <action name="actionAlbatenius">
+   <property name="text">
+    <string>Albatenius</string>
    </property>
   </action>
  </widget>

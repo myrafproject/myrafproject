@@ -14,20 +14,20 @@
 try:
     from PyQt5 import QtWidgets
 except Exception as e:
-    print("{}. PyQt5 is not installed?".format(e))
+    print("{}. Can't import PyQt5.".format(e))
     exit(0)
     
 try:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     import matplotlib.pyplot as plt
 except Exception as e:
-    print("{}. Mtplotlib is not installed?".format(e))
+    print("{}. Can't import matplotlib.".format(e))
     exit(0)
     
 try:
     from myraflib import env
 except Exception as e:
-    print("{}. Cannot find myraflib".format(e))
+    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
     exit(0)
     
 

@@ -8,8 +8,7 @@ try:
     from sep import Background
     from sep import sum_circle
 except Exception as e:
-    
-    print("Can't import sep: {}".format(e))
+    print("{}: Can't import sep".format(e))
     exit(0)
     
 try:
@@ -27,30 +26,37 @@ try:
     from numpy import power
     from numpy import sqrt
     from numpy import argmin
-except:
-    print("Can't import numpy.")
+except Exception as e:
+    print("{}: Can't import numpy.".format(e))
+    exit(0)
+    
+try:
+    from datetime import datetime
+    from datetime import timedelta
+except Exception as e:
+    print("{}: Can't import datetime?".format(e))
     exit(0)
     
 try:
     from astropy.io import fits as fts
     from astropy.time import Time as tm
-except:
-    print("Can't import astropy.")
+except Exception as e:
+    print("{}: Can't import astropy.".format(e))
     exit(0)
 
 try:
     from pyraf import iraf
     from iraf import imred
     from iraf import ccdred
-except:
-    print("Can't import pyraf/iraf.")
+except Exception as e:
+    print("{}: Can't import pyraf/iraf.".format(e))
     exit(0)
 
 try:
     import alipy
     from alipy import imgcat
-except:
-    print("Can't import alipy.")
+except Exception as e:
+    print("{}: Can't import alipy.".format(e))
     exit(0)
 
 from . import env
@@ -64,6 +70,39 @@ class Astronomy:
         def __init__(self, verb=False, debugger=False):
             self.verb = verb
             self.debugger = debugger
+            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+        
+        def str_to_time(self, date):
+            if date is not None:
+                if "T" in date:
+                    frmt = '%Y-%m-%dT%H:%M:%S'
+                elif " " in date:
+                    frmt = '%Y-%m-%d %H:%M:%S'
+                else:
+                    self.etc.log("Unknown date format")
+                    frmt = None
+                    
+                if frmt is not None:
+                    try:
+                        datetime_object = datetime.strptime(date, frmt)
+                        return(datetime_object)
+                    except Exception as e:
+                        self.logger.log(e)
+        
+        def time_diff(self, time, time_offset=-3, offset_type="hours"):
+            if time is not None and time_offset is not None:
+                try:
+                    if "HOURS".startswith(offset_type.upper()):
+                        return(time + timedelta(hours=time_offset))
+                    elif "MINUTES".startswith(offset_type.upper()):
+                        return(time + timedelta(minutes=time_offset))
+                    elif "SECONDS".startswith(offset_type.upper()):
+                        return(time + timedelta(seconds=time_offset))
+                        
+                except Exception as e:
+                    self.logger.log(e)
+            else:
+                self.logger.log("False Type: One of the values is not correct")
         
         def jd(self, utc):
             if utc is not None:
@@ -71,7 +110,7 @@ class Astronomy:
                     ret = tm(utc, scale='utc')
                     return(ret.jd)
                 except Exception as e:
-                    self.etc.log(e)
+                    self.logger.log(e)
             else:
                 self.logger.log("False Type: The value is not date")
                 
@@ -453,6 +492,16 @@ class Astronomy:
             except Exception as e:
                 self.logger.log(e)
                 
+        def mupdate_header(self, src, key_values):
+            self.logger.log("Updating multiple headers in {}".format(src))
+            try:
+                hdu = fts.open(src, mode='update')
+                for key_val in key_values:
+                    hdu[0].header[key_val[0]] = key_val[1]
+                return(hdu.close())
+            except Exception as e:
+                self.logger.log(e)
+                
         def stats(self, file):
             self.logger.log("Getting Stats from {}".format(file))
             try:
@@ -460,6 +509,7 @@ class Astronomy:
                 image_data = hdu[0].data
                 return({'Min': nmin(image_data),
                         'Max': nmax(image_data),
+                        'Median': nmed(image_data),
                         'Mean': nmea(image_data),
                         'Stdev': nstd(image_data)})
             except Exception as e:

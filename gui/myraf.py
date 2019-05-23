@@ -278,6 +278,8 @@ class Ui_MainWindow(object):
         self.actionAutoAlign.setObjectName("actionAutoAlign")
         self.actionMain = QtWidgets.QAction(MainWindow)
         self.actionMain.setObjectName("actionMain")
+        self.actionAlbatenius = QtWidgets.QAction(MainWindow)
+        self.actionAlbatenius.setObjectName("actionAlbatenius")
         self.menuData.addAction(self.actionAddImage)
         self.menuData.addAction(self.actionAddBias)
         self.menuData.addAction(self.actionAddDark)
@@ -330,6 +332,7 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionCredits)
         self.menuHelp.addAction(self.actionLog_Viewer)
         self.menuHelp.addAction(self.actionAbout_MYRaf)
+        self.menuHelp.addAction(self.actionAlbatenius)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuAnalyse.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
@@ -342,7 +345,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MYRaf V3 - Beta"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MYRaf (V3 - Beta) Albatenius"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuData.setTitle(_translate("MainWindow", "&Import Data"))
         self.menuClear_Lists.setTitle(_translate("MainWindow", "&Clear List"))
@@ -443,7 +446,8 @@ class Ui_MainWindow(object):
         self.actionDarkcombine.setText(_translate("MainWindow", "&Darkcombine..."))
         self.actionManualAlign.setText(_translate("MainWindow", "&Manual..."))
         self.actionAutoAlign.setText(_translate("MainWindow", "&Auto"))
-        self.actionMain.setText(_translate("MainWindow", "Main"))
+        self.actionMain.setText(_translate("MainWindow", "&Main"))
+        self.actionAlbatenius.setText(_translate("MainWindow", "Albatenius"))
 
 
 

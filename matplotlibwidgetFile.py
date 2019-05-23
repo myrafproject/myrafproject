@@ -2,7 +2,7 @@
 try:
     from PyQt5 import QtWidgets
 except Exception as e:
-    print("{}. PyQt5 is not installed?".format(e))
+    print("{}. Can't import PyQt5.".format(e))
     exit(0)
 
 try:
@@ -12,7 +12,7 @@ try:
     from matplotlib.figure import Figure
     import matplotlib.gridspec as gridspec
 except Exception as e:
-    print("{}. Mtplotlib is not installed?".format(e))
+    print("{}. Can't import matplotlib.".format(e))
     exit(0)
 
 class MplCanvas(FigureCanvas):

@@ -6,24 +6,25 @@ Created on Fri May  3 12:15:11 2019
 """
 try:
     from sys import argv
-except:
-    print("Can't import sys?")
+except Exception as e:
+    print("{}: Can't import sys?".format(e))
     exit(0)
 
 try:
     import argparse
-except:
-    print("Can't import argparse.")
+except Exception as e:
+    print("{}: Can't import argparse.".format(e))
     exit(0)
 
 try:
     from PyQt5 import QtWidgets
     from PyQt5 import QtCore
-except:
-    print("Can't import PyQt5.")
+except Exception as e:
+    print("{}: Can't import PyQt5.".format(e))
     exit(0)
 
 try:
+    from gui import albategnius
     from gui import myraf
     from gui import display
     from gui import animate
@@ -50,27 +51,27 @@ try:
     from gui import myraf_progress
     from gui import func
     from gui import align_manual
-except:
-    print("Can't import GUIs. MYRaf is not installed properly.")
+except Exception as e:
+    print("{}: Can't import GUIs. MYRaf is not installed properly.".format(e))
     exit(0)
 
 try:
     from fPlot import FitsPlot
-except:
-    print("Can't import fPlot. MYRaf is not installed properly.")
+except Exception as e:
+    print("{}: Can't import fPlot. MYRaf is not installed properly.".format(e))
     exit(0)
 
 try:
     from matplotlib.patches import Circle
-except:
-    print("Can't import matplotlib.")
+except Exception as e:
+    print("{}: Can't import matplotlib.".format(e))
     exit(0)
 
 try:
     from myraflib import analyse
     from myraflib import env
-except:
-    print("Can't import myraflib. MYRaf is not installed properly.")
+except Exception as e:
+    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
     exit(0)
 
 class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
@@ -109,6 +110,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.animate_window = None
         self.alignmanual_window = None
         self.sastrometry_window = None
+        self.albategnius_window = None
         
         self.logger.log("Creating objects")
         self.fts = analyse.Astronomy.Fits(verb=self.verb, debugger=self.debugger)
@@ -147,6 +149,12 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("astrometry")))
         self.actionAlipy_2.triggered.connect(lambda: (
                 self.open_window("alipy")))
+        
+        self.actionAlbatenius.triggered.connect(lambda: (
+                self.open_window("albategnius")))
+        
+        
+        
         self.actionGinga_2.triggered.connect(lambda: (
                 self.open_window("ginga")))
         self.actionLog_Viewer.triggered.connect(lambda: (
@@ -1056,6 +1064,13 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.play_ground.addSubWindow(self.animate_window)
                 self.animate_window.show()
                 
+        elif window_name == "albategnius":
+            if self.albategnius_window is None:
+                self.albategnius_window = AlbategniusWindow(
+                        self, verb=self.verb, debugger=self.debugger)
+                self.play_ground.addSubWindow(self.albategnius_window)
+                self.albategnius_window.show()
+                
         self.reload_log()
                 
                 
@@ -1349,8 +1364,9 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                                 else:
                                     wirte_line = "{},{},{}\n".format(file, ",".join(ph), ",".join(use_header))    
                             f2w.write(wirte_line)
-                            perc = 100 * (it + 1) / (len(files))
-                            self.photometry_progress.setProperty("value", perc)
+                            
+                        perc = 100 * (it + 1) / (len(files))
+                        self.photometry_progress.setProperty("value", perc)
                     f2w.close()
                     
             else:
@@ -1695,14 +1711,123 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
         self.verb = verb
         self.debugger = debugger
         
+        self.fts = analyse.Astronomy.Fits(verb=self.verb, debugger=self.debugger)
+        self.atm = analyse.Astronomy.Time(verb=self.verb, debugger=self.debugger)
+        
         self.hcalc_progress.setProperty("value", 0)
         
         self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
         self.fnk_deve = func.Devices(self, self.logger)
         
+        self.hcalc_go.clicked.connect(lambda: (self.calculate()))
+        
+        self.hcalc_jd_time.currentIndexChanged.connect(lambda: (self.time_change(self.hcalc_jd_time)))
+    
+    def time_change(self, dev):
+        if dev is not None:
+            devices = [self.hcalc_jd_time,
+                       self.hcalc_airmass_time,
+                       self.hcalc_time_time]
+            for device in devices:
+                if device is not dev:
+                    device.setCurrentIndex(dev.currentIndex())
+    
     def reload_log(self):
         if self.parent.logger_window is not None:
             self.parent.logger_window.load()
+        
+    def calculate(self):
+        files = self.fnk_deve.get_from_tree(self.parent.image_list)
+        if len(files) > 0:
+            do_jd = self.hcalc_jd.isChecked()
+            do_airmass = self.hcalc_airmass.isChecked()
+            do_imexamine = self.hcalc_imexamine.isChecked()
+            do_time = self.hcalc_time.isChecked()
+            prefx = self.hcalc_prefix.text()
+            if do_jd or do_airmass or do_imexamine or do_time:
+                utc_head_jd = self.hcalc_jd_time.currentText().split("->")[0]
+                utc_head_tc = self.hcalc_time_time.currentText().split("->")[0]
+                for it, file in enumerate(files):
+                    if do_jd:
+                        utc = self.fts.header(file, field=utc_head_jd)
+                        if utc is not None:
+                            jd = self.atm.jd(utc)
+                            if jd is not None:
+                                self.fts.update_header(file, "{}_jd".format(prefx), jd)
+                            else:
+                                self.logger.log(
+                                        "Cannot calculate JD for ({})".format(utc))
+                    elif do_airmass:
+                        pass
+                    
+                    elif do_imexamine:
+                        mean = self.hcalc_imexamine_mean.isChecked()
+                        median = self.hcalc_imexamine_median.isChecked()
+                        stdv = self.hcalc_imexamine_stdv.isChecked()
+                        the_min = self.hcalc_imexamine_min.isChecked()
+                        the_max = self.hcalc_imexamine_max.isChecked()
+                        
+                        if mean or median or stdv or the_min or the_max:
+                            try:
+                                stats = self.fts.stats(file)
+                                
+                                add_to_header = []
+                                if mean:
+                                    add_to_header.append([
+                                            "{}_mean".format(prefx),
+                                            stats["Mean"]])
+                                if median:
+                                    add_to_header.append([
+                                            "{}_medi".format(prefx),
+                                            stats["Median"]])
+                                if stdv:
+                                    add_to_header.append([
+                                            "{}_stdv".format(prefx),
+                                            stats["Stdev"]])
+                                if the_min:
+                                    add_to_header.append([
+                                            "{}_min".format(prefx),
+                                            stats["Min"]])
+                                if the_max:
+                                    add_to_header.append([
+                                            "{}_max".format(prefx),
+                                            stats["Max"]])
+                                    
+                                self.fts.mupdate_header(file, add_to_header)
+                            except Exception as e:
+                                self.logger.log(e)
+                        else:
+                            self.logger.log("Nothing to do")
+                            
+                    elif do_time:
+                        utc = self.fts.header(file, field=utc_head_tc)
+                        dif = self.hcalc_time_value.value()
+                        dif_type = self.hcalc_time_valueType.currentText()
+                        if utc is not None:
+                            UTC = self.atm.str_to_time(utc)
+                            if UTC is not None:
+                                new_time = self.atm.time_diff(
+                                        UTC, time_offset=dif,
+                                        offset_type=dif_type)
+                                
+                                if new_time is not None:
+                                    self.fts.update_header(
+                                            file, "{}_ntime".format(prefx),
+                                            str(new_time))
+                                else:
+                                    self.logger.log("Cannot calculate time_diff for ({})".format(utc))
+                    
+                    proc = 100 * (it + 1) / (len(files))
+                    self.hcalc_progress.setProperty("value", proc)
+            else:
+                self.logger.log("Nothing to do")
+                QtWidgets.QMessageBox.critical(
+                        self, ("MYRaf Error"), ("Don't know what to do"))
+            
+        else:
+            self.logger.log("No file was given")
+            QtWidgets.QMessageBox.critical(
+                        self, ("MYRaf Error"), ("Please add file(s)"))
         
     def fill_header_list(self, header_list):
         self.fnk_deve.c_replace_list_con(self.hcalc_jd_time, header_list)
@@ -2572,6 +2697,19 @@ class SubtractionWindow(QtWidgets.QWidget, combine_subtraction.Ui_Form):
         
     def closeEvent(self, event):
         self.parent.subtraction_window = None
+
+class AlbategniusWindow(QtWidgets.QWidget, albategnius.Ui_Form):
+    def __init__(self, parent, verb=False, debugger=False):
+        self.parent = parent
+        super(AlbategniusWindow, self).__init__(self.parent)
+        self.setupUi(self)
+        
+    def reload_log(self):
+        if self.parent.logger_window is not None:
+            self.parent.logger_window.load()
+            
+    def closeEvent(self, event):
+        self.parent.albategnius_window = None
 
 def main():
     parser = argparse.ArgumentParser(description='MYRaf V3 Beta')
