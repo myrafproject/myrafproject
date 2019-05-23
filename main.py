@@ -46,6 +46,7 @@ try:
     from gui import setting_calibration
     from gui import setting_photometry
     from gui import setting_cosmiccleaner
+    from gui import setting_astrometrynet
     from gui import myraf_progress
     from gui import func
     from gui import align_manual
@@ -107,6 +108,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.proc_window = None
         self.animate_window = None
         self.alignmanual_window = None
+        self.sastrometry_window = None
         
         self.logger.log("Creating objects")
         self.fts = analyse.Astronomy.Fits(verb=self.verb, debugger=self.debugger)
@@ -169,6 +171,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("sphotometry")))
         self.actionCosmic_Cleaner.triggered.connect(lambda: (
                 self.open_window("sccleaner")))
+        
+        self.actionWCS_2.triggered.connect(lambda: (
+                self.open_window("swcs")))
+        
         self.actionAnalyse_2.triggered.connect(lambda: (
                 self.open_window("analyse")))
         self.actionEditor.triggered.connect(lambda: (
@@ -187,6 +193,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.flat_combine(file_requested=False)))
         self.actionCosmic.triggered.connect(lambda: (self.cclean()))
         self.actionWCS.triggered.connect(lambda: (self.solve()))
+        
         self.actionA_Track.triggered.connect(lambda: (
                 QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
                                                ("Not ready yet"))))        
@@ -233,20 +240,30 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.flat_list.installEventFilter(self)
         self.play_ground.installEventFilter(self)
         
+    def get_ast_set(self):
+        settings = self.fop.read_set("ast")
+        return(settings)
+        
     def solve(self):
-        print("solve")
         files = self.fnk_deve.get_from_tree(self.image_list)
         if len(files) > 0:
+            the_set = self.get_ast_set()
             out_dir = self.fnk_file.save_directory()
             if out_dir is not None and not out_dir == "":
                 self.open_window("proc")
                 for it, file in enumerate(files):
-                    print(file)
-                    self.proc_window.progress_annotation.setProperty("text", "Scolving: {}".format(file))
+                    self.proc_window.progress_annotation.setProperty(
+                            "text", "Scolving: {}".format(file))
                     pn, fn = self.fop.get_base_name(file)
                     out_file = "{}/{}".format(out_dir, fn)
-                    self.fts.solve_field(file, out_file)
-                    self.proc_window.progress_progressBar.setProperty("value", 100 *(it + 1) / (len(files)))
+                    if the_set["online"]:
+                        self.fts.astrometry(file, out_file,
+                                            server=the_set["server"],
+                                            apikey=the_set["apike"])
+                    else:
+                        self.fts.solve_field(file, out_file)
+                    self.proc_window.progress_progressBar.setProperty(
+                            "value", 100 *(it + 1) / (len(files)))
                     
                 for wind in self.play_ground.subWindowList():
                     if wind.windowTitle() == "MYRaf Progress":
@@ -255,51 +272,17 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             self.logger.log("No Image to Solve")
             QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
                                            ("No Image to Solve"))
-        
+    
+    def get_cos_set(self):
+        settings = self.fop.read_set("cos")
+        return(settings)
+    
     def cclean(self):
         files = self.fnk_deve.get_from_tree(self.image_list)
         if len(files) > 0:
             out_dir = self.fnk_file.save_directory()
             if out_dir is not None and not out_dir == "":
-                try:
-                    settings = self.fop.read_set("cos")
-                    gain = settings['gain']
-                    if gain is None:
-                        gain = self.logger.cos_set['gain']
-                            
-                    reno = settings['reno']
-                    if reno is None:
-                        reno = self.logger.cos_set['reno']
-                            
-                    sicl = settings['sicl']
-                    if sicl is None:
-                        sicl = self.logger.cos_set['sicl']
-                            
-                    sifr = settings['sifr']
-                    if sifr is None:
-                        sifr = self.logger.cos_set['sifr']
-                            
-                    obli = settings['obli']
-                    if obli is None:
-                        obli = self.logger.cos_set['obli']
-                            
-                    mait = settings['mait']
-                    if mait is None:
-                        mait = self.logger.cos_set['mait']
-                            
-                    crma = settings['crma']
-                    if crma is None:
-                        crma = self.logger.cos_set['crma']
-                except Exception as e:
-                    self.logger.log(e)
-                    settings = self.logger.cos_set
-                    gain = settings['gain']
-                    reno = settings['reno']
-                    sicl = settings['sicl']
-                    sifr = settings['sifr']
-                    obli = settings['obli']
-                    mait = settings['mait']
-                    crma = settings['crma']
+                the_set = self.get_cos_set()
                     
                 self.open_window("proc")
                 for it, file in enumerate(files):
@@ -307,12 +290,14 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                             "text", "Cleaning: {}".format(file))
                     pn, fn = self.fop.get_base_name(file)
                     out_file = "{}/{}".format(out_dir, fn)
-                    self.fts.cosmic_cleaner(file, out_file, gain=gain,
-                                            readout_noise=reno,
-                                            sigma_clip=sicl,
-                                            sigma_fraction=sifr,
-                                            object_limit=obli,
-                                            max_iter=mait, mask=crma)
+                    self.fts.cosmic_cleaner(file, out_file,
+                                            gain=the_set["gain"],
+                                            readout_noise=the_set["reno"],
+                                            sigma_clip=the_set["sicl"],
+                                            sigma_fraction=the_set["sifr"],
+                                            object_limit=the_set["obli"],
+                                            max_iter=the_set["mait"],
+                                            mask=the_set["crma"])
                     self.proc_window.progress_progressBar.setProperty(
                             "value", 100 *(it + 1) / (len(files)))
                     
@@ -345,7 +330,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                         for wind in self.play_ground.subWindowList():
                             if wind.windowTitle() == "MYRaf Progress":
                                 wind.close()
-                        
+                                
                 else:
                     self.logger.log("No Reference Image")
                     QtWidgets.QMessageBox.critical(
@@ -358,137 +343,59 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             self.logger.log("No Image to Align")
             QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
                                            ("No Image to Align"))
+            
+    def get_cal_set(self):
+        settings = self.fop.read_set("cal")
         
-    def get_flat_rejection(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
+        if settings['b_combine'] == 0:
+            settings['b_combine'] = "median"
+        elif settings['b_combine'] == 1:
+            settings['b_combine'] = "average"
             
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "f_rejection":
-                    if ln[1] == "0":
-                        return("none")
-                    else:
-                        return("minmax")
-                    
-            return("none")
-        else:
-            return("none")
+        if settings['b_rejection'] == 0:
+            settings['b_rejection'] = "none"
+        elif settings['b_rejection'] == 1:
+            settings['b_rejection'] = "minmax"
             
-    def get_flat_combine(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
+        if settings['d_combine'] == 0:
+            settings['d_combine'] = "median"
+        elif settings['d_combine'] == 1:
+            settings['d_combine'] = "average"
             
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "f_combine":
-                    if ln[1] == "0":
-                        return("median")
-                    else:
-                        return("average")
-                    
-            return("median")
-        else:
-            return("median")
-        
-    def get_dark_rejection(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
+        if settings['d_rejection'] == 0:
+            settings['d_rejection'] = "none"
+        elif settings['d_rejection'] == 1:
+            settings['d_rejection'] = "minmax"
             
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "d_rejection":
-                    if ln[1] == "0":
-                        return("none")
-                    else:
-                        return("minmax")
-                    
-            return("none")
-        else:
-            return("none")
+        if settings['d_scale'] == 0:
+            settings['d_scale'] = "none"
+        elif settings['d_scale'] == 1:
+            settings['d_scale'] = "exposure"
             
-    def get_dark_combine(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
+        if settings['f_combine'] == 0:
+            settings['f_combine'] = "median"
+        elif settings['f_combine'] == 1:
+            settings['f_combine'] = "average"
             
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "d_combine":
-                    if ln[1] == "0":
-                        return("median")
-                    else:
-                        return("average")
-                    
-            return("median")
-        else:
-            return("median")
+        if settings['f_rejection'] == 0:
+            settings['f_rejection'] = "none"
+        elif settings['f_rejection'] == 1:
+            settings['f_rejection'] = "minmax"
             
-    def get_dark_scale(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
-            
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "d_scale":
-                    if ln[1] == "0":
-                        return("none")
-                    else:
-                        return("exposure")
-                    
-            return("exposure")
-        else:
-            return("exposure")
-        
-    def get_zero_rejection(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
-            
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "b_rejection":
-                    if ln[1] == "0":
-                        return("none")
-                    else:
-                        return("minmax")
-                    
-            return("none")
-        else:
-            return("none")
-            
-    def get_zero_combine(self):
-        set_file = "{}_calibration.set".format(self.logger.setting_file)
-        if self.fop.is_file(set_file):
-            setting_file = open(set_file, "r")
-            
-            for line in setting_file:
-                ln = line.replace("\n", "").split("|")
-                if ln[0] == "b_combine":
-                    if ln[1] == "0":
-                        return("median")
-                    else:
-                        return("average")
-                    
-            return("median")
-        else:
-            return("median")
+        return(settings)
             
     def zero_combine(self, file_requested=False):
         files = self.fnk_deve.get_from_tree(self.bias_list)
         if len(files) > 0:
             try:
-                com = self.get_zero_combine()
-                rej = self.get_zero_rejection()
+                the_set = self.get_cal_set()
+                
                 out_file = "{}/myraf_zerocombine_{}.fits".format(
                         self.logger.tmp_dir, self.logger.random_string(10))
                 
                 zro = self.ira.zerocombine(files, out_file,
-                                           method=com, rejection=rej)
+                                           method=the_set["b_combine"],
+                                           rejection=the_set["b_rejection"])
                 if zro:
                     if file_requested:
                         return(out_file)
@@ -507,9 +414,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         files = self.fnk_deve.get_from_tree(self.dark_list)
         if len(files) > 0:
             try:
-                com = self.get_dark_combine()
-                rej = self.get_dark_rejection()
-                scl = self.get_dark_scale()
+                the_set = self.get_cal_set()
+                
                 out_file = "{}/myraf_darkcombine_{}.fits".format(
                                 self.logger.tmp_dir,
                                 self.logger.random_string(10))
@@ -532,8 +438,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     zero = None
                     
                 drk = self.ira.darkcombine(files, out_file, zero=zero,
-                                           method=com, rejection=rej,
-                                           scale=scl)
+                                           method=the_set["d_combine"],
+                                           rejection=the_set["d_rejection"],
+                                           scale=the_set["d_scale"])
                 
                 if drk:
                     if file_requested:
@@ -553,8 +460,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         files = self.fnk_deve.get_from_tree(self.flat_list)
         if len(files) > 0:
             try:
-                com = self.get_flat_combine()
-                rej = self.get_flat_rejection()
+                the_set = self.get_cal_set()
+                
                 bias_count = len(self.fnk_deve.get_from_tree(self.bias_list))
                 dark_count = len(self.fnk_deve.get_from_tree(self.dark_list))
                 out_file = "{}/myraf_flatcombine_{}.fits".format(
@@ -605,8 +512,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     
                     
                 flt = self.ira.flatcombine(files, out_file, dark=d_use,
-                                           zero=z_use, method=com,
-                                           rejection=rej)
+                                           zero=z_use,
+                                           method=the_set['f_combine'],
+                                           rejection=the_set['f_rejection'])
                 if flt:
                     if file_requested:
                         return(out_file, d_use, z_use)
@@ -1134,6 +1042,13 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.play_ground.addSubWindow(self.sccleaner_window)
                 self.sccleaner_window.show()
                 
+        elif window_name == "swcs":
+            if self.sastrometry_window is None:
+                self.sastrometry_window = SetAstrometryWindow(
+                        self, verb=self.verb, debugger=self.debugger)
+                self.play_ground.addSubWindow(self.sastrometry_window)
+                self.sastrometry_window.show()
+                
         elif window_name == "animate":
             if self.animate_window is None:
                 self.animate_window = AnimateWindow(
@@ -1382,6 +1297,16 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     def reload_log(self):
         if self.parent.logger_window is not None:
             self.parent.logger_window.load()
+    
+    def get_pho_set(self):
+        settings = self.fop.read_set("pho")
+        try:
+            settings['photpar_aperture'] = list(map(float, settings['photpar_aperture'].split(",")))
+        except Exception as e:
+            self.logger.log("{}. Using default settings".format(e))
+            settings['photpar_aperture'] = list(map(float,
+                    self.logger.pho_set['photpar_aperture'].split(",")))
+        return(settings)
         
     def do_photometry(self):
         files = self.fnk_deve.get_from_tree(self.parent.image_list)
@@ -1391,39 +1316,9 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 out_file = self.fnk_file.save_file(file_type="All (*.*)")
                 if out_file is not None and not out_file == "":
                     f2w = open(out_file, "w")
-                    settings = self.fop.read_set("pho")
-                    try:
-                        aperture = settings['photpar_aperture']
-                        aperture = aperture.split(",")
-                        aperture = list(map(float, aperture))
-                        if aperture is None:
-                            aperture = self.logger.pho_set['photpar_aperture']
-                            aperture = aperture.split(",")
-                            aperture = list(map(float, aperture))
-                            
-                        gain = settings['photpar_gain']
-                        if gain is None:
-                            gain = self.logger.pho_set['photpar_gain']
-                            
-                        zmag = settings['photpar_zmag']
-                        if zmag is None:
-                            zmag = self.logger.pho_set['photpar_zmag']
-                            
-                        wanted_headers = settings['header_to_use']
-                        if wanted_headers is None:
-                            wanted_headers = self.logger.pho_set['header_to_use']
-                            
-                    except Exception as e:
-                        self.logger.log(e)
-                        settings = self.logger.pho_set
-                        aperture = settings['photpar_aperture']#list(map(int, coor))
-                        aperture = aperture.split(",")
-                        aperture = list(map(float, aperture))
-                        gain = settings['photpar_gain']
-                        zmag = settings['photpar_zmag']
-                        wanted_headers = settings['header_to_use']
-                        
-                    wanted_headers = wanted_headers.split(",")
+                    the_set = self.get_pho_set()
+                    
+                    wanted_headers = the_set["header_to_use"].split(",")
                     if wanted_headers == ['']:
                         file_header = "file,x_coor,y_coor,aperture,flx,ferr,flag,mag,merr"
                     else:
@@ -1439,11 +1334,14 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                             for wanted_header in wanted_headers:
                                 use_header.append(str(self.fts.header(file, wanted_header)))
                                 
-                        gvalue = self.fts.header(file, gain)
+                        gvalue = self.fts.header(file, the_set["photpar_gain"])
                         if gvalue is None or gvalue == 0:
                             gvalue = 1.21
                         
-                        phot = self.fts.mphotometry(file, use_coords, zmag=zmag, apertures=aperture, gain=gvalue)
+                        phot = self.fts.mphotometry(file, use_coords,
+                                                    zmag=the_set["photpar_zmag"],
+                                                    apertures=the_set["photpar_aperture"], 
+                                                    gain=gvalue)
                         for ph in phot:
                             if phot is not None:
                                 if use_header == []:
@@ -2572,10 +2470,63 @@ class SetCCleanerWindow(QtWidgets.QWidget, setting_cosmiccleaner.Ui_Form):
         cos_set = {"gain": gain, "reno": reno,
                         "sicl": sicl, "sifr": sifr,
                         "obli": obli, "mait": mait, "crma": crma}
-        
-        
+                
         self.fop.write_set(cos_set, "cos")
-
+        
+        self.reload_log()
+        
+class SetAstrometryWindow(QtWidgets.QWidget, setting_astrometrynet.Ui_Form):
+    def __init__(self, parent, verb=False, debugger=False):
+        self.parent = parent
+        super(SetAstrometryWindow, self).__init__(self.parent)
+        self.setupUi(self)
+        
+        self.verb = verb
+        self.debugger = debugger
+        
+        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+        self.fop = env.File(verb=self.verb, debugger=self.debugger)
+        
+        self.setting_astrometry_save.clicked.connect(lambda: (self.save()))
+        
+        self.load()
+        
+    def reload_log(self):
+        if self.parent.logger_window is not None:
+            self.parent.logger_window.load()
+            
+    def closeEvent(self, event):
+        self.parent.sastrometry_window = None
+            
+    def load_default(self):
+        settings = self.logger.cos_ast
+        self.setting_astrometry_online.setChecked(settings["online"])
+        self.setting_astrometry_online_server.setProperty("text", settings['server'])
+        self.setting_astrometry_online_apikey.setProperty("text", settings['apike'])
+        
+    def load(self):
+        try:
+            settings = self.fop.read_set("ast")
+            
+            self.setting_astrometry_online.setChecked(settings["online"])
+            self.setting_astrometry_online_server.setProperty("text", settings['server'])
+            self.setting_astrometry_online_apikey.setProperty("text", settings['apike'])
+            
+        except Exception as e:
+            self.logger.log(e)
+            self.load_default()
+                    
+        self.reload_log()
+    
+    def save(self):
+        online = self.setting_astrometry_online.isChecked()
+        server = self.setting_astrometry_online_server.text()
+        apike = self.setting_astrometry_online_apikey.text()
+        
+        
+        cal_ast = {"online": online, "server": server, "apike": apike}
+        
+        self.fop.write_set(cal_ast, "ast")
         
         self.reload_log()
     

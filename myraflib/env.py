@@ -112,11 +112,13 @@ class Logger():
         
         self.setting_file = abspath("{}/.myset".format(expanduser("~")))
         
-        self.cos_set_file = abspath("{}/.myset_cosmiccleaner.set".format(expanduser("~")))
+        self.cos_set_file = abspath("{}/.myset_cosmiccleaner.set".format(
+                expanduser("~")))
         self.cos_set = {"gain": 2.2, "reno": 10.0, "sicl": 5.5, "sifr": 0.3,
                         "obli": 5.0, "mait": 2, "crma": False}
         
-        self.pho_set_file = abspath("{}/.myset_photometry.set".format(expanduser("~")))
+        self.pho_set_file = abspath("{}/.myset_photometry.set".format(
+                expanduser("~")))
         self.pho_set = {"std_mag": False, "std_mag_nomad": True,
                         "std_mag_usno": True, "std_mag_gaia": True,
                         "std_mag_radius": 10.0, "datapar_exposure": "exptime",
@@ -127,10 +129,17 @@ class Logger():
                         "lot_time": "JD", "stf_thr": 2.0, "stf_max": 500,
                         "header_to_use": ""}
         
-        self.cal_set_file = abspath("{}/.myset_calibration.set".format(expanduser("~")))
+        self.cal_set_file = abspath("{}/.myset_calibration.set".format(
+                expanduser("~")))
         self.cal_set = {"b_combine": 1, "b_rejection": 0,
                         "d_combine": 0, "d_rejection": 0, "d_scale": 1,
                         "f_combine": 0, "f_rejection": 0}
+        
+        self.cal_ast_file = abspath("{}/.myset_astrometry.set".format(
+                expanduser("~")))
+        self.cal_ast = {"online": False,
+                        "server": "http://nova.astrometry.net/api/",
+                        "apike": "abhfixfhhxsignyo"}
         
         self.observat_dir = abspath("./observat/")
         
@@ -255,6 +264,13 @@ class File():
         except Exception as e:
             self.logger.log(e)
             
+
+    def list_in_path(self, path):
+        try:
+            pt = self.abs_path(path)
+            return(sorted(glob(pt)))
+        except Exception as e:
+            self.logger.log(e) 
 
     def list_of_fiels(self, path, ext="*"):
         try:
@@ -405,7 +421,8 @@ class File():
             self.write_json(self.logger.pho_set_file, dic)
         elif typ == "cal":
             self.write_json(self.logger.cal_set_file, dic)
-            
+        elif typ == "ast":
+            self.write_json(self.logger.cal_ast_file, dic)
             
     def read_set(self, typ):
         if typ == "cos":
@@ -440,3 +457,14 @@ class File():
             except Exception as e:
                 self.logger.log(e)
                 return(self.logger.cal_set)
+                
+        elif typ == "ast":
+            try:
+                dic = self.read_json(self.logger.cal_ast_file)
+                for key, value in dic.items():
+                    if value is None:
+                        dic[value] = self.logger.cal_ast[value]
+                return(dic)
+            except Exception as e:
+                self.logger.log(e)
+                return(self.logger.cal_ast)

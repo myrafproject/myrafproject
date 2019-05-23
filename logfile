@@ -2016,3 +2016,152 @@ May 22 12:29: IMCOMBINE
   /home/msh/Documents/2013-09-13/Bias/Bias-010.fit
 
   Output image = /tmp/myraf_zerocombine_8UQ9R31C54.fits, ncombine = 10
+
+May 23 10:05: IMCOMBINE
+  combine = average, scale = none, zero = none, weight = none
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/Bias/Bias-001.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-002.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-003.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-004.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-005.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-006.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-007.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-008.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-009.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-010.fit
+
+  Output image = /tmp/myraf_zerocombine_J4O7VXLJNE.fits, ncombine = 10
+
+May 23 10:05: IMCOMBINE
+  combine = median, scale = none, zero = none, weight = none
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/Bias/Bias-001.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-002.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-003.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-004.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-005.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-006.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-007.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-008.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-009.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-010.fit
+
+  Output image = /tmp/myraf_zerocombine_E6DLC09XTX.fits, ncombine = 10
+
+May 23 10:05: IMCOMBINE
+  combine = median, scale = none, zero = none, weight = none
+  reject = minmax, nlow = 0, nhigh = 1
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/Bias/Bias-001.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-002.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-003.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-004.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-005.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-006.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-007.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-008.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-009.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-010.fit
+
+  Output image = /tmp/myraf_zerocombine_UGVFN39JLC.fits, ncombine = 10
+
+May 23 10:05: IMCOMBINE
+  combine = average, scale = none, zero = none, weight = none
+  reject = minmax, nlow = 0, nhigh = 1
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/Bias/Bias-001.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-002.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-003.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-004.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-005.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-006.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-007.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-008.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-009.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-010.fit
+
+  Output image = /tmp/myraf_zerocombine_II1EVW61IV.fits, ncombine = 10
+
+May 23 10:06: IMCOMBINE
+  combine = median, scale = exposure, zero = none, weight = none
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-001B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-002B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-003B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-004B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-005B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-006B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-007B.fit
+
+  Output image = /tmp/myraf_darkcombine_H2FFPTE7D9.fits, ncombine = 7
+
+May 23 10:06: IMCOMBINE
+  combine = average, scale = exposure, zero = none, weight = none
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-001B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-002B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-003B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-004B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-005B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-006B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-007B.fit
+
+  Output image = /tmp/myraf_darkcombine_AUD7YYOX3S.fits, ncombine = 7
+
+May 23 10:06: IMCOMBINE
+  combine = average, scale = none, zero = none, weight = none
+  reject = minmax, nlow = 0, nhigh = 1
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/Bias/Bias-001.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-002.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-003.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-004.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-005.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-006.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-007.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-008.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-009.fit
+  /home/msh/Documents/2013-09-13/Bias/Bias-010.fit
+
+  Output image = /tmp/myraf_zerocombine_RV7S6EWDPG.fits, ncombine = 10
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-001B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-002B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-003B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-004B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-005B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-006B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+/home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-007B.fit: May 23 10:06 Zero level correction image is /tmp/myraf_zerocombine_RV7S6EWDPG.fits
+
+May 23 10:06: IMCOMBINE
+  combine = average, scale = exposure, zero = none, weight = none
+  blank = 0.
+                Images 
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-001B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-002B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-003B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-004B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-005B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-006B.fit
+  /home/msh/Documents/2013-09-13/V523_Cas/Dark/Dark-007B.fit
+
+  Output image = /tmp/myraf_darkcombine_V86R5NAIPP.fits, ncombine = 7
+
+May 23 10:07: IMCOMBINE
+  combine = median, scale = mode, zero = none, weight = none
+  blank = 1.
+                Images     Mode  Scale
+  /home/msh/Documents/2013-09-13/Flat/Flat-001B.fit  32636.  1.064
+  /home/msh/Documents/2013-09-13/Flat/Flat-002B.fit  33672.  1.032
+  /home/msh/Documents/2013-09-13/Flat/Flat-003B.fit  34632.  1.003
+  /home/msh/Documents/2013-09-13/Flat/Flat-004B.fit  35786.  0.971
+  /home/msh/Documents/2013-09-13/Flat/Flat-005B.fit  36958.  0.940
+
+  Output image = /tmp/myraf_flatcombine_CUC7PHKNCW.fits, ncombine = 5

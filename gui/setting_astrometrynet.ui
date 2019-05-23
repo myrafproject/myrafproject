@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>334</width>
+    <width>447</width>
     <height>200</height>
    </rect>
   </property>
@@ -28,7 +28,17 @@
      <property name="checkable">
       <bool>true</bool>
      </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
      <layout class="QGridLayout" name="gridLayout_21">
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="setting_astrometry_online_apikey">
+        <property name="text">
+         <string>abhfixfhhxsignyo</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_73">
         <property name="text">
@@ -47,16 +57,6 @@
        <widget class="QLabel" name="label_72">
         <property name="text">
          <string>Server</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="setting_astrometry_online_apikey"/>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QCheckBox" name="setting_astrometry_online_compress">
-        <property name="text">
-         <string>Compress before upload</string>
         </property>
        </widget>
       </item>

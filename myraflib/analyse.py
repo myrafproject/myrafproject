@@ -30,7 +30,7 @@ try:
 except:
     print("Can't import numpy.")
     exit(0)
-
+    
 try:
     from astropy.io import fits as fts
     from astropy.time import Time as tm
@@ -254,9 +254,33 @@ class Astronomy:
             self.fop = env.File(verb=self.verb, debugger=self.debugger)
             self.sma = Statistics.Math(verb=self.verb, debugger=self.debugger)
             
+        def astrometry(self, file, out_file, server="http://nova.astrometry.net/api/", apikey="abhfixfhhxsignyo"):
+            command = ["python3", "myraf_astrometry.py",
+                       "--apikey={}".format(apikey),
+                       "--server={}".format(server),
+                       "--upload={}".format(file),
+                       "--newfits={}".format(out_file)]
+            for output in self.logger.execute(command):
+                self.logger.log(output.strip())
+            
+            
+            
         def solve_field(self, file, out_file):
             for output in self.logger.execute(["solve-field", file]):
                 self.logger.log(output.strip())
+                
+            pat, fname, ext = self.fop.split_file_name(file)
+            
+            files_to_delete = self.fop.list_in_path("{}/{}*".format(
+                    pat, fname))
+            
+            for file in files_to_delete:
+                if not (file.endswith("fit") or file.endswith("new")):
+                    if self.fop.is_file(file):
+                        self.fop.rm(file)
+            new_file = "{}/{}.new".format(pat, fname)
+            if  self.fop.is_file(new_file):
+                self.fop.mv(new_file, out_file)
                 
         def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0,
                            sigma_clip=5, sigma_fraction=0.3, object_limit=5,
@@ -478,9 +502,16 @@ class Astronomy:
                     try:
                         x_coor, y_coor = list(map(int, coor))
                         for aper in apertures:
-                            flx, ferr, flag = sum_circle(data_sub, x_coor, y_coor, aper, err=bkg.globalrms, gain=gain)
+                            flx, ferr, flag = sum_circle(data_sub, x_coor,
+                                                         y_coor, aper,
+                                                         err=bkg.globalrms,
+                                                         gain=gain)
+                            
                             mag, merr = self.sma.flux_to_mag(flx, ferr)
-                            ret.append([str(x_coor), str(y_coor), str(aper), str(float(flx)), str(float(ferr)), str(float(flag)), str(mag + zmag), str(merr)])
+                            ret.append([str(x_coor), str(y_coor), str(aper),
+                                        str(float(flx)), str(float(ferr)),
+                                        str(float(flag)), str(mag + zmag),
+                                        str(merr)])
                     except Exception as e:
                         self.logger.log(e)
                 return(ret)
