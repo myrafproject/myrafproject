@@ -74,20 +74,21 @@ class Astronomy:
         
         def str_to_time(self, date):
             if date is not None:
-                if "T" in date:
-                    frmt = '%Y-%m-%dT%H:%M:%S'
-                elif " " in date:
-                    frmt = '%Y-%m-%d %H:%M:%S'
-                else:
-                    self.etc.log("Unknown date format")
-                    frmt = None
-                    
-                if frmt is not None:
-                    try:
+                try:
+                    if "T" in date:
+                        frmt = '%Y-%m-%dT%H:%M:%S'
+                    elif " " in date:
+                        frmt = '%Y-%m-%d %H:%M:%S'
+                    else:
+                        self.logger.log("Unknown date format")
+                        frmt = None
+                        
+                    if frmt is not None:
                         datetime_object = datetime.strptime(date, frmt)
                         return(datetime_object)
-                    except Exception as e:
-                        self.logger.log(e)
+                        
+                except Exception as e:
+                    self.logger.log(e)
         
         def time_diff(self, time, time_offset=-3, offset_type="hours"):
             if time is not None and time_offset is not None:

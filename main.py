@@ -833,7 +833,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if files:                
             images_to_add = []
             for it, file in enumerate(files):
-                self.logger.log("Check If File is Fits")
                 if self.fts.check(file):
                     file_type = str(self.fts.header(file, "IMAGETYP"))
                     stats = self.fts.stats(file)
@@ -1757,10 +1756,10 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                             else:
                                 self.logger.log(
                                         "Cannot calculate JD for ({})".format(utc))
-                    elif do_airmass:
+                    if do_airmass:
                         pass
                     
-                    elif do_imexamine:
+                    if do_imexamine:
                         mean = self.hcalc_imexamine_mean.isChecked()
                         median = self.hcalc_imexamine_median.isChecked()
                         stdv = self.hcalc_imexamine_stdv.isChecked()
@@ -1799,12 +1798,12 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                         else:
                             self.logger.log("Nothing to do")
                             
-                    elif do_time:
+                    if do_time:
                         utc = self.fts.header(file, field=utc_head_tc)
                         dif = self.hcalc_time_value.value()
                         dif_type = self.hcalc_time_valueType.currentText()
                         if utc is not None:
-                            UTC = self.atm.str_to_time(utc)
+                            UTC = self.atm.str_to_time(str(utc))
                             if UTC is not None:
                                 new_time = self.atm.time_diff(
                                         UTC, time_offset=dif,
