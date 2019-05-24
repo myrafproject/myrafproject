@@ -1619,11 +1619,30 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
         self.observatory_add.clicked.connect(lambda: (
                 self.create_observatory()))
         
-#        self.observatory_list.clicked.connect(lambda: (
-#                self.list_clicked(self.remove_observatory)))
+        self.observatory_list.clicked.connect(lambda: (
+                self.fill_observatory()))
         
         self.observatory_remove.clicked.connect(lambda: (
                 self.remove_observatory()))
+        
+        
+    def fill_observatory(self):
+        obs = self.observatory_list.currentItem()
+        if obs is not None:
+            observatory = obs.text()
+            file = "{}/{}".format(self.logger.obs_dir, observatory)
+            
+            properties = self.fop.read_json(file)
+            
+            
+            self.observatory_abbreviation.setText(properties["observatory"])
+            self.observatory_name.setText(properties["name"])
+            self.observatory_longitude.setText(properties["longitude"])
+            self.observatory_latitude.setText(properties["latitude"])
+            self.observatory_altitude.setText(properties["altitude"])
+            self.observatory_timezone.setText(properties["timezone"])
+            self.observatory_commend.setPlainText(properties["commendation"])
+            
         
     def remove_observatory(self):
         if self.observatory_list.currentItem() is not None:

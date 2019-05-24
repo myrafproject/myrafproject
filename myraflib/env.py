@@ -416,7 +416,6 @@ class File():
             with open(file, 'w') as set_file:
                 dump(dic, set_file)
         except Exception as e:
-            print("hata")
             self.logger.log(e)
             
     def read_json(self, file):
