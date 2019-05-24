@@ -243,9 +243,6 @@ class Logger():
         self.log("Checking if the OS is Other")
         return(not (self.is_it_linux() or self.is_it_windows()))
         
-    def beep(self):
-        print("\a")
-        
 class File():
     def __init__(self, verb=False, debugger=False):
         self.verb = verb

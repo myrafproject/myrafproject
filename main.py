@@ -1513,9 +1513,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 settings = self.logger.pho_set
                 aperture = settings['photpar_aperture']
                 
-            print(aperture)
             for it, coord in enumerate(coords):
-                print(coord)
                 x, y = coord.split(" - ")
                 x, y = float(x), float(y)
                 circ = Circle((x, y), aperture, edgecolor="#00FFFF",
@@ -2354,6 +2352,9 @@ class AlignManualWindow(QtWidgets.QWidget, align_manual.Ui_Form):
                     self.parent.image_list.topLevelItem(new_row))
             path = self.parent.image_list.currentItem().text(0)
             self.show_me(path)
+            if new_row == 0:
+                QtWidgets.QMessageBox.information(self, ("MYRaf Information"),
+                                           ("All images in list are done."))
 
     def show_first_file(self):
         files = self.fnk_deve.get_from_tree(self.parent.image_list)
