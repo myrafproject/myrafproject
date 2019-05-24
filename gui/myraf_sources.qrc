@@ -3,4 +3,29 @@
     <file>../media/Albategnius.jpeg</file>
     <file>../media/Albategnius_50p.jpeg</file>
   </qresource>
+  <qresource prefix="help">
+    <file>../media/help/align.png</file>
+    <file>../media/help/combine.png</file>
+    <file>../media/help/diff_window.png</file>
+    <file>../media/help/diff.png</file>
+    <file>../media/help/editor.png</file>
+    <file>../media/help/file_list.png</file>
+    <file>../media/help/file_menu.png</file>
+    <file>../media/help/hcalc.png</file>
+    <file>../media/help/hedit.png</file>
+    <file>../media/help/hextractor.png</file>
+    <file>../media/help/main.png</file>
+    <file>../media/help/malign_finish.png</file>
+    <file>../media/help/malign.png</file>
+    <file>../media/help/median.png</file>
+    <file>../media/help/observatory_editor.png</file>
+    <file>../media/help/phot_choose.png</file>
+    <file>../media/help/phot_rc.png</file>
+    <file>../media/help/rc.png</file>
+    <file>../media/help/set_astrometry.png</file>
+    <file>../media/help/set_calibration.png</file>
+    <file>../media/help/set_cosmicCleaner.png</file>
+    <file>../media/help/set_photometry.png</file>
+    <file>../media/help/settings.png</file>
+  </qresource>
 </RCC>
