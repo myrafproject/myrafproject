@@ -19,6 +19,16 @@
   <property name="windowTitle">
    <string>MYRaf (V3 - Beta) Albatenius</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../media/myraf/64x64.png</normaloff>../media/myraf/64x64.png</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>22</width>
+    <height>22</height>
+   </size>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_6">
     <item row="0" column="0">
@@ -757,6 +767,8 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="myraf_sources.qrc"/>
+ </resources>
  <connections/>
 </ui>

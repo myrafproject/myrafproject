@@ -3,6 +3,13 @@
     <file>../media/Albategnius.jpeg</file>
     <file>../media/Albategnius_50p.jpeg</file>
   </qresource>
+  <qresource prefix="icon">
+    <file>../media/myraf/16x16.png</file>
+    <file>../media/myraf/32x32.png</file>
+    <file>../media/myraf/64x64.png</file>
+    <file>../media/myraf/128x128.png</file>
+    <file>../media/myraf/256x256.png</file>
+  </qresource>
   <qresource prefix="help">
     <file>../media/help/align.png</file>
     <file>../media/help/combine.png</file>

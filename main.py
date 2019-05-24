@@ -2202,7 +2202,7 @@ class ProcWindow(QtWidgets.QWidget, myraf_progress.Ui_Form):
         self.progress_annotation.setProperty("text", "")
         
     def kill_me(self):
-        print(self)
+        pass
         
     def reload_log(self):
         if self.parent.logger_window is not None:

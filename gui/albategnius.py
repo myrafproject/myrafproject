@@ -42,7 +42,7 @@ class Ui_Form(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Image: https://commons.wikimedia.org/wiki/File:Albategnius.jpeg</p></body></html>"))
 
 
-from . import myraf_sources
+#from . import myraf_sources
 
 
 if __name__ == "__main__":

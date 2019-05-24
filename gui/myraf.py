@@ -14,6 +14,9 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1218, 765)
         MainWindow.setMinimumSize(QtCore.QSize(776, 587))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("media/myraf/64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.centralwidget)
@@ -454,6 +457,7 @@ class Ui_MainWindow(object):
         self.actionAlbatenius.setText(_translate("MainWindow", "Al&batenius ..."))
 
 
+#import myraf_sources_rc
 
 
 if __name__ == "__main__":
