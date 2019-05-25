@@ -313,8 +313,8 @@ class Astronomy:
         def solve_field(self, file, out_file):
             try:
                 
-                command = ["solve-field", "--temp-axy", "--no-plots",
-                           "--overwrite", "--dir={}".format(
+                command = ["solve-field", "--temp-axy",
+                           "--no-plots", "--overwrite", "--dir={}".format(
                                    self.logger.tmp_dir),
                            "--new-fits={}".format(out_file)]
                 
