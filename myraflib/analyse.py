@@ -294,33 +294,40 @@ class Astronomy:
             self.fop = env.File(verb=self.verb, debugger=self.debugger)
             self.sma = Statistics.Math(verb=self.verb, debugger=self.debugger)
             
-        def astrometry(self, file, out_file, server="http://nova.astrometry.net/api/", apikey="abhfixfhhxsignyo"):
-            command = ["python3", "myraf_astrometry.py",
-                       "--apikey={}".format(apikey),
-                       "--server={}".format(server),
-                       "--upload={}".format(file),
-                       "--newfits={}".format(out_file)]
-            for output in self.logger.execute(command):
-                self.logger.log(output.strip())
-            
-            
-            
-        def solve_field(self, file, out_file):
-            for output in self.logger.execute(["solve-field", file]):
-                self.logger.log(output.strip())
+        def astrometry(self, file, out_file,
+                       server="http://nova.astrometry.net/api/",
+                       apikey="abhfixfhhxsignyo"):
+            try:
+                command = ["python3", "myraf_astrometry.py",
+                           "--apikey={}".format(apikey),
+                           "--server={}".format(server),
+                           "--upload={}".format(file),
+                           "--newfits={}".format(out_file)]
                 
-            pat, fname, ext = self.fop.split_file_name(file)
-            
-            files_to_delete = self.fop.list_in_path("{}/{}*".format(
-                    pat, fname))
-            
-            for file in files_to_delete:
-                if not (file.endswith("fit") or file.endswith("new")):
-                    if self.fop.is_file(file):
-                        self.fop.rm(file)
-            new_file = "{}/{}.new".format(pat, fname)
-            if  self.fop.is_file(new_file):
-                self.fop.mv(new_file, out_file)
+                for output in self.logger.execute(command):
+                    self.logger.log(output.strip())
+                    
+            except Exception as e:
+                self.logger.log(e)
+                
+        def solve_field(self, file, out_file):
+            try:
+                
+                command = ["solve-field", "--temp-axy", "--no-plots",
+                           "--overwrite", "--dir={}".format(
+                                   self.logger.tmp_dir),
+                           "--new-fits={}".format(out_file)]
+                
+                if self.debugger:
+                    command.append("-v")
+                    
+                command.append(file)
+                
+                for output in self.logger.execute(command):
+                    self.logger.log(output.strip())
+                
+            except Exception as e:
+                self.loggrt.log(e)
                 
         def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0,
                            sigma_clip=5, sigma_fraction=0.3, object_limit=5,
