@@ -156,8 +156,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.actionAlbatenius.triggered.connect(lambda: (
                 self.open_window("albategnius")))
         
-        
-        
         self.actionGinga_2.triggered.connect(lambda: (
                 self.open_window("ginga")))
         self.actionLog_Viewer.triggered.connect(lambda: (
@@ -166,7 +164,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("licence")))
         self.actionCredits.triggered.connect(lambda: (
                 self.open_window("credits")))
-        self.actionPhotometry.triggered.connect(lambda: (
+        self.actionAperture.triggered.connect(lambda: (
                 self.open_window("photometry")))
         self.actionObservatory.triggered.connect(lambda: (
                 self.open_window("observatory")))

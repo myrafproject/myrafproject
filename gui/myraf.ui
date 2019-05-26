@@ -115,10 +115,17 @@
      <addaction name="actionAutoAlign"/>
      <addaction name="actionManualAlign"/>
     </widget>
+    <widget class="QMenu" name="menu_Photometry">
+     <property name="title">
+      <string>&amp;Photometry</string>
+     </property>
+     <addaction name="actionAperture"/>
+     <addaction name="actionPSF"/>
+    </widget>
     <addaction name="menuCombine"/>
     <addaction name="actionCalibration"/>
     <addaction name="menuAlign"/>
-    <addaction name="actionPhotometry"/>
+    <addaction name="menu_Photometry"/>
     <addaction name="actionA_Track"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -434,11 +441,6 @@
   <action name="actionCalibration">
    <property name="text">
     <string>Ca&amp;libration</string>
-   </property>
-  </action>
-  <action name="actionPhotometry">
-   <property name="text">
-    <string>&amp;Photometry ...</string>
    </property>
   </action>
   <action name="actionA_Track">
@@ -764,6 +766,16 @@
   <action name="actionAlbatenius">
    <property name="text">
     <string>Al&amp;batenius ...</string>
+   </property>
+  </action>
+  <action name="actionAperture">
+   <property name="text">
+    <string>Aperture...</string>
+   </property>
+  </action>
+  <action name="actionPSF">
+   <property name="text">
+    <string>PSF</string>
    </property>
   </action>
  </widget>
