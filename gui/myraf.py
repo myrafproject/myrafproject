@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(1218, 765)
         MainWindow.setMinimumSize(QtCore.QSize(776, 587))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../media/myraf/64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("./media/myraf/64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setIconSize(QtCore.QSize(22, 22))
         self.centralwidget = QtWidgets.QWidget(MainWindow)

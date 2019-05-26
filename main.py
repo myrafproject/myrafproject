@@ -1880,121 +1880,128 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                 dec_head_as = self.hcalc_airmass_dec.currentText().split("->")[0]
                 obs_head_as = self.hcalc_airmass_observatory.currentText().split("->")[0]
                 
-                for it, file in enumerate(files):
-                    if do_jd:
-                        utc = self.fts.header(file, field=utc_head_jd)
-                        if utc is not None:
-                            jd = self.atm.jd(utc)
-                            if jd is not None:
-                                self.fts.update_header(file,
-                                                       "{}_jd".format(prefx),
-                                                       jd)
-                            else:
-                                self.logger.log(
-                                        "Cannot calculate JD for ({})".format(
-                                                utc))
-                    if do_airmass:
-                        utc = self.fts.header(file, field=utc_head_as)
-                        ra = self.fts.header(file, field=ra_head_as)
-                        dec = self.fts.header(file, field=dec_head_as)
-                        
-                        observat = self.fop.read_json("{}/{}".format(
-                                self.logger.obs_dir, obs_head_as))
-                        
-                        if not (utc is None or ra is None or dec is None):
-                            lat = observat['latitude']
-                            lon = observat['longitude']
-                            alt = observat['altitude']
-                            
-                            utc = self.atm.str_to_time(utc)
-                            
-                            if ":" in lat:
-                                lat = self.coo.convert_sex_to_deg(lat)
-                                
-                            if ":" in lon:
-                                lon = self.coo.convert_sex_to_deg(lon)
-                                
-                            if ":" in ra:
-                                ra = self.coo.convert_sex_to_deg(ra)
-                                
-                            if ":" in dec:
-                                dec = self.coo.convert_sex_to_deg(dec)
-                                
-                            alt = float(alt)
-                            lat = float(lat)
-                            lon = float(lon)
-                            ra = float(ra)
-                            dec = float(dec)
-                                
-                            site = self.coo.create_site(lat, lon, alt)
-                            obj = self.coo.create_object(ra, dec)
-                            
-                            alt_az = self.coo.radec_to_alt_az(site, obj, utc)
-                            self.fts.update_header(file,
-                                                   "{}_amass".format(prefx),
-                                                   float(alt_az.secz))
-                        else:
-                            self.logger.log("Bad time, ra or dec header")
-
-                    if do_imexamine:
-                        mean = self.hcalc_imexamine_mean.isChecked()
-                        median = self.hcalc_imexamine_median.isChecked()
-                        stdv = self.hcalc_imexamine_stdv.isChecked()
-                        the_min = self.hcalc_imexamine_min.isChecked()
-                        the_max = self.hcalc_imexamine_max.isChecked()
-                        
-                        if mean or median or stdv or the_min or the_max:
-                            try:
-                                stats = self.fts.stats(file)
-                                
-                                add_to_header = []
-                                if mean:
-                                    add_to_header.append([
-                                            "{}_mean".format(prefx),
-                                            stats["Mean"]])
-                                if median:
-                                    add_to_header.append([
-                                            "{}_medi".format(prefx),
-                                            stats["Median"]])
-                                if stdv:
-                                    add_to_header.append([
-                                            "{}_stdv".format(prefx),
-                                            stats["Stdev"]])
-                                if the_min:
-                                    add_to_header.append([
-                                            "{}_min".format(prefx),
-                                            stats["Min"]])
-                                if the_max:
-                                    add_to_header.append([
-                                            "{}_max".format(prefx),
-                                            stats["Max"]])
-                                    
-                                self.fts.mupdate_header(file, add_to_header)
-                            except Exception as e:
-                                self.logger.log(e)
-                        else:
-                            self.logger.log("Nothing to do")
-                            
-                    if do_time:
-                        utc = self.fts.header(file, field=utc_head_tc)
-                        dif = self.hcalc_time_value.value()
-                        dif_type = self.hcalc_time_valueType.currentText()
-                        if utc is not None:
-                            UTC = self.atm.str_to_time(str(utc))
-                            if UTC is not None:
-                                new_time = self.atm.time_diff(
-                                        UTC, time_offset=dif,
-                                        offset_type=dif_type)
-                                
-                                if new_time is not None:
+                try:
+                    for it, file in enumerate(files):
+                        if do_jd:
+                            utc = self.fts.header(file, field=utc_head_jd)
+                            if utc is not None:
+                                jd = self.atm.jd(utc)
+                                if jd is not None:
                                     self.fts.update_header(
-                                            file, "{}_ntime".format(prefx),
-                                            str(new_time))
+                                            file, "{}_jd".format(prefx), jd)
                                 else:
-                                    self.logger.log("Cannot calculate time_diff for ({})".format(utc))
+                                    self.logger.log(
+                                            "Cannot calculate JD for ({})".format(
+                                                    utc))
+                        if do_airmass:
+                            utc = self.fts.header(file, field=utc_head_as)
+                            ra = self.fts.header(file, field=ra_head_as)
+                            dec = self.fts.header(file, field=dec_head_as)
+                            
+                            observat = self.fop.read_json("{}/{}".format(
+                                    self.logger.obs_dir, obs_head_as))
+                            
+                            if not (utc is None or ra is None or dec is None):
+                                lat = observat['latitude']
+                                lon = observat['longitude']
+                                alt = observat['altitude']
+                                
+                                utc = self.atm.str_to_time(utc)
+                                
+                                if ":" in lat:
+                                    lat = self.coo.convert_sex_to_deg(lat)
+                                    
+                                if ":" in lon:
+                                    lon = self.coo.convert_sex_to_deg(lon)
+                                    
+                                if ":" in ra:
+                                    ra = self.coo.convert_sex_to_deg(ra)
+                                    
+                                if ":" in dec:
+                                    dec = self.coo.convert_sex_to_deg(dec)
+                                    
+                                alt = float(alt)
+                                lat = float(lat)
+                                lon = float(lon)
+                                ra = float(ra)
+                                dec = float(dec)
+                                    
+                                site = self.coo.create_site(lat, lon, alt)
+                                obj = self.coo.create_object(ra, dec)
+                                
+                                alt_az = self.coo.radec_to_alt_az(site,
+                                                                  obj, utc)
+                                self.fts.update_header(file,
+                                                       "{}_amass".format(
+                                                               prefx),
+                                                       float(alt_az.secz))
+                            else:
+                                self.logger.log("Bad time, ra or dec header")
+    
+                        if do_imexamine:
+                            mean = self.hcalc_imexamine_mean.isChecked()
+                            median = self.hcalc_imexamine_median.isChecked()
+                            stdv = self.hcalc_imexamine_stdv.isChecked()
+                            the_min = self.hcalc_imexamine_min.isChecked()
+                            the_max = self.hcalc_imexamine_max.isChecked()
+                            
+                            if mean or median or stdv or the_min or the_max:
+                                try:
+                                    stats = self.fts.stats(file)
+                                    
+                                    add_to_header = []
+                                    if mean:
+                                        add_to_header.append([
+                                                "{}_mean".format(prefx),
+                                                stats["Mean"]])
+                                    if median:
+                                        add_to_header.append([
+                                                "{}_medi".format(prefx),
+                                                stats["Median"]])
+                                    if stdv:
+                                        add_to_header.append([
+                                                "{}_stdv".format(prefx),
+                                                stats["Stdev"]])
+                                    if the_min:
+                                        add_to_header.append([
+                                                "{}_min".format(prefx),
+                                                stats["Min"]])
+                                    if the_max:
+                                        add_to_header.append([
+                                                "{}_max".format(prefx),
+                                                stats["Max"]])
+                                        
+                                    self.fts.mupdate_header(file,
+                                                            add_to_header)
+                                except Exception as e:
+                                    self.logger.log(e)
+                            else:
+                                self.logger.log("Nothing to do")
+                                
+                        if do_time:
+                            utc = self.fts.header(file, field=utc_head_tc)
+                            dif = self.hcalc_time_value.value()
+                            dif_type = self.hcalc_time_valueType.currentText()
+                            if utc is not None:
+                                UTC = self.atm.str_to_time(str(utc))
+                                if UTC is not None:
+                                    new_time = self.atm.time_diff(
+                                            UTC, time_offset=dif,
+                                            offset_type=dif_type)
+                                    
+                                    if new_time is not None:
+                                        self.fts.update_header(
+                                                file, "{}_ntime".format(prefx),
+                                                str(new_time))
+                                    else:
+                                        self.logger.log(
+                                                "Cannot calculate time_diff for ({})".format(utc))
+                        
+                        proc = 100 * (it + 1) / (len(files))
+                        self.hcalc_progress.setProperty("value", proc)
                     
-                    proc = 100 * (it + 1) / (len(files))
-                    self.hcalc_progress.setProperty("value", proc)
+                except Exception as e:
+                    self.logger.log(e)
             else:
                 self.logger.log("Nothing to do")
                 QtWidgets.QMessageBox.critical(
