@@ -40,6 +40,10 @@ except Exception as e:
 try:
     from astropy.io import fits as fts
     from astropy.time import Time as tm
+    from astropy.coordinates import EarthLocation    
+    import astropy.units as U
+    from astropy.coordinates import SkyCoord
+    from astropy.coordinates import AltAz
 except Exception as e:
     print("{}: Can't import astropy.".format(e))
     exit(0)
@@ -580,6 +584,46 @@ class Astronomy:
         def __init__(self, verb=False, debugger=False):
             self.verb = verb
             self.debugger = debugger
+            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+            
+        def create_site(self, lati, long, alti):
+            try:
+                site = EarthLocation(lat=float(lati)*U.deg,
+                                     lon=float(long)*U.deg,
+                                     height=float(alti)*U.m)
+                return(site)
+            except Exception as e:
+                self.logger.log(e)
+                
+        def create_object(self, ra, dec):
+            try:
+                return(SkyCoord(ra=ra*U.hour, dec=dec*U.deg))
+            except Exception as e:
+                self.logger.log(e)
+                
+        def radec_to_alt_az(self, site, obj, utc):
+            try:
+                frame_of_sire = AltAz(obstime=utc, location=site)
+                object_alt_az = obj.transform_to(frame_of_sire)
+                return(object_alt_az)
+            except Exception as e:
+                self.logger.log(e)
+                
+        def airmass(self, object_altaz):
+            try:
+                return(object_altaz.secz)
+            except Exception as e:
+                self.logger.log(e)
+                
+        def convert_sex_to_deg(self, angle):
+            try:
+                an = angle.split(":")
+                if angle.startswith("-"):
+                    return(float(an[0]) - float(an[1])/60 - float(an[2])/3600)
+                else:
+                    return(float(an[0]) + float(an[1])/60 + float(an[2])/3600)
+            except Exception as e:
+                self.logger.log(e)
             
         def phtsical_distence(self, coord1, coord2):
             try:

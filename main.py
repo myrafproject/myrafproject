@@ -1701,15 +1701,8 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
     def reload_observatories(self):
         
         observatories = self.fop.list_of_observatories()
-        if observatories is not None:
-            
-            observats = []
-            
-            for observat in observatories:
-                pn, fn = self.fop.get_base_name(observat)
-                observats.append(fn)
-            
-            self.fnk_deve.replace_list_con(self.observatory_list, observats)
+        if observatories is not None:            
+            self.fnk_deve.replace_list_con(self.observatory_list, observatories)
         else:
             self.logger.log("No observatory found")
         
@@ -1844,6 +1837,9 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                                           debugger=self.debugger)
         self.atm = analyse.Astronomy.Time(verb=self.verb,
                                           debugger=self.debugger)
+        self.coo = analyse.Astronomy.Coordinates(verb=self.verb,
+                                                 debugger=self.debugger)
+        self.fop = env.File(verb=self.verb, debugger=self.debugger)
         
         self.hcalc_progress.setProperty("value", 0)
         
@@ -1878,7 +1874,14 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
             prefx = self.hcalc_prefix.text()
             if do_jd or do_airmass or do_imexamine or do_time:
                 utc_head_jd = self.hcalc_jd_time.currentText().split("->")[0]
+                
                 utc_head_tc = self.hcalc_time_time.currentText().split("->")[0]
+                
+                utc_head_as = self.hcalc_airmass_time.currentText().split("->")[0]
+                ra_head_as = self.hcalc_airmass_ra.currentText().split("->")[0]
+                dec_head_as = self.hcalc_airmass_dec.currentText().split("->")[0]
+                obs_head_as = self.hcalc_airmass_observatory.currentText().split("->")[0]
+                
                 for it, file in enumerate(files):
                     if do_jd:
                         utc = self.fts.header(file, field=utc_head_jd)
@@ -1893,8 +1896,48 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                                         "Cannot calculate JD for ({})".format(
                                                 utc))
                     if do_airmass:
-                        pass
-                    
+                        utc = self.fts.header(file, field=utc_head_as)
+                        ra = self.fts.header(file, field=ra_head_as)
+                        dec = self.fts.header(file, field=dec_head_as)
+                        
+                        observat = self.fop.read_json("{}/{}".format(
+                                self.logger.obs_dir, obs_head_as))
+                        
+                        if not (utc is None or ra is None or dec is None):
+                            lat = observat['latitude']
+                            lon = observat['longitude']
+                            alt = observat['altitude']
+                            
+                            utc = self.atm.str_to_time(utc)
+                            
+                            if ":" in lat:
+                                lat = self.coo.convert_sex_to_deg(lat)
+                                
+                            if ":" in lon:
+                                lon = self.coo.convert_sex_to_deg(lon)
+                                
+                            if ":" in ra:
+                                ra = self.coo.convert_sex_to_deg(ra)
+                                
+                            if ":" in dec:
+                                dec = self.coo.convert_sex_to_deg(dec)
+                                
+                            alt = float(alt)
+                            lat = float(lat)
+                            lon = float(lon)
+                            ra = float(ra)
+                            dec = float(dec)
+                                
+                            site = self.coo.create_site(lat, lon, alt)
+                            obj = self.coo.create_object(ra, dec)
+                            
+                            alt_az = self.coo.radec_to_alt_az(site, obj, utc)
+                            self.fts.update_header(file,
+                                                   "{}_amass".format(prefx),
+                                                   float(alt_az.secz))
+                        else:
+                            self.logger.log("Bad time, ra or dec header")
+
                     if do_imexamine:
                         mean = self.hcalc_imexamine_mean.isChecked()
                         median = self.hcalc_imexamine_median.isChecked()
@@ -1965,12 +2008,15 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                         self, ("MYRaf Error"), ("Please add file(s)"))
         
     def fill_header_list(self, header_list):
+        
+        observatories = self.fop.list_of_observatories()
+        
         self.fnk_deve.c_replace_list_con(self.hcalc_jd_time, header_list)
         self.fnk_deve.c_replace_list_con(self.hcalc_airmass_time, header_list)
         self.fnk_deve.c_replace_list_con(self.hcalc_airmass_ra, header_list)
         self.fnk_deve.c_replace_list_con(self.hcalc_airmass_dec, header_list)
         self.fnk_deve.c_replace_list_con(self.hcalc_airmass_observatory,
-                                         header_list)
+                                         observatories)
         self.fnk_deve.c_replace_list_con(self.hcalc_time_time, header_list)
         
         self.reload_log()

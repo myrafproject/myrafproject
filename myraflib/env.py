@@ -253,7 +253,11 @@ class File():
         try:
             if self.is_dir(self.logger.obs_dir):
                 observatories = self.list_of_fiels(self.logger.obs_dir, "*")
-                return(observatories)
+                ret = []
+                for obs in observatories:
+                    pn, fn = self.get_base_name(obs)
+                    ret.append(fn)
+                return(ret)
             else:
                 self.mkdir(self.logger.obs_dir)
         except Exception as e:
