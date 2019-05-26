@@ -157,7 +157,7 @@ class Ui_Form(object):
 
 
 #import myraf_sources_rc
-
+from gui import myraf_sources
 
 if __name__ == "__main__":
     import sys

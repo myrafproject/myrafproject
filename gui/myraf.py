@@ -467,6 +467,7 @@ class Ui_MainWindow(object):
 
 
 #import myraf_sources_rc
+from gui import myraf_sources
 
 
 if __name__ == "__main__":

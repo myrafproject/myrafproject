@@ -1700,7 +1700,8 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
         
         observatories = self.fop.list_of_observatories()
         if observatories is not None:            
-            self.fnk_deve.replace_list_con(self.observatory_list, observatories)
+            self.fnk_deve.replace_list_con(self.observatory_list,
+                                           observatories)
         else:
             self.logger.log("No observatory found")
         
@@ -1875,10 +1876,13 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                 
                 utc_head_tc = self.hcalc_time_time.currentText().split("->")[0]
                 
-                utc_head_as = self.hcalc_airmass_time.currentText().split("->")[0]
+                utc_head_as = self.hcalc_airmass_time.currentText(
+                        ).split("->")[0]
                 ra_head_as = self.hcalc_airmass_ra.currentText().split("->")[0]
-                dec_head_as = self.hcalc_airmass_dec.currentText().split("->")[0]
-                obs_head_as = self.hcalc_airmass_observatory.currentText().split("->")[0]
+                dec_head_as = self.hcalc_airmass_dec.currentText(
+                        ).split("->")[0]
+                obs_head_as = self.hcalc_airmass_observatory.currentText(
+                        ).split("->")[0]
                 
                 try:
                     for it, file in enumerate(files):
