@@ -1526,8 +1526,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 for it, coord in enumerate(coords):
                     x, y = coord.split(" - ")
                     x, y = int(float(x)), int(float(y))
-                    circ = Circle((mean_apert, mean_apert), mean_apert, edgecolor="#00FFFF",
-                                  facecolor="#00FFFF")
+                    circ = Circle((mean_apert, mean_apert), mean_apert, edgecolor="#00FF00", facecolor="none")      
                     self.artist.append(self.photometry_display.canvas.fig.gca(
                             ).add_artist(circ))
                     circ.center = x, y
@@ -1603,6 +1602,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
         self.logger.log("Photometry: Display Data")
         self.display_photometry.load(image)
         self.image = image
+        self.artist = []
         self.reload_log()
             
     def closeEvent(self, event):
