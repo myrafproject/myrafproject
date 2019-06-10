@@ -40,7 +40,7 @@ except Exception as e:
 try:
     from astropy.io import fits as fts
     from astropy.time import Time as tm
-    from astropy.coordinates import EarthLocation    
+    from astropy.coordinates import EarthLocation
     import astropy.units as U
     from astropy.coordinates import SkyCoord
     from astropy.coordinates import AltAz
@@ -675,3 +675,7 @@ class Statistics:
                 return(rot90(array, number))
             else:
                 return(array)
+                
+        def mean(self, array):
+            numpy_array = ar(array)
+            return(nmea(numpy_array))

@@ -1511,19 +1511,33 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 settings = self.logger.pho_set
                 aperture = settings['photpar_aperture']
                 
-            for it, coord in enumerate(coords):
-                x, y = coord.split(" - ")
-                x, y = float(x), float(y)
-                circ = Circle((x, y), aperture, edgecolor="#00FFFF",
-                              facecolor="none")
-                self.artist.append(self.photometry_display.canvas.fig.gca(
-                        ).add_artist(circ))
-                circ.center = x, y
-                self.artist.append(self.photometry_display.canvas.fig.gca(
-                        ).annotate("s{}".format(str(it)), xy = (x, y),
-                                  color = "#00FFFF", fontsize = 10))
-
-            self.photometry_display.canvas.draw()
+            it = 0
+            sum_aper = 0
+            for aper in aperture.split(","):
+                try:
+                    float_aper = float(aper)
+                    sum_aper += float_aper
+                    it += 1
+                except:
+                    pass
+                
+            mean_apert = int(sum_aper / it)
+            try:
+                for it, coord in enumerate(coords):
+                    x, y = coord.split(" - ")
+                    x, y = int(float(x)), int(float(y))
+                    circ = Circle((mean_apert, mean_apert), mean_apert, edgecolor="#00FFFF",
+                                  facecolor="#00FFFF")
+                    self.artist.append(self.photometry_display.canvas.fig.gca(
+                            ).add_artist(circ))
+                    circ.center = x, y
+                    self.artist.append(self.photometry_display.canvas.fig.gca(
+                            ).annotate("s{}".format(str(it)), xy = (x, y),
+                                      color = "#00FFFF", fontsize = 10))
+                    
+                self.photometry_display.canvas.draw()
+            except Exception as e:
+                self.logger.log(e)
 
         else:
             self.logger.log("No coordinates to plot")
