@@ -42,6 +42,7 @@ try:
     from gui import help_help_ginga
     from gui import help_help_alipy
     from gui import help_help_ccleaner
+    from gui import help_myraf
     from gui import help_help_astrometrynet
     from gui import combine_subtraction
     from gui import setting_calibration
@@ -85,6 +86,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.verb = verb
         self.debugger = debugger
         self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+
+        self.logger.log("Creating objects")
+        self.fts = analyse.Astronomy.Fits(verb=self.verb,
+                                          debugger=self.debugger)
+        self.ira = analyse.Astronomy.Iraf(verb=self.verb,
+                                          debugger=self.debugger)
+        self.fop = env.File(verb=self.verb, debugger=self.debugger)
+        self.fnk_file = func.Files(self, self.logger)
+        self.fnk_deve = func.Devices(self, self.logger)
         
         self.logger.log("Starting MYRaf")
         self.photometry_window = None
@@ -112,15 +122,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.alignmanual_window = None
         self.sastrometry_window = None
         self.albategnius_window = None
-        
-        self.logger.log("Creating objects")
-        self.fts = analyse.Astronomy.Fits(verb=self.verb,
-                                          debugger=self.debugger)
-        self.ira = analyse.Astronomy.Iraf(verb=self.verb,
-                                          debugger=self.debugger)
-        self.fop = env.File(verb=self.verb, debugger=self.debugger)
-        self.fnk_file = func.Files(self, self.logger)
-        self.fnk_deve = func.Devices(self, self.logger)
+        self.myraf_help = None
+
+        log_size = self.fop.get_size(self.logger.log_file)
+
+        if log_size is not None:
+            if log_size > 5000:
+                if self.fnk_deve.ask("Log files are getting big. Do you want to empty them?"):
+                    self.fop.rm(self.logger.log_file)
+                    self.fop.rm(self.logger.mini_log_file)
         
         self.logger.log("Cleaninng TEMP Directory")
         self.fop.temp_cleaner()
@@ -180,6 +190,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("sphotometry")))
         self.actionCosmic_Cleaner.triggered.connect(lambda: (
                 self.open_window("sccleaner")))
+
+        self.actionMain.triggered.connect(lambda: (
+                self.open_window("myraf")))
         
         self.actionWCS_2.triggered.connect(lambda: (
                 self.open_window("swcs")))
@@ -205,7 +218,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         
         self.actionA_Track.triggered.connect(lambda: (
                 QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
-                                               ("Not ready yet"))))        
+                                               ("Not ready yet!"))))        
         
         
         self.actionClose_All_Windows.triggered.connect(lambda: (
@@ -902,6 +915,13 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                         self, verb=self.verb, debugger=self.debugger)
                 self.play_ground.addSubWindow(self.licence_window)
                 self.licence_window.show()
+
+        elif window_name == "myraf":
+            if self.myraf_help is None:
+                self.myraf_help = MyrafhelpWindow(
+                        self, verb=self.verb, debugger=self.debugger)
+                self.play_ground.addSubWindow(self.myraf_help)
+                self.myraf_help.show()
                 
         elif window_name == "proc":
             if self.proc_window is None:
@@ -1521,12 +1541,13 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 except:
                     pass
                 
-            mean_apert = int(sum_aper / it)
+            mean_apert = sum_aper / it
             try:
                 for it, coord in enumerate(coords):
                     x, y = coord.split(" - ")
-                    x, y = int(float(x)), int(float(y))
-                    circ = Circle((mean_apert, mean_apert), mean_apert, edgecolor="#00FF00", facecolor="none")      
+                    x, y = float(x), float(y)
+                    circ = Circle((mean_apert, mean_apert), mean_apert, 
+                                  edgecolor="#00FF00", facecolor="none")      
                     self.artist.append(self.photometry_display.canvas.fig.gca(
                             ).add_artist(circ))
                     circ.center = x, y
@@ -2198,9 +2219,9 @@ class LoggerWindow(QtWidgets.QWidget, help_logger.Ui_Form):
             for line in tmp_file:
                 write_arr.append(line.replace("\n", ""))
             
-        self.fnk_deve.replace_list_con(self.help_logger_list, write_arr)
-        self.help_logger_list.scrollToBottom()
-        self.file_size()
+            self.fnk_deve.replace_list_con(self.help_logger_list, write_arr)
+            self.help_logger_list.scrollToBottom()
+            self.file_size()
         
     def clear_log(self):
         self.logger.dump_log()
@@ -2918,6 +2939,19 @@ class AlbategniusWindow(QtWidgets.QWidget, albategnius.Ui_Form):
     def __init__(self, parent, verb=False, debugger=False):
         self.parent = parent
         super(AlbategniusWindow, self).__init__(self.parent)
+        self.setupUi(self)
+        
+    def reload_log(self):
+        if self.parent.logger_window is not None:
+            self.parent.logger_window.load()
+            
+    def closeEvent(self, event):
+        self.parent.albategnius_window = None
+
+class MyrafhelpWindow(QtWidgets.QWidget, help_myraf.Ui_Form):
+    def __init__(self, parent, verb=False, debugger=False):
+        self.parent = parent
+        super(MyrafhelpWindow, self).__init__(self.parent)
         self.setupUi(self)
         
     def reload_log(self):

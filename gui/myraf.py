@@ -466,9 +466,6 @@ class Ui_MainWindow(object):
         self.actionPSF.setText(_translate("MainWindow", "PSF"))
 
 
-#import myraf_sources_rc
-from gui import myraf_sources
-
 
 if __name__ == "__main__":
     import sys

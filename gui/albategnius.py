@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'albategnius.ui'
+# Form implementation generated from reading ui file 'gui/albategnius.ui'
 #
 # Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -15,7 +16,6 @@ class Ui_Form(object):
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.textBrowser_3 = QtWidgets.QTextBrowser(Form)
-        self.textBrowser_3.setMinimumSize(QtCore.QSize(500, 373))
         self.textBrowser_3.setObjectName("textBrowser_3")
         self.gridLayout.addWidget(self.textBrowser_3, 0, 0, 1, 1)
 
@@ -35,14 +35,9 @@ class Ui_Form(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Abū ʿAbd Allāh Muḥammad ibn Jābir ibn Sinān al-Raqqī al-Ḥarrānī aṣ-Ṣābiʾ al-Battānī (Arabic: محمد بن جابر بن سنان البتاني‎) (Latinized as Albategnius, Albategni or Albatenius) (c. 858 – 929) was an Arab astronomer, astrologer, and mathematician. He introduced a number of trigonometric relations, and his Kitāb az-Zīj was frequently quoted by many medieval astronomers, including Copernicus.</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Al-Battani is sometimes referred to as the &quot;Ptolemy of the Arabs&quot;, and is widely considered the greatest and best known astronomer of the medieval Islamic world.</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/Albatenius/media/Albategnius_50p.jpeg\" /></p>\n"
+"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Source: https://en.wikipedia.org/wiki/Al-Battani</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Image: https://commons.wikimedia.org/wiki/File:Albategnius.jpeg</p></body></html>"))
-
-
-from gui import myraf_sources
 
 
 if __name__ == "__main__":
