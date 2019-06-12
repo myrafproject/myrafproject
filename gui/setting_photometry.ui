@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>486</width>
-    <height>606</height>
+    <height>502</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Phometry Settings</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_8">
+  <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <widget class="QGroupBox" name="setting_phot_std">
      <property name="title">
@@ -79,124 +79,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QGroupBox" name="groupBox_20">
-     <property name="title">
-      <string>WCS</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_65">
-        <property name="text">
-         <string>Right ascension</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="setting_phot_wcs_ra">
-        <property name="text">
-         <string>ra</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_66">
-        <property name="text">
-         <string>Declination</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="setting_phot_wcs_dec">
-        <property name="text">
-         <string>dec</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox_13">
-     <property name="title">
-      <string>DataPars</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_38">
-        <property name="text">
-         <string>Exposur</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="setting_phot_datapar_exposure">
-        <property name="text">
-         <string>exptime</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_39">
-        <property name="text">
-         <string>Filter</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="setting_phot_datapar_filter">
-        <property name="text">
-         <string>subset</string>
-        </property>
-        <property name="maxLength">
-         <number>8</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="1" colspan="2">
-    <widget class="QGroupBox" name="groupBox_17">
-     <property name="title">
-      <string>Location and Time</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_47">
-        <property name="text">
-         <string>Observatory</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="setting_phot_tlc_observatory">
-        <property name="text">
-         <string>observat</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_48">
-        <property name="toolTip">
-         <string>If not give DATE-OBS</string>
-        </property>
-        <property name="text">
-         <string>TIME-OBS</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="setting_phot_tlc_time">
-        <property name="text">
-         <string>JD</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="0">
+   <item row="0" column="1" rowspan="2" colspan="2">
     <widget class="QGroupBox" name="groupBox_15">
      <property name="title">
       <string>PhotPars</string>
@@ -250,10 +133,65 @@
      </layout>
     </widget>
    </item>
+   <item row="1" column="0" rowspan="2">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>PSF</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Size Factor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="setting_psf_sizeFactor">
+        <property name="decimals">
+         <number>1</number>
+        </property>
+        <property name="minimum">
+         <double>3.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>50.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>10.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>MaxIter</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="setting_psf_maxiter">
+        <property name="minimum">
+         <number>3</number>
+        </property>
+        <property name="maximum">
+         <number>15</number>
+        </property>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="2" column="1" colspan="2">
     <widget class="QGroupBox" name="setting_">
      <property name="title">
-      <string>Star finder</string>
+      <string>Star Finder</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="0">
@@ -275,19 +213,6 @@
          <number>500</number>
         </property>
        </widget>
-      </item>
-      <item row="1" column="0">
-       <spacer name="verticalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>43</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>

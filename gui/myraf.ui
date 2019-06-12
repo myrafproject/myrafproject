@@ -770,12 +770,12 @@
   </action>
   <action name="actionAperture">
    <property name="text">
-    <string>Aperture...</string>
+    <string>&amp;Aperture...</string>
    </property>
   </action>
   <action name="actionPSF">
    <property name="text">
-    <string>PSF</string>
+    <string>&amp;PSF...</string>
    </property>
   </action>
  </widget>

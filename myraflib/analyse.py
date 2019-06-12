@@ -41,11 +41,20 @@ try:
     from astropy.io import fits as fts
     from astropy.time import Time as tm
     from astropy.coordinates import EarthLocation
-    import astropy.units as U
     from astropy.coordinates import SkyCoord
     from astropy.coordinates import AltAz
+    import astropy.units as U
+    from astropy.table import Table
+    from astropy.nddata import NDData
 except Exception as e:
     print("{}: Can't import astropy.".format(e))
+    exit(0)
+    
+try:
+    from photutils import EPSFBuilder
+    from photutils.psf import extract_stars
+except Exception as e:
+    print("{}: Can't import photutils.".format(e))
     exit(0)
 
 try:
@@ -579,6 +588,23 @@ class Astronomy:
                 return(ret)
             except Exception as e:
                 self.logger.log(e)
+                
+        def psf(self, image):
+            data = self.data(image)
+            bkg = Background(data)
+            pure_data = data - bkg
+            nddata = NDData(data=pure_data)
+            sources = self.star_finder(image)
+            stars_tbl = Table()
+            size = nmea(sources[:, 2])
+            for source in sources:
+                stars_tbl['x'] = source[0]
+                stars_tbl['y'] = source[1]
+                
+            stars = extract_stars(nddata, stars_tbl, size=size*10)
+            epsf_builder = EPSFBuilder(oversampling=4, maxiters=3, progress_bar=self.verb)
+            epsf, fitted_stars = epsf_builder(stars)
+            print(epsf)
         
     class Coordinates:
         def __init__(self, verb=False, debugger=False):

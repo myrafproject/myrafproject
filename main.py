@@ -52,6 +52,7 @@ try:
     from gui import myraf_progress
     from gui import func
     from gui import align_manual
+    from gui import psf
 except Exception as e:
     print("{}: Can't import GUIs. MYRaf is not installed properly.".format(e))
     exit(0)
@@ -123,6 +124,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.sastrometry_window = None
         self.albategnius_window = None
         self.myraf_help = None
+        self.psf_window = None
 
         log_size = self.fop.get_size(self.logger.log_file)
 
@@ -176,6 +178,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("credits")))
         self.actionAperture.triggered.connect(lambda: (
                 self.open_window("photometry")))
+        
+        self.actionPSF.triggered.connect(lambda: (
+                self.open_window("psf")))
+        
         self.actionObservatory.triggered.connect(lambda: (
                 self.open_window("observatory")))
         self.actionHedit.triggered.connect(lambda: (
@@ -261,6 +267,22 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.dark_list.installEventFilter(self)
         self.flat_list.installEventFilter(self)
         self.play_ground.installEventFilter(self)
+        
+#    def do_psf(self):
+#        files = self.fnk_deve.get_from_tree(self.image_list)
+#        if len(files) > 0:
+#            image = self.fnk_deve.get_from_tree(self.image_list)
+#            if not image == []:
+#                file = image[0]
+#                self.fts.psf(file)
+#            else:
+#                self.logger.log("Please select an image")
+#                QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
+#                                               ("No image was selected"))
+#        else:
+#            self.logger.log("No file was given")
+#            QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
+#                                           ("No file was given"))
         
     def get_ast_set(self):
         settings = self.fop.read_set("ast")
@@ -678,6 +700,11 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     if device == self.image_list:
                         self.photometry_window.show_me(path)
                         
+                if self.psf_window is not None:
+                    self.logger.log("Photometry Window is Open")
+                    if device == self.image_list:
+                        self.psf_window.show_me(path)
+                        
                 if not self.display_window == []:
                     self.logger.log("Display Window is Open")
                     if not self.display_window == []:
@@ -733,7 +760,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("image")))
             menu.addAction('Remove', lambda: (self.rm_data("image")))
             menu.addSeparator()
-            menu.addAction('Animate', lambda: (self.animate(self.image_list)))
+            menu.addAction('Animate...', lambda: (self.animate(self.image_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.image_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -790,7 +817,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("bias")))
             menu.addAction('Remove', lambda: (self.rm_data("bias")))
             menu.addSeparator()
-            menu.addAction('Animate', lambda: (self.animate(self.bias_list)))
+            menu.addAction('Animate...', lambda: (self.animate(self.bias_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.bias_list, False)))
             menu.addAction('Display in New Window', lambda: (
@@ -804,7 +831,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("dark")))
             menu.addAction('Remove', lambda: (self.rm_data("dark")))
             menu.addSeparator()
-            menu.addAction('Animate', lambda: (self.animate(self.dark_list)))
+            menu.addAction('Animate...', lambda: (self.animate(self.dark_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.dark_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -818,7 +845,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("flat")))
             menu.addAction('Remove', lambda: (self.rm_data("flat")))
             menu.addSeparator()
-            menu.addAction('Animate', lambda: (self.animate(self.flat_list)))
+            menu.addAction('Animate...', lambda: (self.animate(self.flat_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.flat_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -908,6 +935,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.photometry_window.show()
             else:
                 self.photometry_window.show_me(arg)
+                
+        elif window_name == "psf":
+            if self.psf_window is None:
+                self.psf_window = PSFWindow(
+                        self, arg, verb=self.verb, debugger=self.debugger)
+                self.play_ground.addSubWindow(self.psf_window)
+                self.psf_window.show()
+            else:
+                self.psf_window.show_me(arg)
                 
         elif window_name == "licence":
             if self.licence_window is None:
@@ -1286,6 +1322,260 @@ class DisplayWindow(QtWidgets.QWidget, display.Ui_Form):
         self.logger.log("DisplayW: Kill on Close")
         self.parent.display_window.remove(self)
 
+class PSFWindow(QtWidgets.QWidget, psf.Ui_Form):
+    def __init__(self, parent, image, verb=False, debugger=False):
+        self.parent = parent
+        super(PSFWindow, self).__init__(self.parent.play_ground)
+        self.setupUi(self)
+        
+        self.verb = verb
+        self.debugger = debugger
+        
+        self.fop = env.File(verb=self.verb, debugger=self.debugger)
+        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+        self.fnk_deve = func.Devices(self, self.logger)
+        self.fts = analyse.Astronomy.Fits(verb=self.verb,
+                                          debugger=self.debugger)
+        self.coo = analyse.Astronomy.Coordinates(verb=self.verb,
+                                           debugger=self.debugger)
+        
+        self.psf_progress.setProperty("value", 0)
+        
+        self.display_psf = FitsPlot(self.psf_display.canvas,
+                                  verb=self.verb, debugger=self.debugger)
+        
+        self.psf_display.canvas.fig.canvas.mpl_connect(
+                'motion_notify_event', self.onpick)
+        self.psf_display.canvas.fig.canvas.mpl_connect(
+                'button_press_event', self.get_coordinates)
+        
+        self.psf_coordinates.installEventFilter(self)
+        self.psf_display.installEventFilter(self)
+        
+        self.image = None
+        self.artist_fwhm = []
+        
+        
+    def rm_line(self):
+        self.fnk_deve.rm(self.psf_coordinates)
+        self.reload_log()
+        
+    def plot_coordinates(self):
+        coords = self.fnk_deve.list_of_selected(self.psf_coordinates)
+        if not coords == []:
+            for art in self.artist:
+                art.remove()
+            self.artist = []
+            
+            settings = self.fop.read_set("pho")
+            try:
+                aperture = settings['photpar_aperture']
+                if aperture is None:
+                    aperture = self.logger.pho_set['photpar_aperture']
+                    
+            except Exception as e:
+                self.logger.log(e)
+                settings = self.logger.pho_set
+                aperture = settings['photpar_aperture']
+                
+            it = 0
+            sum_aper = 0
+            for aper in aperture.split(","):
+                try:
+                    float_aper = float(aper)
+                    sum_aper += float_aper
+                    it += 1
+                except:
+                    pass
+                
+            mean_apert = sum_aper / it
+            try:
+                for it, coord in enumerate(coords):
+                    x, y = coord.split(" - ")
+                    x, y = float(x), float(y)
+                    circ = Circle((mean_apert, mean_apert), mean_apert, 
+                                  edgecolor="#00FF00", facecolor="none")      
+                    self.artist.append(self.psf_display.canvas.fig.gca(
+                            ).add_artist(circ))
+                    circ.center = x, y
+                    self.artist.append(self.psf_display.canvas.fig.gca(
+                            ).annotate("s{}".format(str(it)), xy = (x, y),
+                                      color = "#00FFFF", fontsize = 10))
+                    
+                self.psf_display.canvas.draw()
+            except Exception as e:
+                self.logger.log(e)
+
+        else:
+            self.logger.log("No coordinates to plot")
+            QtWidgets.QMessageBox.critical(
+                    self, ("MYRaf Error"),
+                    ("Please add coordinate(s)"))
+            
+        self.reload_log()
+        
+    def sex(self):
+        if self.image is not None:
+            the_set = self.get_pho_set()
+            sources = self.fts.star_finder(self.image,
+                                           max_star=the_set["stf_max"])
+            if sources is not None:
+                use_sources = []
+                for source in sources:
+                    use_sources.append("{:.2f} - {:.2f}".format(source[0],
+                                       source[1]))
+                self.fnk_deve.replace_list_con(self.psf_coordinates,
+                                               use_sources)
+            else:
+                self.logger.log("Could't find any source(s)")
+                QtWidgets.QMessageBox.critical(
+                        self, ("MYRaf Error"), ("Could't find any source(s)"))
+        else:
+            self.logger.log("No image file was given")
+            QtWidgets.QMessageBox.critical(
+                    self, ("MYRaf Error"), ("No image file was given"))
+            
+    def get_pho_set(self):
+        settings = self.fop.read_set("pho")
+        try:
+            settings['photpar_aperture'] = list(map(float,
+                    settings['photpar_aperture'].split(",")))
+        except Exception as e:
+            self.logger.log("{}. Using default settings".format(e))
+            settings['photpar_aperture'] = list(map(float,
+                    self.logger.pho_set['photpar_aperture'].split(",")))
+        return(settings)
+        
+    def import_coordinates(self):
+        file = self.fnk_file.get_files(file_type="All (*.*)")
+        if not file == []:
+            file = file[0]
+            lines_2_add = []
+            f2r = open(file, "r")
+            for line in f2r:
+                try:
+                    if not line.startswith("#"):
+                        coord = line.replace("\n", "")
+                        x, y = coord.split(",")
+                        lines_2_add.append("{} - {}".format(
+                                str(float(x)), str(float(y))))
+                except Exception as e:
+                    self.logger.log(e)
+            f2r.close()
+            self.fnk_deve.replace_list_con(self.psf_coordinates,
+                                           lines_2_add)
+            
+        self.reload_log()
+    
+    def export_coordinates(self):
+        coords = self.fnk_deve.list_of_list(self.psf_coordinates)
+        if not coords == []:
+            file = self.fnk_file.save_file(file_type="All (*.*)")
+            if not file == "":
+                f2w = open(file, "w")
+                f2w.write("#X_coord,Y_coord\n")
+                for coord in coords:
+                    f2w.write("{}\n".format(coord.replace(" - ", ",")))
+                f2w.close()
+        else:
+            self.logger.log("No coordinates to export")
+            QtWidgets.QMessageBox.critical(
+                    self, ("MYRaf Error"), ("No coordinates to export"))
+            
+        self.reload_log()
+        
+    def get_fwhm(self):
+        if self.image is not None:
+            sources = self.fts.star_finder(self.image, max_star=15000)
+            x, y = self.display_psf.get_xy()
+            if sources is not None:
+                index = self.coo.find_closest(sources, [x, y])
+                if index is not None:
+                    found_x = sources[index][0]
+                    found_y = sources[index][1]
+                    circ = Circle((found_x, found_y), 10, edgecolor="#FFFF00",
+                                  facecolor="none")
+                    self.artist_fwhm.append(
+                            self.psf_display.canvas.fig.gca(
+                                    ).add_artist(circ))
+                    circ.center = found_x, found_y
+                    self.artist_fwhm.append(
+                            self.psf_display.canvas.fig.gca().annotate(
+                                    "Obj", xy = (found_x, found_y),
+                                    color = "#FFFF00", fontsize = 10))
+                    self.psf_display.canvas.draw()
+                    QtWidgets.QMessageBox.information(
+                            self, ("MYRaf Information"),
+                            ("FWHM: {}".format(sources[index][2])))
+                    for art in self.artist_fwhm:
+                        art.remove()
+                    self.artist_fwhm = []
+                    self.psf_display.canvas.draw()
+            else:
+                self.logger.log("Could't find any source(s)")
+                QtWidgets.QMessageBox.critical(
+                        self, ("MYRaf Error"), ("Could't find any source(s)"))
+        else:
+            self.logger.log("No image file was given")
+            QtWidgets.QMessageBox.critical(
+                    self, ("MYRaf Error"), ("No image file was given"))
+        
+    def eventFilter(self, source, event):
+        if (event.type() == QtCore.QEvent.ContextMenu and
+            source is self.psf_coordinates):
+            menu = QtWidgets.QMenu()
+            menu.addAction('Remove', lambda: (self.rm_line()))
+            menu.addSeparator()
+            menu.addAction('SEx!', lambda: (self.sex()))
+            menu.addAction('Plot', lambda: (self.plot_coordinates()))
+            menu.addSeparator()
+            menu.addAction('Import', lambda: (self.import_coordinates()))
+            menu.addAction('Export', lambda: (self.export_coordinates()))
+            menu.exec_(event.globalPos())
+            return(True)
+            
+        elif (event.type() == QtCore.QEvent.ContextMenu and
+            source is self.psf_display):
+            menu = QtWidgets.QMenu()
+            menu.addAction('FWHM', lambda: (self.get_fwhm()))
+            menu.exec_(event.globalPos())
+            return(True)
+            
+        return super(PSFWindow, self).eventFilter(source, event)
+        
+    def get_coordinates(self, event):
+        if self.image is not None:
+            if event.button == 1:
+                sources = self.fts.star_finder(self.image, max_star=15000)
+                x, y = self.display_psf.get_xy()
+                if sources is not None:
+                    index = self.coo.find_closest(sources, [x, y])
+                    if index is not None:
+                        found_x = sources[index][0]
+                        found_y = sources[index][1]
+                        self.fnk_deve.add(self.psf_coordinates,
+                                          ["{:.2f} - {:.2f}".format(
+                                                  float(found_x),
+                                                  float(found_y))])
+            
+    def onpick(self, event):
+        x, y = self.display_psf.get_xy()
+        self.psf_annotation.setText("{:.4f}, {:.4f}".format(x, y))
+                
+        self.reload_log()
+        
+    def show_me(self, image):
+        self.logger.log("PSF: Display Data")
+        self.display_psf.load(image)
+        self.image = image
+        self.artist = []
+        self.reload_log()
+        
+    def reload_log(self):
+        if self.parent.logger_window is not None:
+            self.parent.logger_window.load()
+        
+        
 class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     def __init__(self, parent, image, verb=False, debugger=False):
         self.parent = parent
@@ -1433,6 +1723,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             menu.addAction('FWHM', lambda: (self.get_fwhm()))
             menu.exec_(event.globalPos())
             return(True)
+        
             
         return super(PhotometryWindow, self).eventFilter(source, event)
     
@@ -1475,28 +1766,12 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     def rm_line(self):
         self.fnk_deve.rm(self.photometry_coordinates)
         self.reload_log()
-                
-    def get_max_source(self):
-        try:
-            if self.fop.is_file(self.set_file):
-                setting_file = open(self.set_file, "r")
-                
-                for line in setting_file:
-                    ln = line.replace("\n", "").split("|")
-                    if ln[0] == "stf_max":
-                        return(int(ln[1]))
-                        
-                return(500)
-            else:
-                return(500)
-        except Exception as e:
-            self.logger.log(e)
-            return(500)
     
     def sex(self):
         if self.image is not None:
-            max_str = self.get_max_source()
-            sources = self.fts.star_finder(self.image, max_star=max_str)
+            the_set = self.get_pho_set()
+            sources = self.fts.star_finder(self.image,
+                                           max_star=the_set["stf_max"])
             if sources is not None:
                 use_sources = []
                 for source in sources:
@@ -1605,11 +1880,30 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             
         self.reload_log()
         
-    def get_coordinates(self, event):
-        if event.button == 1:
+    def find_closest_source(self):
+        if self.image is not None:
+            sources = self.fts.star_finder(self.image, max_star=15000)
             x, y = self.display_photometry.get_xy()
-            self.fnk_deve.add(self.photometry_coordinates,
-                              ["{:.2f} - {:.2f}".format(float(x), float(y))])
+            if sources is not None:
+                index = self.coo.find_closest(sources, [x, y])
+                if index is not None:
+                    found_x = sources[index][0]
+                    found_y = sources[index][1]
+                    self.fnk_deve.add(self.photometry_coordinates,
+                                      ["{:.2f} - {:.2f}".format(
+                                              float(found_x), float(found_y))])
+        
+    def get_coordinates(self, event):
+        if self.image is not None:
+            if event.button == 1:
+                modifiers = QtWidgets.QApplication.keyboardModifiers()
+                if modifiers == QtCore.Qt.ShiftModifier:
+                    self.find_closest_source()
+                else:
+                    x, y = self.display_photometry.get_xy()
+                    self.fnk_deve.add(self.photometry_coordinates,
+                                      ["{:.2f} - {:.2f}".format(
+                                              float(x), float(y))])
                     
         self.reload_log()
         
@@ -2651,24 +2945,16 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         self.setting_phot_std_gaia.setChecked(settings['std_mag_gaia'])
         self.setting_photo_std_radius.setValue(settings['std_mag_radius'])
         
-        self.setting_phot_datapar_exposure.setProperty(
-                "text", settings['datapar_exposure'])
-        self.setting_phot_datapar_filter.setProperty(
-                "text", settings['datapar_filter'])
         self.setting_phot_photpar_aperture.setProperty(
                 "text", settings['photpar_aperture'])
         self.setting_phot_photpar_zmag.setValue(settings['photpar_zmag'])
         self.setting_phot_photpar_gain.setProperty(
                 "text", settings['photpar_gain'])
         
-        self.setting_phot_wcs_ra.setProperty("text", settings['wcs_ra'])
-        self.setting_phot_wcs_dec.setProperty("text", settings['wcs_dec'])
-        
-        self.setting_phot_tlc_observatory.setProperty(
-                "text", settings['lot_obse'])
-        self.setting_phot_tlc_time.setProperty("text", settings['lot_time'])
-        
         self.setting_phot_starf_max.setValue(settings['stf_max'])
+        
+        self.setting_psf_sizeFactor.setValue(settings['psf_sizeFactor'])
+        self.setting_psf_maxiter.setValue(settings['psf_maxiter'])
         
         if not settings['header_to_use'] == "":
             headers = settings['header_to_use'].split(",")
@@ -2683,25 +2969,16 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
             self.setting_phot_std_gaia.setChecked(settings['std_mag_gaia'])
             self.setting_photo_std_radius.setValue(settings['std_mag_radius'])
             
-            self.setting_phot_datapar_exposure.setProperty(
-                    "text", settings['datapar_exposure'])
-            self.setting_phot_datapar_filter.setProperty(
-                    "text", settings['datapar_filter'])
             self.setting_phot_photpar_aperture.setProperty(
                 "text", settings['photpar_aperture'])
             self.setting_phot_photpar_zmag.setValue(settings['photpar_zmag'])
             self.setting_phot_photpar_gain.setProperty(
                     "text", settings['photpar_gain'])
             
-            self.setting_phot_wcs_ra.setProperty("text", settings['wcs_ra'])
-            self.setting_phot_wcs_dec.setProperty("text", settings['wcs_dec'])
-            
-            self.setting_phot_tlc_observatory.setProperty(
-                    "text", settings['lot_obse'])
-            self.setting_phot_tlc_time.setProperty(
-                    "text", settings['lot_time'])
-            
             self.setting_phot_starf_max.setValue(settings['stf_max'])
+            
+            self.setting_psf_sizeFactor.setValue(settings['psf_sizeFactor'])
+            self.setting_psf_maxiter.setValue(settings['psf_maxiter'])
             
             if not settings['header_to_use'] == "":
                 headers = settings['header_to_use'].split(",")
@@ -2720,41 +2997,29 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         std_mag_gaia = self.setting_phot_std_gaia.isChecked()
         std_mag_radius = self.setting_photo_std_radius.value()
         
-        datapar_exposure = self.setting_phot_datapar_exposure.text()
-        datapar_filter = self.setting_phot_datapar_filter.text()
-        
         photpar_aperture = self.setting_phot_photpar_aperture.text()
         photpar_zmag = self.setting_phot_photpar_zmag.value()
         photpar_gain = self.setting_phot_photpar_gain.text()
         
-        wcs_ra = self.setting_phot_wcs_ra.text()
-        wcs_dec = self.setting_phot_wcs_dec.text()
-        
-        lot_obse = self.setting_phot_tlc_observatory.text()
-        lot_time = self.setting_phot_tlc_time.text()
-        
         stf_max = self.setting_phot_starf_max.value()
+        
+        psf_sizeFactor = self.setting_psf_sizeFactor.value()
+        psf_maxiter = self.setting_psf_maxiter.value()
         
         #setting_phot_hex_use
         header_to_use = ",".join(self.fnk_deve.list_of_list(
                 self.setting_phot_hex_use))
         
-        
-        
         pho_set = {"std_mag": std_mag, "std_mag_nomad": std_mag_nomad,
                    "std_mag_usno": std_mag_usno, "std_mag_gaia": std_mag_gaia,
                    "std_mag_radius": std_mag_radius,
                    
-                   "datapar_exposure": datapar_exposure,
-                   "datapar_filter": datapar_filter,
-                   
                    "photpar_aperture": photpar_aperture,
                    "photpar_zmag": photpar_zmag, "photpar_gain": photpar_gain,
                    
-                   "wcs_ra": wcs_ra, "wcs_dec": wcs_dec,
-                   
-                   "lot_obse": lot_obse, "lot_time": lot_time,
                    "stf_max": stf_max,
+                   
+                   "psf_sizeFactor":psf_sizeFactor, "psf_maxiter":psf_maxiter,
                    
                    "header_to_use": header_to_use}
         

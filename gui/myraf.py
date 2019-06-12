@@ -462,9 +462,11 @@ class Ui_MainWindow(object):
         self.actionAutoAlign.setText(_translate("MainWindow", "&Auto"))
         self.actionMain.setText(_translate("MainWindow", "&Main"))
         self.actionAlbatenius.setText(_translate("MainWindow", "Al&batenius ..."))
-        self.actionAperture.setText(_translate("MainWindow", "Aperture..."))
-        self.actionPSF.setText(_translate("MainWindow", "PSF"))
+        self.actionAperture.setText(_translate("MainWindow", "&Aperture..."))
+        self.actionPSF.setText(_translate("MainWindow", "&PSF..."))
 
+
+#import myraf_sources_rc
 
 
 if __name__ == "__main__":
