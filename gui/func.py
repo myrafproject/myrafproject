@@ -24,6 +24,18 @@ class Files:
                 (ftype))[0]
         return(files)
         
+    def get_file(self, file_type=None):
+        
+        if file_type is not None:
+            ftype = file_type
+        else:
+            ftype = "fits, fit, fts (*.fits *.fit *.fts)"
+            
+        files = QtWidgets.QFileDialog.getOpenFileName(
+                self.frame, "File...","" ,
+                (ftype))[0]
+        return(files)
+        
     def save_file(self, file_type=None, name=None):
         if file_type is None:
             tp = "fits, fit, fts (*.fits *.fit *.fts)"

@@ -144,6 +144,7 @@
     <addaction name="actionObservatory"/>
     <addaction name="actionCosmic"/>
     <addaction name="actionWCS"/>
+    <addaction name="actionGraph"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -776,6 +777,11 @@
   <action name="actionPSF">
    <property name="text">
     <string>&amp;PSF...</string>
+   </property>
+  </action>
+  <action name="actionGraph">
+   <property name="text">
+    <string>Graph</string>
    </property>
   </action>
  </widget>

@@ -774,3 +774,9 @@ class Statistics:
         def mean(self, array):
             numpy_array = ar(array)
             return(nmea(numpy_array))
+            
+        def lst2num(self, lst):
+            return(ar(lst))
+            
+        def fnum(self, lst):
+            return(lst.astype(f64))

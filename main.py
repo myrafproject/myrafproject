@@ -53,6 +53,7 @@ try:
     from gui import func
     from gui import align_manual
     from gui import psf
+    from gui import graph
 except Exception as e:
     print("{}: Can't import GUIs. MYRaf is not installed properly.".format(e))
     exit(0)
@@ -125,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.albategnius_window = None
         self.myraf_help = None
         self.psf_window = None
+        self.graph_window = None
 
         log_size = self.fop.get_size(self.logger.log_file)
 
@@ -178,6 +180,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("credits")))
         self.actionAperture.triggered.connect(lambda: (
                 self.open_window("photometry")))
+        self.actionGraph.triggered.connect(lambda: (
+                self.open_window("graph")))
         
         self.actionPSF.triggered.connect(lambda: (
                 QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
@@ -946,6 +950,13 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             else:
                 self.psf_window.show_me(arg)
                 
+        elif window_name == "graph":
+            if self.graph_window is None:
+                self.graph_window = GraphWindow(
+                        self, verb=self.verb, debugger=self.debugger)
+                self.play_ground.addSubWindow(self.graph_window)
+                self.graph_window.show()
+                
         elif window_name == "licence":
             if self.licence_window is None:
                 self.licence_window = LicenceWindow(
@@ -1149,6 +1160,98 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if len(widgetList) > 0:
             if self.fnk_deve.ask("Are you sure you want to quit?"):
                 self.destroy()
+
+class GraphWindow(QtWidgets.QWidget, graph.Ui_Form):
+    def __init__(self, parent, verb=False, debugger=False):
+        self.parent = parent
+        super(GraphWindow, self).__init__(self.parent)
+        self.setupUi(self)
+        
+        self.verb = verb
+        self.debugger = debugger
+        
+        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+        self.fop = env.File(verb=self.verb, debugger=self.debugger)
+        
+        self.arr = analyse.Statistics.Array(verb=self.verb, debugger=self.debugger)
+        
+        self.fnk_file = func.Files(self, self.logger)
+        self.fnk_deve = func.Devices(self, self.logger)
+        
+        self.get_file.clicked.connect(lambda: (self.load_file()))
+        self.plot.clicked.connect(lambda: (self.plot_graph()))
+        
+    def clear(self):
+        data = []
+        self.disp_chart.canvas.axlc1.hold(False)
+        self.disp_chart.canvas.axlc1.plot(data)
+        self.disp_chart.canvas.axlc2.hold(False)
+        self.disp_chart.canvas.axlc2.plot(data)
+        self.disp_chart.canvas.draw()
+        
+    def load_file(self):
+        file = self.fnk_file.get_file(file_type="*")
+        if self.fop.is_file(file):
+            self.file_path.setText(file)
+            
+            data = self.fop.read_json(file)
+            v = list(range(1, data["nobj"] + 1))
+            self.fnk_deve.c_add(self.variabl_index, v)
+            self.fnk_deve.c_add(self.compair_index, ["None"] + v)
+            self.fnk_deve.c_add(self.compair2_index, ["None"] + v)
+            self.fnk_deve.c_add(self.x_values, data["hex"])
+            self.fnk_deve.c_add(self.aperture, data["apertures"])
+            
+    def plot_graph(self):
+        file = self.file_path.text()
+        if self.fop.is_file(file):
+            data = self.fop.read_json(file)
+            variable = self.variabl_index.currentText()
+            comp = self.compair_index.currentText()
+            comp2 = self.compair2_index.currentText()
+            apert = self.aperture.currentIndex()
+            xs = self.x_values.currentText()
+            graph_data = []
+            cgraph_data = []
+            for key, values in data.items():
+                try:
+                    x = values[xs]
+                    phot_data = self.arr.lst2num(values["phot"])
+                    var_data = phot_data[phot_data[:, 0] == str(variable)][0]
+                    if not comp == "None":
+                        comp_data = phot_data[phot_data[:, 0] == str(comp)][0]
+                        graph_data.append(self.arr.lst2num([x, float(var_data[apert + 1]) - float(comp_data[apert + 1])]))
+                        
+                        if not comp2 == "None":
+                            comp2_data = phot_data[phot_data[:, 0] == str(comp2)][0]
+                            cgraph_data.append(self.arr.lst2num([x, float(comp2_data[apert + 1]) - float(comp_data[apert + 1])]))
+                    else:
+                        graph_data.append(self.arr.lst2num([x, var_data[apert + 1]]))     
+                except:
+                    pass
+                
+            graph_data = self.arr.lst2num(graph_data)
+            
+            self.clear()
+            self.disp_chart.canvas.axlc1.errorbar(self.arr.fnum(graph_data[:, 0]), self.arr.fnum(graph_data[:, 1]), fmt="o")
+            self.disp_chart.canvas.axlc1.invert_yaxis()
+            if not cgraph_data == []:
+                cgraph_data = self.arr.lst2num(cgraph_data)
+                self.disp_chart.canvas.axlc2.errorbar(self.arr.fnum(cgraph_data[:, 0]), self.arr.fnum(cgraph_data[:, 1]), fmt="o")
+                self.disp_chart.canvas.axlc2.invert_yaxis()
+            
+            self.disp_chart.canvas.draw()
+            
+        else:
+            self.logger.log("No valid file was given")
+            QtWidgets.QMessageBox.critical(
+                    self, ("MYRaf Error"),
+                    ("No valid file was given"))
+        
+        
+    def closeEvent(self, event):
+        self.parent.graph_window = None
+        
 
 class AnimateWindow(QtWidgets.QWidget, animate.Ui_Form):
     def __init__(self, parent, image_list, verb=False, debugger=False):
@@ -1645,20 +1748,20 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                         use_coo.append(list(map(float, coord.split(" - "))))
                         
                     settings = self.fop.read_set("pho")
-                    for file in files:
+                    results["apertures"] = settings["photpar_aperture"]
+                    results["zmag"] = settings["photpar_zmag"]
+                    results["nobj"] = len(use_coo)
+                    results["coords"] = use_coo
+                    results["hex"] = settings["header_to_use"]
+                    results["nframes"] = len(files)
+                    for it, file in enumerate(files):
                         r = {}
                         try:
                             tmp_out = "{}/{}.mag".format(self.logger.tmp_dir, self.fop.split_file_name(file)[1])
                             pres = self.ira.phot(file, tmp_out, use_coo, settings["photpar_aperture"], zmag=settings["photpar_zmag"])
                             if pres:
                                 res = self.ira.textdump(tmp_out)
-                                print(res)
                                 if res is not None:
-                                    r["apertures"] = settings["photpar_aperture"]
-                                    r["zmag"] = settings["photpar_zmag"]
-                                    r["nobj"] = len(use_coo)
-                                    r["coords"] = use_coo
-                                    
                                     for header in settings["header_to_use"]:
                                         r[header] = self.fts.header(file, header)
                                         
@@ -1668,8 +1771,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                             
                         except Exception as e:
                             self.logger.log(e)
-                    
-                    print(results)
+                            
+                        self.photometry_progress.setProperty("value", 100 * (it + 1)/(len(files)))
                     self.fop.write_json(out_file, results)
             else:
                 self.logger.log("No coordinate was given")

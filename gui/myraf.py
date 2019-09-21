@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(1218, 765)
         MainWindow.setMinimumSize(QtCore.QSize(776, 587))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("./media/myraf/64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../media/myraf/64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setIconSize(QtCore.QSize(22, 22))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -292,6 +292,8 @@ class Ui_MainWindow(object):
         self.actionAperture.setObjectName("actionAperture")
         self.actionPSF = QtWidgets.QAction(MainWindow)
         self.actionPSF.setObjectName("actionPSF")
+        self.actionGraph = QtWidgets.QAction(MainWindow)
+        self.actionGraph.setObjectName("actionGraph")
         self.menuData.addAction(self.actionAddImage)
         self.menuData.addAction(self.actionAddBias)
         self.menuData.addAction(self.actionAddDark)
@@ -329,6 +331,7 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionObservatory)
         self.menuEdit.addAction(self.actionCosmic)
         self.menuEdit.addAction(self.actionWCS)
+        self.menuEdit.addAction(self.actionGraph)
         self.menuSettings.addAction(self.actionCalibration_2)
         self.menuSettings.addAction(self.actionPhotometry_2)
         self.menuSettings.addAction(self.actionCosmic_Cleaner)
@@ -464,10 +467,7 @@ class Ui_MainWindow(object):
         self.actionAlbatenius.setText(_translate("MainWindow", "Al&batenius ..."))
         self.actionAperture.setText(_translate("MainWindow", "&Aperture..."))
         self.actionPSF.setText(_translate("MainWindow", "&PSF..."))
-
-
-#import myraf_sources_rc
-
+        self.actionGraph.setText(_translate("MainWindow", "Graph"))
 
 if __name__ == "__main__":
     import sys
