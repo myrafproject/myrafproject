@@ -4,6 +4,13 @@ Created on Fri May  3 14:35:56 2019
 
 @author: msh, yk
 """
+
+try:
+    from subprocess import PIPE
+except Exception as e:
+    print("{}: Can't import subprocess".format(e))
+    exit(0)
+
 try:
     from sep import Background
     from sep import sum_circle
@@ -22,7 +29,7 @@ try:
     from numpy import rot90
     from numpy import log10
     from numpy import log
-    from numpy import float64
+    from numpy import float64 as f64
     from numpy import power
     from numpy import sqrt
     from numpy import argmin
@@ -61,6 +68,9 @@ try:
     from pyraf import iraf
     from iraf import imred
     from iraf import ccdred
+    from iraf import digiphot
+    from iraf import daophot
+    from iraf import ptools
 except Exception as e:
     print("{}: Can't import pyraf/iraf.".format(e))
     exit(0)
@@ -298,6 +308,65 @@ class Astronomy:
             except Exception as e:
                 self.logger.log(e)
                 return(False)
+                
+        def phot(self, file, output, coords, apertures, annulus=5, dannulus=5, zmag=25):
+            try:
+                coord_file = "{}/myraf_coord.coo".format(self.logger.tmp_dir)
+                with open(coord_file, "w") as f:
+                    for coord in coords:
+                        f.write("{} {}\n".format(coord[0], coord[1]))
+                        
+                apertures = list(map(str, apertures))
+                
+                iraf.photpars.weighting = "constant"
+                iraf.photpars.aperture = ",".join(apertures)
+                iraf.photpars.zmag = zmag
+                iraf.photpars.mkapert = "no"
+                
+                iraf.daophot.phot.interactive = "no"
+                iraf.daophot.phot.verify = "no"
+                iraf.daophot.phot.verbose = "no"
+                
+                iraf.fitskypars.salgo = "centroid"
+                iraf.fitskypars.annu = annulus
+                iraf.fitskypars.dannu = dannulus
+                iraf.fitskypars.skyval = 0
+                iraf.fitskypars.smaxi = 10
+                iraf.fitskypars.sloc = 0
+                iraf.fitskypars.shic = 0
+                iraf.fitskypars.snrej = 50
+                iraf.fitskypars.slorej = 3.
+                iraf.fitskypars.shirej = 3.
+                iraf.fitskypars.khist = 3
+                iraf.fitskypars.binsi = 0.1
+                
+                if self.fop.is_file(output):
+                    self.fop.rm(output)
+                    
+                iraf.phot.coords = coord_file
+                iraf.phot.output = output
+                iraf.daophot.phot.verify = "no"
+                iraf.daophot.phot.interactive = "no"
+                iraf.daophot.phot.radplots = "no"
+                
+                iraf.daophot.phot(file, output=output, coords=coord_file, verbose="no", verify="no", interactive="no")
+                return True
+            except Exception as e:
+                self.logger.log(e)
+                return False
+
+        def textdump(self, file, fields=["id", "mag", "merr"]):
+            try:
+                ret = []
+                txdump = iraf.txdump
+                the_fields = ",".join(fields)
+                res = txdump(file, the_fields, "yes", Stdout=PIPE)
+                for r in res:
+                    ret.append(r.split())
+                    
+                return ret
+            except Exception as e:
+                self.logger.log(e)
             
     class Fits:
         def __init__(self, verb=False, debugger=False):
@@ -489,7 +558,7 @@ class Astronomy:
                 if rot is not None:
                     data = rot90(data, rot)
                 
-                data = data.astype(float64)
+                data = data.astype(f64)
                 return(data)
             except Exception as e:
                 self.logger.log(e)

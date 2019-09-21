@@ -180,7 +180,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.open_window("photometry")))
         
         self.actionPSF.triggered.connect(lambda: (
-                self.open_window("psf")))
+                QtWidgets.QMessageBox.critical(self, ("MYRaf Error"),
+                                               ("Not ready yet!"))))
         
         self.actionObservatory.triggered.connect(lambda: (
                 self.open_window("observatory")))
@@ -1594,6 +1595,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                                           debugger=self.debugger)
         self.coo = analyse.Astronomy.Coordinates(verb=self.verb,
                                            debugger=self.debugger)
+        self.ira = analyse.Astronomy.Iraf(verb=self.verb,
+                                           debugger=self.debugger)
         self.sar = analyse.Statistics.Array(verb=self.verb,
                                             debugger=self.debugger)
         self.sma = analyse.Statistics.Math(verb=self.verb,
@@ -1628,17 +1631,6 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     def reload_log(self):
         if self.parent.logger_window is not None:
             self.parent.logger_window.load()
-    
-    def get_pho_set(self):
-        settings = self.fop.read_set("pho")
-        try:
-            settings['photpar_aperture'] = list(map(float,
-                    settings['photpar_aperture'].split(",")))
-        except Exception as e:
-            self.logger.log("{}. Using default settings".format(e))
-            settings['photpar_aperture'] = list(map(float,
-                    self.logger.pho_set['photpar_aperture'].split(",")))
-        return(settings)
         
     def do_photometry(self):
         files = self.fnk_deve.get_from_tree(self.parent.image_list)
@@ -1647,51 +1639,38 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
             if len(coords) > 0:
                 out_file = self.fnk_file.save_file(file_type="All (*.*)")
                 if out_file is not None and not out_file == "":
-                    f2w = open(out_file, "w")
-                    the_set = self.get_pho_set()
-                    
-                    wanted_headers = the_set["header_to_use"].split(",")
-                    if wanted_headers == ['']:
-                        file_header = "file,x_coor,y_coor,aperture,flx,ferr,flag,mag,merr"
-                    else:
-                        file_header = "file,x_coor,y_coor,aperture,flx,ferr,flag,mag,merr,{}".format(",".join(wanted_headers))
-                    f2w.write("{}\n".format(file_header))
-                    use_coords = []
+                    results = {}
+                    use_coo = []
                     for coord in coords:
-                        x, y = coord.split(" - ")
-                        use_coords.append([float(x), float(y)])
-                    for it, file in enumerate(files):
-                        use_header = []
-                        if not wanted_headers == ['']:
-                            for wanted_header in wanted_headers:
-                                use_header.append(
-                                        str(self.fts.header(file,
-                                                            wanted_header)))
-                                
-                        gvalue = self.fts.header(file, the_set["photpar_gain"])
-                        if gvalue is None or gvalue == 0:
-                            gvalue = 1.21
+                        use_coo.append(list(map(float, coord.split(" - "))))
                         
-                        phot = self.fts.mphotometry(
-                                file, use_coords,
-                                zmag=the_set["photpar_zmag"],
-                                apertures=the_set["photpar_aperture"],
-                                gain=gvalue)
-                        for ph in phot:
-                            if phot is not None:
-                                if use_header == []:
-                                    wirte_line = "{},{}\n".format(
-                                            file, ",".join(ph))
-                                else:
-                                    wirte_line = "{},{},{}\n".format(
-                                            file, ",".join(ph),
-                                            ",".join(use_header))    
-                            f2w.write(wirte_line)
+                    settings = self.fop.read_set("pho")
+                    for file in files:
+                        r = {}
+                        try:
+                            tmp_out = "{}/{}.mag".format(self.logger.tmp_dir, self.fop.split_file_name(file)[1])
+                            pres = self.ira.phot(file, tmp_out, use_coo, settings["photpar_aperture"], zmag=settings["photpar_zmag"])
+                            if pres:
+                                res = self.ira.textdump(tmp_out)
+                                print(res)
+                                if res is not None:
+                                    r["apertures"] = settings["photpar_aperture"]
+                                    r["zmag"] = settings["photpar_zmag"]
+                                    r["nobj"] = len(use_coo)
+                                    r["coords"] = use_coo
+                                    
+                                    for header in settings["header_to_use"]:
+                                        r[header] = self.fts.header(file, header)
+                                        
+                                    r["phot"] = res
+                                        
+                            results[file] = r
                             
-                        perc = 100 * (it + 1) / (len(files))
-                        self.photometry_progress.setProperty("value", perc)
-                    f2w.close()
+                        except Exception as e:
+                            self.logger.log(e)
                     
+                    print(results)
+                    self.fop.write_json(out_file, results)
             else:
                 self.logger.log("No coordinate was given")
                 QtWidgets.QMessageBox.critical(
@@ -1769,7 +1748,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     
     def sex(self):
         if self.image is not None:
-            the_set = self.get_pho_set()
+            the_set = self.fop.read_set("pho")
             sources = self.fts.star_finder(self.image,
                                            max_star=the_set["stf_max"])
             if sources is not None:
@@ -1808,7 +1787,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 
             it = 0
             sum_aper = 0
-            for aper in aperture.split(","):
+            for aper in aperture:
                 try:
                     float_aper = float(aper)
                     sum_aper += float_aper
@@ -2981,7 +2960,7 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
             self.setting_psf_maxiter.setValue(settings['psf_maxiter'])
             
             if not settings['header_to_use'] == "":
-                headers = settings['header_to_use'].split(",")
+                headers = settings['header_to_use']
                 self.fnk_deve.replace_list_con(
                         self.setting_phot_hex_use, headers)
         except Exception as e:
@@ -3007,14 +2986,13 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         psf_maxiter = self.setting_psf_maxiter.value()
         
         #setting_phot_hex_use
-        header_to_use = ",".join(self.fnk_deve.list_of_list(
-                self.setting_phot_hex_use))
+        header_to_use = self.fnk_deve.list_of_list(self.setting_phot_hex_use)
         
         pho_set = {"std_mag": std_mag, "std_mag_nomad": std_mag_nomad,
                    "std_mag_usno": std_mag_usno, "std_mag_gaia": std_mag_gaia,
                    "std_mag_radius": std_mag_radius,
                    
-                   "photpar_aperture": photpar_aperture,
+                   "photpar_aperture": list(map(float, photpar_aperture.split(","))),
                    "photpar_zmag": photpar_zmag, "photpar_gain": photpar_gain,
                    
                    "stf_max": stf_max,

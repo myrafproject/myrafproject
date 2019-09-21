@@ -128,10 +128,10 @@ class Logger():
         self.pho_set = {"std_mag": False, "std_mag_nomad": True,
                         "std_mag_usno": True, "std_mag_gaia": True,
                         "std_mag_radius": 10.0, 
-                        "photpar_aperture": "10.0, 15.0", "photpar_zmag": 25.0,
+                        "photpar_aperture": [10.0, 15.0], "photpar_zmag": 25.0,
                         "photpar_gain": "gain", "stf_max": 500,
                         "psf_sizefactor": 10.0, "psf_maxiter":10,
-                        "header_to_use": ""}
+                        "header_to_use": []}
         
         self.cal_set_file = abspath("{}/.myset_calibration.set".format(
                 expanduser("~")))
@@ -413,7 +413,7 @@ class File():
     def write_json(self, file, dic):
         try:
             with open(file, 'w') as set_file:
-                dump(dic, set_file)
+                dump(dic, set_file, indent=1, sort_keys=True)
         except Exception as e:
             self.logger.log(e)
             
