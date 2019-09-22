@@ -19,6 +19,12 @@ except Exception as e:
     exit(0)
     
 try:
+    from ccdproc import cosmicray_lacosmic as cosla
+except Exception as e:
+    print("{}: Can't import ccdproc".format(e))
+    exit(0)
+    
+try:
     from numpy import min as nmin
     from numpy import max as nmax
     from numpy import mean as nmea
@@ -83,7 +89,6 @@ except Exception as e:
     exit(0)
 
 from . import env
-from . import cosm
 
 class Astronomy:
     def __init__(self):
@@ -410,26 +415,28 @@ class Astronomy:
                 
             except Exception as e:
                 self.loggrt.log(e)
+
+        def cosmic_cleaner(self, file, output, sigclip=12, sigfrac=0.3,
+                           objlim=5.0, gain=1.0, readnoise=6.5,
+                           satlevel=65535.0, pssl=0.0, iteration=4,
+                           sepmed=True, cleantype='meanmask', fsmode='median',
+                           psfmodel='gauss', psffwhm=2.5, psfsize=7, psfk=None,
+                           psfbeta=4.765, verbose=False):
+            try:
+                data = self.data(file)
                 
-        def cosmic_cleaner(self, image, output, gain=2.2, readout_noise=10.0,
-                           sigma_clip=5, sigma_fraction=0.3, object_limit=5,
-                           max_iter=4, mask=False):
-            
-            data, header = cosm.fromfits(image)
-            if data.ndim == 2:
-                cos = cosm.cosmicsimage(data, gain=gain,
-                                        readnoise=readout_noise,
-                                        sigclip=sigma_clip,
-                                        sigfrac=sigma_fraction,
-                                        objlim=object_limit, verbose=self.verb)
-                
-                cos.run(maxiter=max_iter)
-                cosm.tofits(output, cos.cleanarray, header)
-                if mask:
-                    pn, fn, ex = self.fop.split_file_name(output)
-                    cosm.tofits("{}/{}_mask{}".format(pn, fn, ex),
-                                cos.mask, header)
-            pass
+                new_data, cos = cosla(data, sigclip=sigclip, sigfrac=sigfrac,
+                                      objlim=objlim, gain=gain,
+                                      readnoise=readnoise, satlevel=satlevel,
+                                      pssl=pssl, niter=iteration,
+                                      sepmed=sepmed, cleantype=cleantype,
+                                      fsmode=fsmode, psfmodel=psfmodel,
+                                      psffwhm=psffwhm, psfsize=psfsize,
+                                      psfk=psfk, psfbeta=psfbeta,
+                                      verbose=verbose)
+                self.write(output, new_data, header=self.header(file, field="?"))
+            except Exception as e:
+                self.logger.log(e)
             
         def align(self, image, ref, output):
             identifications = alipy.ident.run(ref, [image], visu=False,
@@ -544,6 +551,8 @@ class Astronomy:
                     
                 if field == "*":
                     return(ret)
+                elif field == "?":
+                    return(header)
                 else:
                     return(header[field])
             except Exception as e:
