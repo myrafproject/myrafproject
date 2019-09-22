@@ -741,14 +741,20 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.logger.log("Subtraction detected")
                 self.open_window("subtract", all_files)
             else:
-                data = self.fts.combine(all_files,
-                                        combine_method=combine_method)
-                if data is not None:
-                    the_file = "{}/myraf_{}_{}.fits".format(
-                            self.logger.tmp_dir, combine_method,
-                            self.logger.random_string(10))
-                    self.fts.write(the_file, data)
-                    self.open_window("display", [the_file, True])
+                if len(all_files) > 2:
+                    data = self.fts.combine(all_files,
+                                            combine_method=combine_method)
+                    if data is not None:
+                        the_file = "{}/myraf_{}_{}.fits".format(
+                                self.logger.tmp_dir, combine_method,
+                                self.logger.random_string(10))
+                        self.fts.write(the_file, data)
+                        self.open_window("display", [the_file, True])
+                else:
+                    self.logger.log("No enough file was given")
+                    QtWidgets.QMessageBox.critical(
+                            self, ("MYRaf Error"),
+                            ("Please at least add 3 files"))
         else:
             self.logger.log("No file to combine")
             QtWidgets.QMessageBox.critical(
@@ -769,48 +775,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.exec_(event.globalPos())
             return(True)
             
-#        elif (event.type() == QtCore.QEvent.ContextMenu and source is self.play_ground):
-#            print(source)
-#            menu = QtWidgets.QMenu()
-#            subMenu_data = menu.addMenu("Data")
-#            
-#            subMenu_data_import = subMenu_data.addMenu("Import Data")
-#            subMenu_data_import.addAction('Image', lambda: (self.add_data("image")))
-#            subMenu_data_import.addAction('Bias', lambda: (self.add_data("bias")))
-#            subMenu_data_import.addAction('Dark', lambda: (self.add_data("dark")))
-#            subMenu_data_import.addAction('Flat', lambda: (self.add_data("flat")))
-#            
-#            subMenu_data_clear = subMenu_data.addMenu("Clear Lists")
-#            subMenu_data_clear.addAction('Clear All Lists', lambda: (self.clear_list("all")))
-#            subMenu_data_clear.addAction('Clear Image List', lambda: (self.clear_list("image")))
-#            subMenu_data_clear.addAction('Clear Bias List', lambda: (self.clear_list("bias")))
-#            subMenu_data_clear.addAction('Clear Dark List', lambda: (self.clear_list("dark")))
-#            subMenu_data_clear.addAction('Clear Flat List', lambda: (self.clear_list("flat")))
-#            
-#            subMenu_analyse = menu.addMenu("Analyse")
-#            subMenu_analyse_combine = subMenu_analyse.addMenu("Combine")
-#            subMenu_analyse_combine.addAction('Median...', lambda: (self.combine_images("median")))
-#            subMenu_analyse_combine.addAction('Average...', lambda: (self.combine_images("average")))
-#            subMenu_analyse_combine.addAction('Sum...', lambda: (self.combine_images("sum")))
-#            subMenu_analyse_combine.addAction('Difference...', lambda: (self.combine_images("diff")))
-#            
-#            subMenu_analyse.addAction('Calibration', lambda: (print("calibration")))
-#            subMenu_analyse.addAction('Align', lambda: (print("align")))
-#            subMenu_analyse.addAction('Photometry...', lambda: (self.open_window("photometry")))
-#            subMenu_analyse.addAction('A_Track', lambda: (print("a_Track")))
-#            
-#            subMenu_editor = menu.addMenu("Editor")
-#            subMenu_editor_header = subMenu_editor.addMenu("Header")
-#            subMenu_editor_header.addAction('Header Editor...', lambda: (self.open_window("heditor")))
-#            subMenu_editor_header.addAction('Header Calculator...', lambda: (self.open_window("hcalc")))
-#            subMenu_editor_header.addAction('Header Extractor...', lambda: (self.open_window("hex")))
-#            
-#            subMenu_editor.addAction('Observatory...', lambda: (self.open_window("observatory")))
-#            subMenu_editor.addAction('Cosmic Cleaner', lambda: (print("Cosmic Cleaner")))
-#            subMenu_editor.addAction('WCS', lambda: (print("WCS")))
-#            
-#            menu.exec_(event.globalPos())
-#            return(True)
             
         elif (event.type() == QtCore.QEvent.ContextMenu and
               source is self.bias_list):
