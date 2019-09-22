@@ -603,7 +603,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                         if self.fop.is_file(out_file):
                             self.fop.rm(out_file)
                         if self.ira.ccdproc(file, out_file, zero, dark, flat):
-                            self.fts.update_header(file, "MYCORR","calibration done @ {} using MYRaf V3 Beta".format(self.logger.time_stamp()))
+                            self.fts.update_header(file, "MYCORR", "calibration done @ {} using MYRaf V3 Beta".format(self.logger.time_stamp()))
                             
                         proc = 100 *(it + 1) / (len(files))
                         self.proc_window.progress_progressBar.setProperty(
@@ -767,7 +767,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("image")))
             menu.addAction('Remove', lambda: (self.rm_data("image")))
             menu.addSeparator()
-            menu.addAction('Animate...', lambda: (self.animate(self.image_list)))
+            menu.addAction('Animate...', lambda: (
+                    self.animate(self.image_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.image_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -782,7 +783,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("bias")))
             menu.addAction('Remove', lambda: (self.rm_data("bias")))
             menu.addSeparator()
-            menu.addAction('Animate...', lambda: (self.animate(self.bias_list)))
+            menu.addAction('Animate...', lambda: (
+                    self.animate(self.bias_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.bias_list, False)))
             menu.addAction('Display in New Window', lambda: (
@@ -796,7 +798,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("dark")))
             menu.addAction('Remove', lambda: (self.rm_data("dark")))
             menu.addSeparator()
-            menu.addAction('Animate...', lambda: (self.animate(self.dark_list)))
+            menu.addAction('Animate...', lambda: (
+                    self.animate(self.dark_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.dark_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -810,7 +813,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.addAction('Add', lambda: (self.add_data("flat")))
             menu.addAction('Remove', lambda: (self.rm_data("flat")))
             menu.addSeparator()
-            menu.addAction('Animate...', lambda: (self.animate(self.flat_list)))
+            menu.addAction('Animate...', lambda: (
+                    self.animate(self.flat_list)))
             menu.addAction('Display..', lambda: (self.display(
                     self.flat_list, False)))
             menu.addAction('Display in New Window...', lambda: (
@@ -1172,24 +1176,37 @@ class GraphWindow(QtWidgets.QWidget, graph.Ui_Form):
                     var_data = phot_data[phot_data[:, 0] == str(variable)][0]
                     if not comp == "None":
                         comp_data = phot_data[phot_data[:, 0] == str(comp)][0]
-                        graph_data.append(self.parent.arr.lst2num([x, float(var_data[apert + 1]) - float(comp_data[apert + 1])]))
+                        graph_data.append(
+                                self.parent.arr.lst2num(
+                                        [x, float(var_data[apert + 1]) -
+                                         float(comp_data[apert + 1])]))
                         
                         if not comp2 == "None":
-                            comp2_data = phot_data[phot_data[:, 0] == str(comp2)][0]
-                            cgraph_data.append(self.parent.arr.lst2num([x, float(comp2_data[apert + 1]) - float(comp_data[apert + 1])]))
+                            comp2_data = phot_data[
+                                    phot_data[:, 0] == str(comp2)][0]
+                            cgraph_data.append(
+                                    self.parent.arr.lst2num(
+                                            [x, float(comp2_data[apert + 1]) -
+                                             float(comp_data[apert + 1])]))
                     else:
-                        graph_data.append(self.parent.arr.lst2num([x, var_data[apert + 1]]))     
+                        graph_data.append(
+                                self.parent.arr.lst2num(
+                                        [x, var_data[apert + 1]]))     
                 except:
                     pass
                 
             graph_data = self.parent.arr.lst2num(graph_data)
             
             self.clear()
-            self.disp_chart.canvas.axlc1.errorbar(self.parent.arr.fnum(graph_data[:, 0]), self.parent.arr.fnum(graph_data[:, 1]), fmt="o")
+            self.disp_chart.canvas.axlc1.errorbar(
+                    self.parent.arr.fnum(graph_data[:, 0]),
+                    self.parent.arr.fnum(graph_data[:, 1]), fmt="o")
             self.disp_chart.canvas.axlc1.invert_yaxis()
             if not cgraph_data == []:
                 cgraph_data = self.parent.arr.lst2num(cgraph_data)
-                self.disp_chart.canvas.axlc2.errorbar(self.parent.arr.fnum(cgraph_data[:, 0]), self.parent.arr.fnum(cgraph_data[:, 1]), fmt="o")
+                self.disp_chart.canvas.axlc2.errorbar(
+                        self.parent.arr.fnum(cgraph_data[:, 0]),
+                        self.parent.arr.fnum(cgraph_data[:, 1]), fmt="o")
                 self.disp_chart.canvas.axlc2.invert_yaxis()
             
             self.disp_chart.canvas.draw()
@@ -1578,7 +1595,8 @@ class PSFWindow(QtWidgets.QWidget, psf.Ui_Form):
     def get_coordinates(self, event):
         if self.image is not None:
             if event.button == 1:
-                sources = self.parent.fts.star_finder(self.image, max_star=15000)
+                sources = self.parent.fts.star_finder(
+                        self.image, max_star=15000)
                 x, y = self.display_psf.get_xy()
                 if sources is not None:
                     index = self.parent.coo.find_closest(sources, [x, y])
@@ -1617,7 +1635,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
         self.verb = verb
         self.debugger = debugger
         
-        self.set_file = "{}_photometry.set".format(self.parent.logger.setting_file)
+        self.set_file = "{}_photometry.set".format(
+                self.parent.logger.setting_file)
         
         self.photometry_progress.setProperty("value", 0)
         
@@ -1649,9 +1668,11 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
     def do_photometry(self):
         files = self.parent.fnk_deve.get_from_tree(self.parent.image_list)
         if len(files) > 0:
-            coords = self.parent.fnk_deve.list_of_list(self.photometry_coordinates)
+            coords = self.parent.fnk_deve.list_of_list(
+                    self.photometry_coordinates)
             if len(coords) > 0:
-                out_file = self.parent.fnk_file.save_file(file_type="All (*.*)")
+                out_file = self.parent.fnk_file.save_file(
+                        file_type="All (*.*)")
                 if out_file is not None and not out_file == "":
                     results = {}
                     use_coo = []
@@ -1668,13 +1689,19 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                     for it, file in enumerate(files):
                         r = {}
                         try:
-                            tmp_out = "{}/{}.mag".format(self.parent.logger.tmp_dir, self.parent.fop.split_file_name(file)[1])
-                            pres = self.parent.ira.phot(file, tmp_out, use_coo, settings["photpar_aperture"], zmag=settings["photpar_zmag"])
+                            tmp_out = "{}/{}.mag".format(
+                                    self.parent.logger.tmp_dir,
+                                    self.parent.fop.split_file_name(file)[1])
+                            pres = self.parent.ira.phot(
+                                    file, tmp_out, use_coo,
+                                    settings["photpar_aperture"],
+                                    zmag=settings["photpar_zmag"])
                             if pres:
                                 res = self.parent.ira.textdump(tmp_out)
                                 if res is not None:
                                     for header in settings["header_to_use"]:
-                                        r[header] = self.parent.fts.header(file, header)
+                                        r[header] = self.parent.fts.header(
+                                                file, header)
                                         
                                     r["phot"] = res
                                         
@@ -1683,7 +1710,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                         except Exception as e:
                             self.parent.logger.log(e)
                             
-                        self.photometry_progress.setProperty("value", 100 * (it + 1)/(len(files)))
+                        self.photometry_progress.setProperty(
+                                "value", 100 * (it + 1)/(len(files)))
                     self.parent.fop.write_json(out_file, results)
             else:
                 self.parent.logger.log("No coordinate was given")
@@ -1770,8 +1798,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                 for source in sources:
                     use_sources.append("{:.2f} - {:.2f}".format(source[0],
                                        source[1]))
-                self.parent.fnk_deve.replace_list_con(self.photometry_coordinates,
-                                               use_sources)
+                self.parent.fnk_deve.replace_list_con(
+                        self.photometry_coordinates, use_sources)
             else:
                 self.parent.logger.log("Could't find any source(s)")
                 QtWidgets.QMessageBox.critical(
@@ -1782,7 +1810,8 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
                     self, ("MYRaf Error"), ("No image file was given"))
             
     def plot_coordinates(self):
-        coords = self.parent.fnk_deve.list_of_selected(self.photometry_coordinates)
+        coords = self.parent.fnk_deve.list_of_selected(
+                self.photometry_coordinates)
         if not coords == []:
             for art in self.artist:
                 art.remove()
@@ -1960,9 +1989,11 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
         
     def remove_observatory(self):
         if self.observatory_list.currentItem() is not None:
-            files = self.parent.fnk_deve.list_of_selected(self.observatory_list)
+            files = self.parent.fnk_deve.list_of_selected(
+                    self.observatory_list)
             for file in files:
-                file_to_delete = "{}/{}".format(self.parent.logger.obs_dir, file)
+                file_to_delete = "{}/{}".format(
+                        self.parent.logger.obs_dir, file)
                 self.parent.fop.rm(file_to_delete)
                 
             self.reload_observatories()
@@ -1994,7 +2025,8 @@ class ObservatoryWindow(QtWidgets.QWidget, observatory.Ui_Form):
                             "timezone":timezone.strip(),
                             "commendation":commendation.strip()}
                 
-                file_name = "{}/{}".format(self.parent.logger.obs_dir, observatory)
+                file_name = "{}/{}".format(
+                        self.parent.logger.obs_dir, observatory)
                 
                 self.parent.fop.write_json(file_name, observat)
                 
@@ -2192,23 +2224,26 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                 try:
                     for it, file in enumerate(files):
                         if do_jd:
-                            utc = self.parent.fts.header(file, field=utc_head_jd)
+                            utc = self.parent.fts.header(
+                                    file, field=utc_head_jd)
                             if utc is not None:
                                 jd = self.parent.atm.jd(utc)
                                 if jd is not None:
                                     self.parent.fts.update_header(
                                             file, "{}_jd".format(prefx), jd)
                                 else:
-                                    self.logger.log(
-                                            "Cannot calculate JD for ({})".format(
-                                                    utc))
+                                    self.logger.log("Cannot calculate JD for ({})".format(utc))
                         if do_airmass:
-                            utc = self.parent.fts.header(file, field=utc_head_as)
-                            ra = self.parent.fts.header(file, field=ra_head_as)
-                            dec = self.parent.fts.header(file, field=dec_head_as)
+                            utc = self.parent.fts.header(file,
+                                                         field=utc_head_as)
+                            ra = self.parent.fts.header(file,
+                                                        field=ra_head_as)
+                            dec = self.parent.fts.header(file,
+                                                         field=dec_head_as)
                             
-                            observat = self.parent.fop.read_json("{}/{}".format(
-                                    self.logger.obs_dir, obs_head_as))
+                            observat = self.parent.fop.read_json(
+                                    "{}/{}".format(
+                                            self.logger.obs_dir, obs_head_as))
                             
                             if not (utc is None or ra is None or dec is None):
                                 lat = observat['latitude']
@@ -2218,16 +2253,19 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                                 utc = self.parent.atm.str_to_time(utc)
                                 
                                 if ":" in lat:
-                                    lat = self.parent.coo.convert_sex_to_deg(lat)
+                                    lat = self.parent.coo.convert_sex_to_deg(
+                                            lat)
                                     
                                 if ":" in lon:
-                                    lon = self.parent.coo.convert_sex_to_deg(lon)
+                                    lon = self.parent.coo.convert_sex_to_deg(
+                                            lon)
                                     
                                 if ":" in ra:
                                     ra = self.parent.coo.convert_sex_to_deg(ra)
                                     
                                 if ":" in dec:
-                                    dec = self.parent.coo.convert_sex_to_deg(dec)
+                                    dec = self.parent.coo.convert_sex_to_deg(
+                                            dec)
                                     
                                 alt = float(alt)
                                 lat = float(lat)
@@ -2235,7 +2273,8 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                                 ra = float(ra)
                                 dec = float(dec)
                                     
-                                site = self.parent.coo.create_site(lat, lon, alt)
+                                site = self.parent.coo.create_site(
+                                        lat, lon, alt)
                                 obj = self.parent.coo.create_object(ra, dec)
                                 
                                 alt_az = self.parent.coo.radec_to_alt_az(site,
@@ -2288,7 +2327,8 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                                 self.logger.log("Nothing to do")
                                 
                         if do_time:
-                            utc = self.parent.fts.header(file, field=utc_head_tc)
+                            utc = self.parent.fts.header(file,
+                                                         field=utc_head_tc)
                             dif = self.hcalc_time_value.value()
                             dif_type = self.hcalc_time_valueType.currentText()
                             if utc is not None:
@@ -2303,8 +2343,7 @@ class HCalcWindow(QtWidgets.QWidget, header_calculator.Ui_Form):
                                                 file, "{}_ntime".format(prefx),
                                                 str(new_time))
                                     else:
-                                        self.logger.log(
-                                                "Cannot calculate time_diff for ({})".format(utc))
+                                        self.logger.log("Cannot calculate time_diff for ({})".format(utc))
                         
                         proc = 100 * (it + 1) / (len(files))
                         self.hcalc_progress.setProperty("value", proc)
@@ -2371,7 +2410,8 @@ class HexWindow(QtWidgets.QWidget, header_extractor.Ui_Form):
         
         if not (all_files is None or all_files == []):
             if len(self.parent.fnk_deve.list_of_selected(self.hex_header_list)) > 0:
-                output_file = self.parent.fnk_file.save_file(file_type="All (*.*)")
+                output_file = self.parent.fnk_file.save_file(
+                        file_type="All (*.*)")
                 if output_file is not None and not output_file == "":
                     arr_to_write = []
                     for it, file in enumerate(all_files):
@@ -2401,7 +2441,8 @@ class HexWindow(QtWidgets.QWidget, header_extractor.Ui_Form):
         self.reload_log()
         
     def fill_header_list(self, header_list):
-        self.parent.fnk_deve.replace_list_con(self.hex_header_list, header_list)
+        self.parent.fnk_deve.replace_list_con(self.hex_header_list,
+                                              header_list)
         self.reload_log()
         
     def closeEvent(self, event):
@@ -2459,9 +2500,11 @@ class LoggerWindow(QtWidgets.QWidget, help_logger.Ui_Form):
         mlog_size = 0.
         log_size = 0.
         if self.parent.fop.is_file(self.parent.logger.mini_log_file):
-            mlog_size = self.parent.fop.get_size(self.parent.logger.mini_log_file) / 1048576
+            mlog_size = self.parent.fop.get_size(
+                    self.parent.logger.mini_log_file) / 1048576
         if self.parent.fop.is_file(self.parent.logger.log_file):
-            log_size = self.parent.fop.get_size(self.parent.logger.log_file) / 1048576
+            log_size = self.parent.fop.get_size(
+                    self.parent.logger.log_file) / 1048576
         self.logger_annotation.setProperty(
                 "text", "Total Temperory File size is: {:.2} MB".format(
                         mlog_size + log_size))
@@ -2479,7 +2522,8 @@ class LoggerWindow(QtWidgets.QWidget, help_logger.Ui_Form):
             for line in tmp_file:
                 write_arr.append(line.replace("\n", ""))
             
-            self.parent.fnk_deve.replace_list_con(self.help_logger_list, write_arr)
+            self.parent.fnk_deve.replace_list_con(self.help_logger_list,
+                                                  write_arr)
             self.help_logger_list.scrollToBottom()
             self.file_size()
         
@@ -2686,7 +2730,8 @@ class AlignManualWindow(QtWidgets.QWidget, align_manual.Ui_Form):
             self.parent.fts.update_header(self.image, "MYALIGNX", x)
             self.parent.fts.update_header(self.image, "MYALIGNY", y)
             new_row = self.parent.image_list.currentIndex().row() + 1
-            lenght = len(self.parent.fnk_deve.get_from_tree(self.parent.image_list))
+            lenght = len(self.parent.fnk_deve.get_from_tree(
+                    self.parent.image_list))
             new_row = new_row % (lenght)
             self.parent.image_list.setCurrentItem(
                     self.parent.image_list.topLevelItem(new_row))
@@ -2742,7 +2787,8 @@ class SetCalibrationWindow(QtWidgets.QWidget, setting_calibration.Ui_Form):
         self.verb = verb
         self.debugger = debugger
         
-        self.file = "{}_calibration.set".format(self.parent.logger.setting_file)
+        self.file = "{}_calibration.set".format(
+                self.parent.logger.setting_file)
         
         self.setting_calibration_save.clicked.connect(lambda: (self.save()))
         
@@ -2905,7 +2951,8 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         
         if not settings['header_to_use'] == "":
             headers = settings['header_to_use'].split(",")
-            self.parent.fnk_deve.replace_list_con(self.setting_phot_hex_use, headers)
+            self.parent.fnk_deve.replace_list_con(self.setting_phot_hex_use,
+                                                  headers)
         
     def load(self):
         try:
@@ -2954,13 +3001,15 @@ class SetPhotometryWindow(QtWidgets.QWidget, setting_photometry.Ui_Form):
         psf_maxiter = self.setting_psf_maxiter.value()
         
         #setting_phot_hex_use
-        header_to_use = self.parent.fnk_deve.list_of_list(self.setting_phot_hex_use)
+        header_to_use = self.parent.fnk_deve.list_of_list(
+                self.setting_phot_hex_use)
         
         pho_set = {"std_mag": std_mag, "std_mag_nomad": std_mag_nomad,
                    "std_mag_usno": std_mag_usno, "std_mag_gaia": std_mag_gaia,
                    "std_mag_radius": std_mag_radius,
                    
-                   "photpar_aperture": list(map(float, photpar_aperture.split(","))),
+                   "photpar_aperture": list(map(
+                           float, photpar_aperture.split(","))),
                    "photpar_zmag": photpar_zmag, "photpar_gain": photpar_gain,
                    
                    "stf_max": stf_max,
@@ -2983,7 +3032,8 @@ class SetCCleanerWindow(QtWidgets.QWidget, setting_cosmiccleaner.Ui_Form):
         self.verb = verb
         self.debugger = debugger
         
-        self.file = "{}_cosmiccleaner.set".format(self.parent.logger.setting_file)
+        self.file = "{}_cosmiccleaner.set".format(
+                self.parent.logger.setting_file)
         
         self.setting_cclener_save.clicked.connect(lambda: (self.save()))
         
@@ -3125,8 +3175,9 @@ class SubtractionWindow(QtWidgets.QWidget, combine_subtraction.Ui_Form):
         file2 = self.subtract_image2.currentText()
         diff = self.parent.fts.subtract(file1, file2)
         if diff is not None:
-            the_file = "{}/myraf_diff_{}.fits".format(self.parent.logger.tmp_dir,
-                        self.parent.logger.random_string(10))
+            the_file = "{}/myraf_diff_{}.fits".format(
+                    self.parent.logger.tmp_dir,
+                    self.parent.logger.random_string(10))
             self.parent.fts.write(the_file, diff)
             
             self.parent.open_window("display", [the_file, True])

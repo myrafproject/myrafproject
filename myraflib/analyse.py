@@ -314,7 +314,8 @@ class Astronomy:
                 self.logger.log(e)
                 return(False)
                 
-        def phot(self, file, output, coords, apertures, annulus=5, dannulus=5, zmag=25):
+        def phot(self, file, output, coords, apertures, annulus=5,
+                 dannulus=5, zmag=25):
             try:
                 coord_file = "{}/myraf_coord.coo".format(self.logger.tmp_dir)
                 with open(coord_file, "w") as f:
@@ -354,7 +355,8 @@ class Astronomy:
                 iraf.daophot.phot.interactive = "no"
                 iraf.daophot.phot.radplots = "no"
                 
-                iraf.daophot.phot(file, output=output, coords=coord_file, verbose="no", verify="no", interactive="no")
+                iraf.daophot.phot(file, output=output, coords=coord_file,
+                                  verbose="no", verify="no", interactive="no")
                 return True
             except Exception as e:
                 self.logger.log(e)
@@ -434,7 +436,8 @@ class Astronomy:
                                       psffwhm=psffwhm, psfsize=psfsize,
                                       psfk=psfk, psfbeta=psfbeta,
                                       verbose=verbose)
-                self.write(output, new_data, header=self.header(file, field="?"))
+                self.write(output, new_data, header=self.header(file,
+                                                                field="?"))
             except Exception as e:
                 self.logger.log(e)
             
@@ -680,7 +683,8 @@ class Astronomy:
                 stars_tbl['y'] = source[1]
                 
             stars = extract_stars(nddata, stars_tbl, size=size*10)
-            epsf_builder = EPSFBuilder(oversampling=4, maxiters=3, progress_bar=self.verb)
+            epsf_builder = EPSFBuilder(oversampling=4, maxiters=3,
+                                       progress_bar=self.verb)
             epsf, fitted_stars = epsf_builder(stars)
             print(epsf)
         
