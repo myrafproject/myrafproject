@@ -1200,13 +1200,13 @@ class GraphWindow(QtWidgets.QWidget, graph.Ui_Form):
             self.clear()
             self.disp_chart.canvas.axlc1.errorbar(
                     self.parent.arr.fnum(graph_data[:, 0]),
-                    self.parent.arr.fnum(graph_data[:, 1]), fmt="o")
+                    self.parent.arr.fnum(graph_data[:, 1]), fmt="ok")
             self.disp_chart.canvas.axlc1.invert_yaxis()
             if not cgraph_data == []:
                 cgraph_data = self.parent.arr.lst2num(cgraph_data)
                 self.disp_chart.canvas.axlc2.errorbar(
                         self.parent.arr.fnum(cgraph_data[:, 0]),
-                        self.parent.arr.fnum(cgraph_data[:, 1]), fmt="o")
+                        self.parent.arr.fnum(cgraph_data[:, 1]), fmt="ok")
                 self.disp_chart.canvas.axlc2.invert_yaxis()
             
             self.disp_chart.canvas.draw()

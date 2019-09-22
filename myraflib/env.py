@@ -148,6 +148,7 @@ class Logger():
         self.observat_dir = abspath("./observat/")
         
     def execute(self, cmd):
+        """Executes a given command"""
         try:
             p = Popen(cmd, stdout=PIPE, universal_newlines=True)
             for stdout_line in iter(p.stdout.readline, ""):
@@ -160,23 +161,29 @@ class Logger():
             self.log(e)
         
     def random_string(self, length):
+        """Generates random strings with given length"""
         return(''.join(random.choices(
                 string.ascii_uppercase + string.digits, k=length)))
         
     def time_stamp(self):
+        """Returns timestamp as YYYY-mm-ddTHH:MM:SS"""
         return(str(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")))
         
     def time_stamp_(self):
+        """Returns timestamp as YYYY-mm-ddTHH-MM-SS"""
         return(str(datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%S")))
     
     def user_name(self):
+        """Returns user name"""
         return(str(getuser()))
     
     def system_info(self):
+        """Returns System Information"""
         si = uname()
         return("{}, {}, {}, {}".format(si[0], si[2], si[5], self.user_name()))
         
     def caller_function(self, pri=False):
+        """Returns Caller function of a function"""
         curframe = currentframe()
         calframe = getouterframes(curframe, 2)
         caller = calframe
@@ -188,11 +195,13 @@ class Logger():
             return(caller)
             
     def print_if(self, text):
+        """Prints text if verb is True"""
         if self.verb:
             print("[{}|{}] --> {}".format(self.time_stamp(),
                   self.system_info(), text))
             
     def log(self, text):
+        """Logs text if debugger is True"""
         try:
             self.print_if(text)
             if self.debugger:
@@ -208,6 +217,7 @@ class Logger():
             print(e)
         
     def mini_log(self, text):
+        """Logs (mini log) if debugger is true"""
         mini_log_file = open(self.mini_log_file, "a")
         mini_log_file.write("[{}|{}] --> {}\n".format(self.time_stamp(),
                             self.system_info(), text))
@@ -222,6 +232,7 @@ class Logger():
             print(e)
         
     def dump_log(self):
+        """Clears log files"""
         try:
             self.log("Deleting the Log file.")
             log_file = open(self.log_file, "w")
@@ -230,14 +241,17 @@ class Logger():
             print(e)
         
     def is_it_windows(self):
+        """Checks if system is windows"""
         self.log("Checking if the OS is Windows")
         return(system() == 'Windows')
         
     def is_it_linux(self):
+        """Checks if system is GNU/Linux"""
         self.log("Checking if the OS is Linux")
         return(system() == 'Linux')
         
     def is_it_other(self):
+        """Checks if system is neither Windows nor GNU/Linux """
         self.log("Checking if the OS is Other")
         return(not (self.is_it_linux() or self.is_it_windows()))
         
@@ -248,6 +262,7 @@ class File():
         self.logger = Logger(verb=self.verb, debugger=self.debugger)
             
     def list_of_observatories(self):
+        """Return List of observatories"""
         try:
             if self.is_dir(self.logger.obs_dir):
                 observatories = self.list_of_fiels(self.logger.obs_dir, "*")
@@ -262,11 +277,13 @@ class File():
             self.logger.log(e)
         
     def temp_cleaner(self):
-        files = self.list_of_fiels(self.logger.tmp_dir, "myraf*.fits")
+        """Removes myraf files in /tmp"""
+        files = self.list_of_fiels(self.logger.tmp_dir, "myraf*.*")
         for file in files:
             self.rm(file)
         
     def get_size(self, path):
+        """Return size of a given file"""
         try:
             if self.is_file(path):
                 return(getsize(path))
@@ -274,6 +291,7 @@ class File():
             self.logger.log(e)
         
     def abs_path(self, path):
+        """Return Absolute path of a given path"""
         try:
             return(abspath(path))
         except Exception as e:
@@ -281,6 +299,7 @@ class File():
             
 
     def list_in_path(self, path):
+        """Returns file/directory in a given path"""
         try:
             pt = self.abs_path(path)
             return(sorted(glob(pt)))
@@ -288,6 +307,7 @@ class File():
             self.logger.log(e) 
 
     def list_of_fiels(self, path, ext="*"):
+        """Returns file in a given path with given extension"""
         try:
             if self.is_dir(path):
                 pt = self.abs_path("{}/{}".format(path, ext))
@@ -296,6 +316,7 @@ class File():
             self.logger.log(e)  
             
     def is_file(self, src):
+        """Checks if given path is file"""
         self.logger.log("Checking if file {0} exist".format(src))
         try:
             return(isfile(src))
@@ -304,6 +325,7 @@ class File():
             return(False)
         
     def is_dir(self, src):
+        """Checks if given path is directory"""
         self.logger.log("Checking if directory {0} exist".format(src))
         try:
             return((not self.is_file(src)) and exists(src))
@@ -312,6 +334,7 @@ class File():
             return(False)
     
     def get_home_dir(self):
+        """Return users home directory"""
         self.logger.log("Getting Home dir path")
         try:
             return(expanduser("~"))
@@ -319,6 +342,7 @@ class File():
             self.logger.log(e)
     
     def get_base_name(self, src):
+        """Returns base path of a given file"""
         self.logger.log("Finding path and file name for {0}".format(src))
         try:
             pn = dirname(realpath(src))
@@ -328,6 +352,7 @@ class File():
             self.logger.log(e)
     
     def get_extension(self, src):
+        """Returns extension of a given file"""
         self.logger.log("Finding extension for {0}".format(src))
         try:
             return(splitext(src))
@@ -335,6 +360,7 @@ class File():
             self.logger.log(e)
             
     def split_file_name(self, src):
+        """Retuns path and name of a file"""
         self.logger.log("Chopping path {0}".format(src))
         try:
             path, name = self.get_base_name(src)
@@ -344,6 +370,7 @@ class File():
             self.logger.log(e)
             
     def cp(self, src, dst):
+        """Copies a given file"""
         self.logger.log("Copying file {0} to {1}".format(src, dst))
         try:
             copy2(src, dst)
@@ -351,6 +378,7 @@ class File():
             self.logger.log(e)
             
     def rm(self, src):
+        """Removes a given file"""
         self.logger.log("Removing file {0}".format(src))
         try:
             remove(src)
@@ -358,6 +386,7 @@ class File():
             self.logger.log(e)
             
     def mv(self, src, dst):
+        """Moves a given file"""
         self.logger.log("Moving file {0} to {1}".format(src, dst))
         try:
             move(src, dst)
@@ -365,6 +394,7 @@ class File():
             self.logger.log(e)
             
     def mkdir(self, path):
+        """Makes a directory"""
         try:
             if not self.is_dir:
                 mkdir(path)
@@ -372,6 +402,7 @@ class File():
             self.logger.log(e)
             
     def read_pysexcat(self, file):
+        """Reads pysexcat file and returns as an array"""
         try:
             if self.is_file(file):
                 the_file = open(file, "r")
@@ -390,6 +421,7 @@ class File():
             self.logger.log(e)
             
     def read_array(self, src, dm=" ", dtype=float):
+        """Reads an array from a file"""
         self.logger.log("Reading {0}".format(src))
         try:
             return(genfromtxt(src, comments='#', delimiter=dm, dtype=dtype))
@@ -397,6 +429,7 @@ class File():
             self.logger.log(e)
             
     def write_array(self, src, arr, dm=" ", h=""):
+        """Writes an array to a file"""
         self.logger.log("Writing to {0}".format(src))
         try:
             arr = ar(arr)
@@ -404,6 +437,7 @@ class File():
         except Exception as e:
             self.logger.log(e)
     def write_list(self, dest, the_list):
+        """Writes a list of a file"""
         f = open(dest, "w")
         for i in the_list:
             f.write("{}\n".format(i))
@@ -411,13 +445,15 @@ class File():
         f.close()
         
     def write_json(self, file, dic):
+        """Writes a dictionary ro a json file"""
         try:
             with open(file, 'w') as set_file:
-                dump(dic, set_file, indent=1, sort_keys=True)
+                dump(dic, set_file, indent=1)
         except Exception as e:
             self.logger.log(e)
             
     def read_json(self, file):
+        """Returns a dictionary from a json file"""
         try:
             with open(file, 'r') as myfile:
                 data=myfile.read()
@@ -429,6 +465,7 @@ class File():
             self.logger.log(e)
             
     def write_set(self, dic, typ):
+        """Writes MYRaf settings"""
         if typ == "cos":
             self.write_json(self.logger.cos_set_file, dic)
         elif typ == "pho":
@@ -439,6 +476,7 @@ class File():
             self.write_json(self.logger.cal_ast_file, dic)
             
     def read_set(self, typ):
+        """Reads MYRaf settings"""
         if typ == "cos":
             try:
                 dic = self.read_json(self.logger.cos_set_file)

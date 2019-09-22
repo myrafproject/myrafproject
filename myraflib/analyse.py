@@ -101,6 +101,7 @@ class Astronomy:
             self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
         
         def str_to_time(self, date):
+            """Returns a date object from a string"""
             if date is not None:
                 try:
                     if "T" in date:
@@ -119,6 +120,7 @@ class Astronomy:
                     self.logger.log(e)
         
         def time_diff(self, time, time_offset=-3, offset_type="hours"):
+            """Time Calculator"""
             if time is not None and time_offset is not None:
                 try:
                     if "HOURS".startswith(offset_type.upper()):
@@ -134,6 +136,7 @@ class Astronomy:
                 self.logger.log("False Type: One of the values is not correct")
         
         def jd(self, utc):
+            """Calculates JD from UTC"""
             if utc is not None:
                 try:
                     ret = tm(utc, scale='utc')
@@ -144,6 +147,7 @@ class Astronomy:
                 self.logger.log("False Type: The value is not date")
                 
         def jd_r(self, jd):
+            """Returns UTC from JD"""
             try:
                 t = tm(jd, format='jd', scale='tai')
                 return(t.to_datetime())
@@ -159,6 +163,7 @@ class Astronomy:
             self.fop = env.File(verb=self.verb, debugger=self.debugger)
             
         def imshift(self, file, output, dx, dy):
+            """Shifts a given fits file with given dx and dy"""
             try:
                 iraf.imshift.unlearn()
                 iraf.imshift(input=file, output=output, x=dx, y=dy)
@@ -170,6 +175,7 @@ class Astronomy:
             
         def zerocombine(self, files, output, method="median",
                         rejection="minmax", ccdtype=""):
+            """IRAF zerocombine"""
             self.logger.log("Zerocombine Started")
             try:
                 biases = ",".join(files)
@@ -199,6 +205,7 @@ class Astronomy:
         
         def darkcombine(self, files, output, zero=None, method="median",
                         rejection="minmax", ccdtype="", scale="exposure"):
+            """IRAF darkcombine"""
             self.logger.log("Darkcombine Started")
             try:
                 darks = ",".join(files)
@@ -235,6 +242,7 @@ class Astronomy:
         
         def flatcombine(self, files, output, dark=None, zero=None, ccdtype="",
                         method="Median", rejection="minmax", subset="no"):
+            """IRAF flatcombine"""
             self.logger.log("Flatcombine Started")
             try:
                 flats = ",".join(files)
@@ -278,6 +286,10 @@ class Astronomy:
                 return(False)
                 
         def ccdproc(self, file, output=None, zero=None, dark=None, flat=None):
+            """
+            Does IRAF calibration
+            IRAF ccdproc
+            """
             self.logger.log("Ccdproc Started")
             try:
                 iraf.imred.unlearn()
@@ -316,6 +328,10 @@ class Astronomy:
                 
         def phot(self, file, output, coords, apertures, annulus=5,
                  dannulus=5, zmag=25):
+            """
+            Does IRAF photometry
+            IRAF phot
+            """
             try:
                 coord_file = "{}/myraf_coord.coo".format(self.logger.tmp_dir)
                 with open(coord_file, "w") as f:
@@ -363,6 +379,10 @@ class Astronomy:
                 return False
 
         def textdump(self, file, fields=["id", "mag", "merr"]):
+            """
+            Returns an array from IRAF mag file
+            IRAF txdump
+            """
             try:
                 ret = []
                 txdump = iraf.txdump
@@ -386,6 +406,10 @@ class Astronomy:
         def astrometry(self, file, out_file,
                        server="http://nova.astrometry.net/api/",
                        apikey="abhfixfhhxsignyo"):
+            """
+            Solves field for given fits
+            Online astrometry.net
+            """
             try:
                 command = ["python3", "myraf_astrometry.py",
                            "--apikey={}".format(apikey),
@@ -400,6 +424,10 @@ class Astronomy:
                 self.logger.log(e)
                 
         def solve_field(self, file, out_file):
+            """
+            Solves field for given fits
+            offline (solve-field) astrometry.net
+            """
             try:
                 
                 command = ["solve-field", "--temp-axy",
@@ -424,6 +452,7 @@ class Astronomy:
                            sepmed=True, cleantype='meanmask', fsmode='median',
                            psfmodel='gauss', psffwhm=2.5, psfsize=7, psfk=None,
                            psfbeta=4.765, verbose=False):
+            """Cleaning cosmic rays from given file"""
             try:
                 data = self.data(file)
                 
@@ -442,6 +471,7 @@ class Astronomy:
                 self.logger.log(e)
             
         def align(self, image, ref, output):
+            """Aligning an image with respect of given referance"""
             identifications = alipy.ident.run(ref, [image], visu=False,
                                               sexkeepcat=False, verbose=False)
             outputshape = alipy.align.shape(ref)
@@ -452,6 +482,7 @@ class Astronomy:
                                             shape=outputshape, outdir=output)
                 
         def star_finder(self, image, max_star=500):
+            """returns x, y and fwhm of objects on a given fits image"""
             self.logger.log("Star finder started for {}".format(image))
             try:
                 img = imgcat.ImgCat(image)
@@ -467,6 +498,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def subtract(self, img1, img2):
+            """Subtacts two image array"""
             self.logger.log("Subtraction for {} - {}".format(img1, img2))
             try:
                 data1 = self.data(img1)
@@ -477,6 +509,7 @@ class Astronomy:
                 self.logger.log(e)
             
         def combine(self, files, combine_method):
+            """Combines (median, average, sum) given files"""
             self.logger.log("Combine for {} files with {} methdo".format(
                     len(files), combine_method))
             try:
@@ -532,6 +565,7 @@ class Astronomy:
                 return(False)
             
         def check(self, file):
+            """Checks if file is fit"""
             self.logger.log("Check if file({}) is fits".format(file))
             try:
                 hdu = fts.open(file, "readonly")
@@ -542,6 +576,7 @@ class Astronomy:
                 return(False)
                 
         def header(self, file, field="*"):
+            """Returns header(s) from file"""
             self.logger.log("Getting Header from {}".format(file))
             ret = []
             try:
@@ -562,6 +597,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def data(self, file, rot=None):
+            """Return data from a given fits file"""
             self.logger.log("Getting data from {}".format(file))
             try:
                 hdu = fts.open(file, mode='readonly')
@@ -576,6 +612,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def delete_header(self, file, key):
+            """Removes a key from header"""
             self.logger.log("Deleting {}'s Header".format(file))
             try:
                 hdu = fts.open(file, mode='update')
@@ -585,6 +622,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def update_header(self, src, key, value):
+            """Adds/Updates a header to a given fits file"""
             self.logger.log("Updating {}'s Header, {}={}".format(src,
                             key, value))
             try:
@@ -595,6 +633,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def mupdate_header(self, src, key_values):
+            """Adds/Updates a header to multiple fits files"""
             self.logger.log("Updating multiple headers in {}".format(src))
             try:
                 hdu = fts.open(src, mode='update')
@@ -605,6 +644,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def stats(self, file):
+            """Returns statistics of a given fit file."""
             self.logger.log("Getting Stats from {}".format(file))
             try:
                 hdu = fts.open(file)
@@ -618,6 +658,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def write(self, dest, data, header=None, ow=True):
+            """Writes data to a fits file"""
             self.logger.log("Writeing data to file({})".format(dest))
             try:
                 if ow and self.fop.is_file(dest):
@@ -629,6 +670,7 @@ class Astronomy:
                 
         def photometry(self, file, x_coor, y_coor, zmag=25.0,
                        aper_radius=15.0, gain=1.21):
+            """Python photometry"""
             try:
                 data = self.data(file)
                 bkg = Background(data)
@@ -645,6 +687,7 @@ class Astronomy:
                 
         def mphotometry(self, file, coors, zmag=25.0,
                        apertures=[10.0 ,15.0], gain=1.21):
+            """Python multiple photometry"""
             try:
                 data = self.data(file)
                 bkg = Background(data)
@@ -671,6 +714,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def psf(self, image):
+            """PSF photometry"""
             data = self.data(image)
             bkg = Background(data)
             pure_data = data - bkg
@@ -695,6 +739,7 @@ class Astronomy:
             self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
             
         def create_site(self, lati, long, alti):
+            """Creates a site"""
             try:
                 site = EarthLocation(lat=float(lati)*U.deg,
                                      lon=float(long)*U.deg,
@@ -704,12 +749,14 @@ class Astronomy:
                 self.logger.log(e)
                 
         def create_object(self, ra, dec):
+            """Creates an object"""
             try:
                 return(SkyCoord(ra=ra*U.hour, dec=dec*U.deg))
             except Exception as e:
                 self.logger.log(e)
                 
         def radec_to_alt_az(self, site, obj, utc):
+            """Returns alt/az of an object for a given time and site"""
             try:
                 frame_of_sire = AltAz(obstime=utc, location=site)
                 object_alt_az = obj.transform_to(frame_of_sire)
@@ -718,12 +765,14 @@ class Astronomy:
                 self.logger.log(e)
                 
         def airmass(self, object_altaz):
+            """Calculates airmass of a given alt/az"""
             try:
                 return(object_altaz.secz)
             except Exception as e:
                 self.logger.log(e)
                 
         def convert_sex_to_deg(self, angle):
+            """Converts sexagecimal to degree"""
             try:
                 an = angle.split(":")
                 if angle.startswith("-"):
@@ -733,7 +782,8 @@ class Astronomy:
             except Exception as e:
                 self.logger.log(e)
             
-        def phtsical_distence(self, coord1, coord2):
+        def physical_distence(self, coord1, coord2):
+            """Calculates pixel distence of two coordinates"""
             try:
                 return(sqrt(power(coord1[0] - coord2[0], 2) +
                             power(coord1[1] - coord2[1], 2)))
@@ -741,6 +791,7 @@ class Astronomy:
                 self.logger.log(e)
                 
         def find_closest(self, coordinates, coord):
+            """Finds closesst coordinate in coordinate array to a given coordinates"""
             try:
                 dists = sqrt(power(coordinates[:, 0] - coord[0], 2) +
                              power(coordinates[:, 1] - coord[1], 2))
@@ -765,6 +816,7 @@ class Statistics:
             self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
             
         def flux_to_mag(self, flux, fluxerr):
+            """Calculates mag from flux"""
             try:
                 mag, magerr = -2.5 * log10(flux), 2.5/log(10.0)*fluxerr/flux
                 return(mag, magerr)
@@ -779,17 +831,21 @@ class Statistics:
             self.fop = env.File(verb=self.verb, debugger=self.debugger)
         
         def rotate90(self, array, number=0):
+            """Rotates an array 90 degrees"""
             if not number == 0 or number is not None:
                 return(rot90(array, number))
             else:
                 return(array)
                 
         def mean(self, array):
+            """returns mean of a given array"""
             numpy_array = ar(array)
             return(nmea(numpy_array))
             
         def lst2num(self, lst):
+            """returns numpy array from a list"""
             return(ar(lst))
             
         def fnum(self, lst):
+            """Converts numpy array to float64"""
             return(lst.astype(f64))
