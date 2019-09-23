@@ -16,6 +16,9 @@
   <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <widget class="QGroupBox" name="setting_phot_std">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>S&amp;tandard Magnitudes</string>
      </property>
@@ -135,6 +138,9 @@
    </item>
    <item row="1" column="0" rowspan="2">
     <widget class="QGroupBox" name="groupBox_3">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>PSF</string>
      </property>

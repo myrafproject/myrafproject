@@ -1152,11 +1152,11 @@ class GraphWindow(QtWidgets.QWidget, graph.Ui_Form):
             
             data = self.parent.fop.read_json(file)
             v = list(range(1, data["nobj"] + 1))
-            self.parent.fnk_deve.c_add(self.variabl_index, v)
-            self.parent.fnk_deve.c_add(self.compair_index, ["None"] + v)
-            self.parent.fnk_deve.c_add(self.compair2_index, ["None"] + v)
-            self.parent.fnk_deve.c_add(self.x_values, data["hex"])
-            self.parent.fnk_deve.c_add(self.aperture, data["apertures"])
+            self.parent.fnk_deve.c_replace_list_con(self.variabl_index, v)
+            self.parent.fnk_deve.c_replace_list_con(self.compair_index, ["None"] + v)
+            self.parent.fnk_deve.c_replace_list_con(self.compair2_index, ["None"] + v)
+            self.parent.fnk_deve.c_replace_list_con(self.x_values, data["hex"])
+            self.parent.fnk_deve.c_replace_list_con(self.aperture, data["apertures"])
             
     def plot_graph(self):
         file = self.file_path.text()
@@ -1919,7 +1919,7 @@ class PhotometryWindow(QtWidgets.QWidget, photometry.Ui_Form):
         if self.image is not None:
             if event.button == 1:
                 modifiers = QtWidgets.QApplication.keyboardModifiers()
-                if modifiers == QtCore.Qt.ShiftModifier:
+                if modifiers == QtCore.Qt.ControlModifier:
                     self.find_closest_source()
                 else:
                     x, y = self.display_photometry.get_xy()
