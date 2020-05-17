@@ -202,6 +202,7 @@ class Ui_MainWindow(object):
         self.phot_coor_sex.setObjectName("phot_coor_sex")
         self.gridLayout_19.addWidget(self.phot_coor_sex, 0, 0, 1, 2)
         self.phot_coor_list = QtWidgets.QListWidget(self.groupBox_7)
+        self.phot_coor_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.phot_coor_list.setObjectName("phot_coor_list")
         self.gridLayout_19.addWidget(self.phot_coor_list, 1, 0, 1, 2)
         spacerItem4 = QtWidgets.QSpacerItem(117, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)

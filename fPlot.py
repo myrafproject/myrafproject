@@ -42,10 +42,10 @@ class FitsPlot(object):
             self.logger.error(e)
             
     def get_xy(self):
-        return(self.fitsimage.get_last_data_xy())
+        return self.fitsimage.get_last_data_xy()
         
     def get_data_size(self):
-        return(self.fitsimage.get_data_size())
+        return self.fitsimage.get_data_size()
         
     def get_data(self, point=True):
         try:
@@ -53,11 +53,11 @@ class FitsPlot(object):
                 x, y = self.get_xy()
                 w, h = self.get_data_size()
                 if 0 < x < w and 0 < y < h:
-                    return(self.fitsimage.get_data(int(x), int(y)))
+                    return self.fitsimage.get_data(int(x), int(y))
                 else:
-                    return(float('NaN'))
+                    return None
             else:
-                return(self.fitsimage.get_data())
+                return self.fitsimage.get_data()
         except Exception as e:
             self.logger.error(e)
 

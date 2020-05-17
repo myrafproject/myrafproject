@@ -516,7 +516,11 @@
             </widget>
            </item>
            <item row="1" column="0" colspan="2">
-            <widget class="QListWidget" name="phot_coor_list"/>
+            <widget class="QListWidget" name="phot_coor_list">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::ExtendedSelection</enum>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <spacer name="horizontalSpacer_5">

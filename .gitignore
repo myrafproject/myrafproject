@@ -2,3 +2,4 @@
 *.txt
 logfile
 /pyraf/
+/.idea/
