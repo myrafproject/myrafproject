@@ -4,403 +4,145 @@ Created on Fri May  3 14:43:58 2019
 
 @author: msh, yk
 """
-try:
-    import string
-except Exception as e:
-    print("{}: Can't import string?".format(e))
-    exit(0)
+import tempfile
+from json import dump, loads
+from os import remove, mkdir
+from os.path import getsize, abspath, isfile, exists, expanduser, realpath, dirname, basename, splitext
+from glob import glob
+from shutil import copy2, move
 
-try:
-    from subprocess import Popen
-    from subprocess import PIPE
-    from subprocess import CalledProcessError
-except Exception as e:
-    print("{}: Can't import subprocess?".format(e))
-    exit(0)
-    
-try:
-    from json import dump
-    from json import loads
-except Exception as e:
-    print("{}: Can't import json?".format(e))
-    exit(0)
-    
-try:
-    import random
-except Exception as e:
-    print("{}: Can't import random?".format(e))
-    exit(0)
+from numpy import array as ar, genfromtxt, savetxt
 
-try:
-    from numpy import genfromtxt
-    from numpy import savetxt
-    from numpy import array as ar
-except Exception as e:
-    print("{}: Can't import numpy.".format(e))
-    exit(0)
 
-try:
-    from os.path import expanduser
-    from os.path import exists
-    from os.path import isfile
-    from os.path import dirname
-    from os.path import basename
-    from os.path import realpath
-    from os.path import splitext
-    from os.path import abspath
-    from os.path import getsize
-    from os import remove
-    from os import mkdir
-except Exception as e:
-    print("{}: Can't import os?".format(e))
-    exit(0)
-
-try:
-    from glob import glob
-except Exception as e:
-    print("{}: Can't import glob?".format(e))
-    exit(0)
-
-try:
-    from shutil import copy2
-    from shutil import move
-except Exception as e:
-    print("{}: Can't import shutil?".format(e))
-    exit(0)
-
-try:
-    from datetime import datetime
-except Exception as e:
-    print("{}: Can't import datetime?".format(e))
-    exit(0)
-
-try:
-    from getpass import getuser
-except Exception as e:
-    print("{}: Can't import getpass?".format(e))
-    exit(0)
-
-try:
-    from platform import uname
-    from platform import system
-except Exception as e:
-    print("{}: Can't import platform?".format(e))
-    exit(0)
-
-try:
-    from inspect import currentframe
-    from inspect import getouterframes
-except Exception as e:
-    print("{}: Can't import inspect?".format(e))
-    exit(0)
-
-try:
-    import tempfile
-except Exception as e:
-    print("{}: Can't import tempfile?".format(e))
-    exit(0)
-    
-class Logger():
-    def __init__(self, verb=True, debugger=False):
-        self.verb = verb
-        self.debugger = debugger
-        self.log_dir = abspath("{}/mylog/".format(expanduser("~")))
-        self.obs_dir = abspath("{}/myobservat/".format(expanduser("~")))
-        self.log_file = abspath("{}/log.my".format(self.log_dir))
-        self.mini_log_file = abspath("{}/mlog.my".format(self.log_dir))
-        self.tmp_dir = tempfile.gettempdir()
-        
-        if not(exists(self.log_dir) and not isfile(self.log_dir)):
-            mkdir(self.log_dir)
-            
-        if not(exists(self.obs_dir) and not isfile(self.obs_dir)):
-            mkdir(self.obs_dir)
-            
-        self.setting_file = abspath("{}/.myset".format(expanduser("~")))
-        
-        self.cos_set_file = abspath("{}/.myset_cosmiccleaner.set".format(
-                expanduser("~")))
-        self.cos_set = {"gain": 2.2, "reno": 10.0, "sicl": 5.5, "sifr": 0.3,
-                        "obli": 5.0, "mait": 2, "crma": False}
-        
-        self.pho_set_file = abspath("{}/.myset_photometry.set".format(
-                expanduser("~")))
-        self.pho_set = {"std_mag": False, "std_mag_nomad": True,
-                        "std_mag_usno": True, "std_mag_gaia": True,
-                        "std_mag_radius": 10.0, 
-                        "photpar_aperture": [10.0, 15.0], "photpar_zmag": 25.0,
-                        "photpar_gain": "gain", "stf_max": 500,
-                        "psf_sizefactor": 10.0, "psf_maxiter":10,
-                        "header_to_use": []}
-        
-        self.cal_set_file = abspath("{}/.myset_calibration.set".format(
-                expanduser("~")))
-        self.cal_set = {"b_combine": 1, "b_rejection": 0,
-                        "d_combine": 0, "d_rejection": 0, "d_scale": 1,
-                        "f_combine": 0, "f_rejection": 0}
-        
-        self.cal_ast_file = abspath("{}/.myset_astrometry.set".format(
-                expanduser("~")))
-        self.cal_ast = {"online": False,
-                        "server": "http://nova.astrometry.net/api/",
-                        "apike": "abhfixfhhxsignyo"}
-        
-        self.observat_dir = abspath("./observat/")
-        
-    def execute(self, cmd):
-        """Executes a given command"""
-        try:
-            p = Popen(cmd, stdout=PIPE, universal_newlines=True)
-            for stdout_line in iter(p.stdout.readline, ""):
-                yield stdout_line 
-            p.stdout.close()
-            return_code = p.wait()
-            if return_code:
-                raise CalledProcessError(return_code, cmd)
-        except Exception as e:
-            self.log(e)
-        
-    def random_string(self, length):
-        """Generates random strings with given length"""
-        return(''.join(random.choices(
-                string.ascii_uppercase + string.digits, k=length)))
-        
-    def time_stamp(self):
-        """Returns timestamp as YYYY-mm-ddTHH:MM:SS"""
-        return(str(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")))
-        
-    def time_stamp_(self):
-        """Returns timestamp as YYYY-mm-ddTHH-MM-SS"""
-        return(str(datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%S")))
-    
-    def user_name(self):
-        """Returns user name"""
-        return(str(getuser()))
-    
-    def system_info(self):
-        """Returns System Information"""
-        si = uname()
-        return("{}, {}, {}, {}".format(si[0], si[2], si[5], self.user_name()))
-        
-    def caller_function(self, pri=False):
-        """Returns Caller function of a function"""
-        curframe = currentframe()
-        calframe = getouterframes(curframe, 2)
-        caller = calframe
-        self.system_info()
-        if pri:
-            return("{}>{}>{}".format(
-                    caller[0][3], caller[1][3], caller[2][3]))
-        else:
-            return(caller)
-            
-    def print_if(self, text):
-        """Prints text if verb is True"""
-        if self.verb:
-            print("[{}|{}] --> {}".format(self.time_stamp(),
-                  self.system_info(), text))
-            
-    def log(self, text):
-        """Logs text if debugger is True"""
-        try:
-            self.print_if(text)
-            if self.debugger:
-                log_file = open(self.log_file, "a")
-                log_file.write("Time: {}\n".format(self.time_stamp()))
-                log_file.write("System Info: {}\n".format(self.system_info()))
-                log_file.write("Log: {}\n".format(text))
-                log_file.write("Function: {}\n\n\n".format(
-                        self.caller_function()))
-                log_file.close()
-                self.mini_log(text)
-        except Exception as e:
-            print(e)
-        
-    def mini_log(self, text):
-        """Logs (mini log) if debugger is true"""
-        mini_log_file = open(self.mini_log_file, "a")
-        mini_log_file.write("[{}|{}] --> {}\n".format(self.time_stamp(),
-                            self.system_info(), text))
-        mini_log_file.close()
-        
-    def dump_mlog(self):
-        try:
-            self.log("Deleting the Mini Log file.")
-            mini_log_file = open(self.mini_log_file, "w")
-            mini_log_file.close()
-        except Exception as e:
-            print(e)
-        
-    def dump_log(self):
-        """Clears log files"""
-        try:
-            self.log("Deleting the Log file.")
-            log_file = open(self.log_file, "w")
-            log_file.close()
-        except Exception as e:
-            print(e)
-        
-    def is_it_windows(self):
-        """Checks if system is windows"""
-        self.log("Checking if the OS is Windows")
-        return(system() == 'Windows')
-        
-    def is_it_linux(self):
-        """Checks if system is GNU/Linux"""
-        self.log("Checking if the OS is Linux")
-        return(system() == 'Linux')
-        
-    def is_it_other(self):
-        """Checks if system is neither Windows nor GNU/Linux """
-        self.log("Checking if the OS is Other")
-        return(not (self.is_it_linux() or self.is_it_windows()))
-        
 class File():
-    def __init__(self, verb=False, debugger=False):
-        self.verb = verb
-        self.debugger = debugger
-        self.logger = Logger(verb=self.verb, debugger=self.debugger)
-            
-    def list_of_observatories(self):
-        """Return List of observatories"""
-        try:
-            if self.is_dir(self.logger.obs_dir):
-                observatories = self.list_of_fiels(self.logger.obs_dir, "*")
-                ret = []
-                for obs in observatories:
-                    pn, fn = self.get_base_name(obs)
-                    ret.append(fn)
-                return(ret)
-            else:
-                self.mkdir(self.logger.obs_dir)
-        except Exception as e:
-            self.logger.log(e)
-        
-    def temp_cleaner(self):
+    def __init__(self, logger):
+        self.logger = logger
+        self.tmp_dir = tempfile.gettempdir()
+
+    def temp_cleaner(self, files="myraf*.*"):
         """Removes myraf files in /tmp"""
-        files = self.list_of_fiels(self.logger.tmp_dir, "myraf*.*")
+        files = self.list_of_fiels(self.tmp_dir, files)
         for file in files:
             self.rm(file)
-        
+
     def get_size(self, path):
         """Return size of a given file"""
         try:
             if self.is_file(path):
-                return(getsize(path))
+                return getsize(path)
         except Exception as e:
-            self.logger.log(e)
-        
+            self.logger.error(e)
+
     def abs_path(self, path):
         """Return Absolute path of a given path"""
         try:
-            return(abspath(path))
+            return abspath(path)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
 
     def list_in_path(self, path):
         """Returns file/directory in a given path"""
         try:
             pt = self.abs_path(path)
-            return(sorted(glob(pt)))
+            return sorted(glob(pt))
         except Exception as e:
-            self.logger.log(e) 
+            self.logger.error(e)
 
     def list_of_fiels(self, path, ext="*"):
         """Returns file in a given path with given extension"""
         try:
             if self.is_dir(path):
                 pt = self.abs_path("{}/{}".format(path, ext))
-                return(sorted(glob(pt)))
+                return sorted(glob(pt))
         except Exception as e:
-            self.logger.log(e)  
-            
+            self.logger.error(e)
+
     def is_file(self, src):
         """Checks if given path is file"""
-        self.logger.log("Checking if file {0} exist".format(src))
+        self.logger.info("Checking if file {0} exist".format(src))
         try:
-            return(isfile(src))
+            return isfile(src)
         except Exception as e:
-            self.logger.log(e)
-            return(False)
-        
+            self.logger.error(e)
+            return False
+
     def is_dir(self, src):
         """Checks if given path is directory"""
-        self.logger.log("Checking if directory {0} exist".format(src))
+        self.logger.info("Checking if directory {0} exist".format(src))
         try:
-            return((not self.is_file(src)) and exists(src))
+            return (not self.is_file(src)) and exists(src)
         except Exception as e:
-            self.logger.log(e)
-            return(False)
-    
+            self.logger.error(e)
+            return False
+
     def get_home_dir(self):
         """Return users home directory"""
-        self.logger.log("Getting Home dir path")
+        self.logger.info("Getting Home dir path")
         try:
-            return(expanduser("~"))
+            return expanduser("~")
         except Exception as e:
-            self.logger.log(e)
-    
+            self.logger.error(e)
+
     def get_base_name(self, src):
         """Returns base path of a given file"""
-        self.logger.log("Finding path and file name for {0}".format(src))
+        self.logger.info("Finding path and file name for {0}".format(src))
         try:
             pn = dirname(realpath(src))
             fn = basename(realpath(src))
-            return(pn, fn)
+            return pn, fn
         except Exception as e:
-            self.logger.log(e)
-    
+            self.logger.error(e)
+
     def get_extension(self, src):
         """Returns extension of a given file"""
-        self.logger.log("Finding extension for {0}".format(src))
+        self.logger.info("Finding extension for {0}".format(src))
         try:
-            return(splitext(src))
+            return splitext(src)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def split_file_name(self, src):
         """Retuns path and name of a file"""
-        self.logger.log("Chopping path {0}".format(src))
+        self.logger.info("Chopping path {0}".format(src))
         try:
             path, name = self.get_base_name(src)
             name, extension = self.get_extension(name)
-            return(path, name, extension)
+            return path, name, extension
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def cp(self, src, dst):
         """Copies a given file"""
-        self.logger.log("Copying file {0} to {1}".format(src, dst))
+        self.logger.info("Copying file {0} to {1}".format(src, dst))
         try:
             copy2(src, dst)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def rm(self, src):
         """Removes a given file"""
-        self.logger.log("Removing file {0}".format(src))
+        self.logger.info("Removing file {0}".format(src))
         try:
             remove(src)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def mv(self, src, dst):
         """Moves a given file"""
-        self.logger.log("Moving file {0} to {1}".format(src, dst))
+        self.logger.info("Moving file {0} to {1}".format(src, dst))
         try:
             move(src, dst)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def mkdir(self, path):
         """Makes a directory"""
         try:
             if not self.is_dir:
                 mkdir(path)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def read_pysexcat(self, file):
         """Reads pysexcat file and returns as an array"""
         try:
@@ -412,111 +154,55 @@ class File():
                         ln = line.replace("\n", "").split()
                         if float(ln[2]) != 99 and float(ln[3]) != 99:
                             ret.append(ar([float(ln[0]), float(ln[1]),
-                                        float(ln[2]), float(ln[3]),
-                                        float(ln[4]), float(ln[5]),
-                                        float(ln[6]), float(ln[7])]))
-            
-                return(ar(ret))
+                                           float(ln[2]), float(ln[3]),
+                                           float(ln[4]), float(ln[5]),
+                                           float(ln[6]), float(ln[7])]))
+
+                return ar(ret)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def read_array(self, src, dm=" ", dtype=float):
         """Reads an array from a file"""
-        self.logger.log("Reading {0}".format(src))
+        self.logger.info("Reading {0}".format(src))
         try:
-            return(genfromtxt(src, comments='#', delimiter=dm, dtype=dtype))
+            return genfromtxt(src, comments='#', delimiter=dm, dtype=dtype)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def write_array(self, src, arr, dm=" ", h=""):
         """Writes an array to a file"""
-        self.logger.log("Writing to {0}".format(src))
+        self.logger.info("Writing to {0}".format(src))
         try:
             arr = ar(arr)
             savetxt(src, arr, delimiter=dm, newline='\n', header=h)
         except Exception as e:
-            self.logger.log(e)
+            self.logger.error(e)
+
     def write_list(self, dest, the_list):
         """Writes a list of a file"""
         f = open(dest, "w")
         for i in the_list:
             f.write("{}\n".format(i))
-        
+
         f.close()
-        
+
     def write_json(self, file, dic):
         """Writes a dictionary ro a json file"""
         try:
             with open(file, 'w') as set_file:
                 dump(dic, set_file, indent=1)
         except Exception as e:
-            self.logger.log(e)
-            
+            self.logger.error(e)
+
     def read_json(self, file):
         """Returns a dictionary from a json file"""
         try:
             with open(file, 'r') as myfile:
-                data=myfile.read()
-                
+                data = myfile.read()
+
             settings = loads(data)
-            
-            return(settings)
+
+            return settings
         except Exception as e:
-            self.logger.log(e)
-            
-    def write_set(self, dic, typ):
-        """Writes MYRaf settings"""
-        if typ == "cos":
-            self.write_json(self.logger.cos_set_file, dic)
-        elif typ == "pho":
-            self.write_json(self.logger.pho_set_file, dic)
-        elif typ == "cal":
-            self.write_json(self.logger.cal_set_file, dic)
-        elif typ == "ast":
-            self.write_json(self.logger.cal_ast_file, dic)
-            
-    def read_set(self, typ):
-        """Reads MYRaf settings"""
-        if typ == "cos":
-            try:
-                dic = self.read_json(self.logger.cos_set_file)
-                for key, value in dic.items():
-                    if value is None:
-                        dic[value] = self.logger.cos_set[value]
-                return(dic)
-            except Exception as e:
-                self.logger.log(e)
-                return(self.logger.cos_set)
-                
-        elif typ == "pho":
-            try:
-                dic = self.read_json(self.logger.pho_set_file)
-                for key, value in dic.items():
-                    if value is None:
-                        dic[value] = self.logger.pho_set[value]
-                return(dic)
-            except Exception as e:
-                self.logger.log(e)
-                return(self.logger.pho_set)
-                
-        elif typ == "cal":
-            try:
-                dic = self.read_json(self.logger.cal_set_file)
-                for key, value in dic.items():
-                    if value is None:
-                        dic[value] = self.logger.cal_set[value]
-                return(dic)
-            except Exception as e:
-                self.logger.log(e)
-                return(self.logger.cal_set)
-                
-        elif typ == "ast":
-            try:
-                dic = self.read_json(self.logger.cal_ast_file)
-                for key, value in dic.items():
-                    if value is None:
-                        dic[value] = self.logger.cal_ast[value]
-                return(dic)
-            except Exception as e:
-                self.logger.log(e)
-                return(self.logger.cal_ast)
+            self.logger.error(e)

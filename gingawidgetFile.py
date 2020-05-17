@@ -24,26 +24,12 @@ except Exception as e:
     print("{}. Can't import matplotlib.".format(e))
     exit(0)
     
-try:
-    from myraflib import env
-except Exception as e:
-    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
-    exit(0)
-    
 
 class MplCanvas(FigureCanvas):
 
-    def __init__(self, verb=False, debugger=False):
-        self.verb = verb
-        self.debugger = debugger
-        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-        self.fop = env.File(verb=self.verb, debugger=self.debugger)
-        
-        if not self.fop.is_dir(self.logger.log_dir):
-            self.fop.mkdir(self.logger.log_dir)
+    def __init__(self):
         
         # create a regular matplotlib figure
-        self.logger.log("gingawidgetFile is doing something(MplCanvas).")
         try:
             self.fig = plt.figure()
             FigureCanvas.__init__(self, self.fig)
@@ -51,20 +37,11 @@ class MplCanvas(FigureCanvas):
                                        QtWidgets.QSizePolicy.Expanding)
             FigureCanvas.updateGeometry(self)
         except Exception as e:
-            self.logger.log(e)
+            print(e)
 
 class gingaWidget(QtWidgets.QWidget):
 
-    def __init__(self, parent=None, verb=False, debugger=False):
-        self.verb = verb
-        self.debugger = debugger
-        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-        self.fop = env.File(verb=self.verb, debugger=self.debugger)
-        
-        if not self.fop.is_dir(self.logger.log_dir):
-            self.fop.mkdir(self.logger.log_dir)
-        
-        self.logger.log("gingawidgetFile is doing something(gingaWidget).")
+    def __init__(self, parent=None):
         try:
             QtWidgets.QWidget.__init__(self, parent)
             self.canvas = MplCanvas()
@@ -73,4 +50,4 @@ class gingaWidget(QtWidgets.QWidget):
             self.setLayout(self.vbl)
             self.parent = parent
         except Exception as e:
-            self.logger.log(e)
+            print(e)

@@ -70,35 +70,14 @@ except Exception as e:
     print("{}: Can't import photutils.".format(e))
     exit(0)
 
-try:
-    from pyraf import iraf
-    from iraf import imred
-    from iraf import ccdred
-    from iraf import digiphot
-    from iraf import daophot
-    from iraf import ptools
-except Exception as e:
-    print("{}: Can't import pyraf/iraf.".format(e))
-    exit(0)
-
-try:
-    import alipy
-    from alipy import imgcat
-except Exception as e:
-    print("{}: Can't import alipy.".format(e))
-    exit(0)
-
-from . import env
 
 class Astronomy:
     def __init__(self):
         pass
     
     class Time:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+        def __init__(self, logger):
+            self.logger = logger
         
         def str_to_time(self, date):
             """Returns a date object from a string"""
@@ -109,342 +88,54 @@ class Astronomy:
                     elif " " in date:
                         frmt = '%Y-%m-%d %H:%M:%S'
                     else:
-                        self.logger.log("Unknown date format")
+                        self.logger.info("Unknown date format")
                         frmt = None
                         
                     if frmt is not None:
                         datetime_object = datetime.strptime(date, frmt)
-                        return(datetime_object)
+                        return datetime_object
                         
                 except Exception as e:
-                    self.logger.log(e)
+                    self.logger.error(e)
         
         def time_diff(self, time, time_offset=-3, offset_type="hours"):
             """Time Calculator"""
             if time is not None and time_offset is not None:
                 try:
                     if "HOURS".startswith(offset_type.upper()):
-                        return(time + timedelta(hours=time_offset))
+                        return time + timedelta(hours=time_offset)
                     elif "MINUTES".startswith(offset_type.upper()):
-                        return(time + timedelta(minutes=time_offset))
+                        return time + timedelta(minutes=time_offset)
                     elif "SECONDS".startswith(offset_type.upper()):
-                        return(time + timedelta(seconds=time_offset))
+                        return time + timedelta(seconds=time_offset)
                         
                 except Exception as e:
-                    self.logger.log(e)
+                    self.logger.error(e)
             else:
-                self.logger.log("False Type: One of the values is not correct")
+                self.logger.warning("False Type: One of the values is not correct")
         
         def jd(self, utc):
             """Calculates JD from UTC"""
             if utc is not None:
                 try:
                     ret = tm(utc, scale='utc')
-                    return(ret.jd)
+                    return ret.jd
                 except Exception as e:
-                    self.logger.log(e)
+                    self.logger.error(e)
             else:
-                self.logger.log("False Type: The value is not date")
+                self.logger.warning("False Type: The value is not date")
                 
         def jd_r(self, jd):
             """Returns UTC from JD"""
             try:
                 t = tm(jd, format='jd', scale='tai')
-                return(t.to_datetime())
+                return t.to_datetime()
             except Exception as e:
-                self.logger.log(e)
-        
-    
-    class Iraf:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-            self.fop = env.File(verb=self.verb, debugger=self.debugger)
-            
-        def imshift(self, file, output, dx, dy):
-            """Shifts a given fits file with given dx and dy"""
-            try:
-                iraf.imshift.unlearn()
-                iraf.imshift(input=file, output=output, x=dx, y=dy)
-                return(True)
-            except Exception as e:
-                self.logger.log(e)
-                return(False)
-            
-            
-        def zerocombine(self, files, output, method="median",
-                        rejection="minmax", ccdtype=""):
-            """IRAF zerocombine"""
-            self.logger.log("Zerocombine Started")
-            try:
-                biases = ",".join(files)
-                iraf.ccdred.zerocombine.unlearn()
-                ccdred.instrument = "ccddb$kpno/camera.dat"
-                out_file = "{}/myraf_biases.flist".format(self.logger.tmp_dir)
-                f2w = open(out_file, "w")
-                for i in files:
-                    f2w.write("{}\n".format(i))
-                f2w.close()
-                biases = "@{}".format(out_file)
-                
-                iraf.imred.unlearn()
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                iraf.ccdred.combine.unlearn()
-                iraf.ccdred.zerocombine.unlearn()
-                
-                iraf.zerocombine(input=biases, output=output, combine=method,
-                                 reject=rejection, ccdtype=ccdtype,
-                                 Stdout="/dev/null")
-                return(True)
-            except Exception as e:
-                self.logger.log(e)
-                return(False)
-            
-        
-        def darkcombine(self, files, output, zero=None, method="median",
-                        rejection="minmax", ccdtype="", scale="exposure"):
-            """IRAF darkcombine"""
-            self.logger.log("Darkcombine Started")
-            try:
-                darks = ",".join(files)
-                iraf.imred.unlearn()
-                ccdred.instrument = "ccddb$kpno/camera.dat"
-                
-                
-                out_file = "{}/myraf_darks.flist".format(self.logger.tmp_dir)
-                f2w = open(out_file, "w")
-                for i in files:
-                    f2w.write("{}\n".format(i))
-                f2w.close()
-                darks = "@{}".format(out_file)
-                
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                iraf.ccdred.combine.unlearn()
-                iraf.ccdred.darkcombine.unlearn()
-                
-                if zero is not None:
-                    iraf.ccdproc(images=darks, ccdtype='', fixpix='no',
-                                 oversca="no", trim="no", zerocor='yes',
-                                 darkcor='no', flatcor='no', zero=zero,
-                                 Stdout="/dev/null")
-
-                iraf.darkcombine(input=darks, output=output, combine=method,
-                                 reject=rejection, ccdtype=ccdtype,
-                                 scale=scale, process="no", Stdout="/dev/null")
-                    
-                return(True)
-            except Exception as e:
-                self.logger.log(e)
-                return(False)
-        
-        def flatcombine(self, files, output, dark=None, zero=None, ccdtype="",
-                        method="Median", rejection="minmax", subset="no"):
-            """IRAF flatcombine"""
-            self.logger.log("Flatcombine Started")
-            try:
-                flats = ",".join(files)
-                iraf.imred.unlearn()
-                ccdred.instrument = "ccddb$kpno/camera.dat"
-                
-                out_file = "{}/myraf_flats.flist".format(self.logger.tmp_dir)
-                f2w = open(out_file, "w")
-                for i in files:
-                    f2w.write("{}\n".format(i))
-                f2w.close()
-                flats = "@{}".format(out_file)    
-                
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                iraf.ccdred.combine.unlearn()
-                iraf.ccdred.flatcombine.unlearn()
-                
-                iraf.flatcombine(input=flats, output=output, combine=method,
-                                 reject=rejection, ccdtype=ccdtype,
-                                 subset=subset, process="no",
-                                 Stdout="/dev/null")
-                
-                if dark is not None:
-                    darkcor = 'yes'
-                else:
-                    darkcor = 'no'
-                
-                if zero is not None:
-                    zerocor='yes'
-                else:
-                    zerocor='no'
-                    
-                iraf.ccdproc(images=flats, ccdtype='', fixpix='no',
-                             oversca="no", trim="no", zerocor=zerocor,
-                             darkcor=darkcor, flatcor='no', zero=zero,
-                             dark=dark, Stdout="/dev/null")
-                return(True)
-            except Exception as e:
-                self.logger.log(e)
-                return(False)
-                
-        def ccdproc(self, file, output=None, zero=None, dark=None, flat=None):
-            """
-            Does IRAF calibration
-            IRAF ccdproc
-            """
-            self.logger.log("Ccdproc Started")
-            try:
-                iraf.imred.unlearn()
-                ccdred.instrument = "ccddb$kpno/camera.dat"
-                
-                if output is None:
-                    output = ""
-                    
-                if zero is None:
-                    zeroCor = "no"
-                else:
-                    zeroCor = "yes"
-                    
-                if dark is None:
-                    darkCor = "no"
-                else:
-                    darkCor = "yes"
-                    
-                if flat is None:
-                    flatCor = "no"
-                else:
-                    flatCor = "yes"
-                    
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                
-                iraf.ccdproc(images=file, output=output, ccdtype='',
-                             fixpix='no', oversca="no", trim="no",
-                             zerocor=zeroCor, darkcor=darkCor,
-                             flatcor=flatCor, zero=zero, dark=dark,
-                             flat=flat, Stdout="/dev/null")
-                return(True)
-            except Exception as e:
-                self.logger.log(e)
-                return(False)
-                
-        def phot(self, file, output, coords, apertures, annulus=5,
-                 dannulus=5, zmag=25):
-            """
-            Does IRAF photometry
-            IRAF phot
-            """
-            try:
-                coord_file = "{}/myraf_coord.coo".format(self.logger.tmp_dir)
-                with open(coord_file, "w") as f:
-                    for coord in coords:
-                        f.write("{} {}\n".format(coord[0], coord[1]))
-                        
-                apertures = list(map(str, apertures))
-                
-                iraf.photpars.weighting = "constant"
-                iraf.photpars.aperture = ",".join(apertures)
-                iraf.photpars.zmag = zmag
-                iraf.photpars.mkapert = "no"
-                
-                iraf.daophot.phot.interactive = "no"
-                iraf.daophot.phot.verify = "no"
-                iraf.daophot.phot.verbose = "no"
-                
-                iraf.fitskypars.salgo = "centroid"
-                iraf.fitskypars.annu = annulus
-                iraf.fitskypars.dannu = dannulus
-                iraf.fitskypars.skyval = 0
-                iraf.fitskypars.smaxi = 10
-                iraf.fitskypars.sloc = 0
-                iraf.fitskypars.shic = 0
-                iraf.fitskypars.snrej = 50
-                iraf.fitskypars.slorej = 3.
-                iraf.fitskypars.shirej = 3.
-                iraf.fitskypars.khist = 3
-                iraf.fitskypars.binsi = 0.1
-                
-                if self.fop.is_file(output):
-                    self.fop.rm(output)
-                    
-                iraf.phot.coords = coord_file
-                iraf.phot.output = output
-                iraf.daophot.phot.verify = "no"
-                iraf.daophot.phot.interactive = "no"
-                iraf.daophot.phot.radplots = "no"
-                
-                iraf.daophot.phot(file, output=output, coords=coord_file,
-                                  verbose="no", verify="no", interactive="no")
-                return True
-            except Exception as e:
-                self.logger.log(e)
-                return False
-
-        def textdump(self, file, fields=["id", "mag", "merr"]):
-            """
-            Returns an array from IRAF mag file
-            IRAF txdump
-            """
-            try:
-                ret = []
-                txdump = iraf.txdump
-                the_fields = ",".join(fields)
-                res = txdump(file, the_fields, "yes", Stdout=PIPE)
-                for r in res:
-                    ret.append(r.split())
-                    
-                return ret
-            except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
             
     class Fits:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-            self.fop = env.File(verb=self.verb, debugger=self.debugger)
-            self.sma = Statistics.Math(verb=self.verb, debugger=self.debugger)
-            
-        def astrometry(self, file, out_file,
-                       server="http://nova.astrometry.net/api/",
-                       apikey="abhfixfhhxsignyo"):
-            """
-            Solves field for given fits
-            Online astrometry.net
-            """
-            try:
-                command = ["python3", "myraf_astrometry.py",
-                           "--apikey={}".format(apikey),
-                           "--server={}".format(server),
-                           "--upload={}".format(file),
-                           "--newfits={}".format(out_file)]
-                
-                for output in self.logger.execute(command):
-                    self.logger.log(output.strip())
-                    
-            except Exception as e:
-                self.logger.log(e)
-                
-        def solve_field(self, file, out_file):
-            """
-            Solves field for given fits
-            offline (solve-field) astrometry.net
-            """
-            try:
-                
-                command = ["solve-field", "--temp-axy",
-                           "--no-plots", "--overwrite", "--dir={}".format(
-                                   self.logger.tmp_dir),
-                           "--new-fits={}".format(out_file)]
-                
-                if self.debugger:
-                    command.append("-v")
-                    
-                command.append(file)
-                
-                for output in self.logger.execute(command):
-                    self.logger.log(output.strip())
-                
-            except Exception as e:
-                self.loggrt.log(e)
+        def __init__(self, logger):
+            self.logger = logger
 
         def cosmic_cleaner(self, file, output, sigclip=12, sigfrac=0.3,
                            objlim=5.0, gain=1.0, readnoise=6.5,
@@ -468,7 +159,7 @@ class Astronomy:
                 self.write(output, new_data, header=self.header(file,
                                                                 field="?"))
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
             
         def align(self, image, ref, output):
             """Aligning an image with respect of given referance"""
@@ -483,34 +174,34 @@ class Astronomy:
                 
         def star_finder(self, image, max_star=500):
             """returns x, y and fwhm of objects on a given fits image"""
-            self.logger.log("Star finder started for {}".format(image))
+            self.logger.info("Star finder started for {}".format(image))
             try:
                 img = imgcat.ImgCat(image)
-                img.makecat(rerun=True, keepcat=False, verbose=self.verb)
+                img.makecat(rerun=True, keepcat=False, verbose=False)
                 img.makestarlist(skipsaturated=False, n=max_star,
-                                 verbose=self.verb)
+                                 verbose=False)
                 ret = []
                 for star in img.starlist:
                     ret.append([star.x, star.y, star.fwhm])
                     
-                return(ar(ret))
+                return ar(ret)
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def subtract(self, img1, img2):
             """Subtacts two image array"""
-            self.logger.log("Subtraction for {} - {}".format(img1, img2))
+            self.logger.info("Subtraction for {} - {}".format(img1, img2))
             try:
                 data1 = self.data(img1)
                 data2 = self.data(img2)
                 if data1 is not None and data2 is not None:
-                    return(data1 - data2)
+                    return data1 - data2
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
             
         def combine(self, files, combine_method):
             """Combines (median, average, sum) given files"""
-            self.logger.log("Combine for {} files with {} methdo".format(
+            self.logger.info("Combine for {} files with {} methdo".format(
                     len(files), combine_method))
             try:
                 if combine_method == "median":
@@ -523,7 +214,7 @@ class Astronomy:
                                 
                         arrays = ar(arrays)
                         medi = nmed(arrays, axis=0)
-                        return(medi)
+                        return medi
                             
                     else:
                         raise Exception('No enough file for median method')
@@ -538,7 +229,7 @@ class Astronomy:
                                 
                         arrays = ar(arrays)
                         mean = nmea(arrays, axis=0)
-                        return(mean)
+                        return mean
                             
                     else:
                         raise Exception('No enough file for average method')
@@ -553,7 +244,7 @@ class Astronomy:
                                 
                         arrays = ar(arrays)
                         ssum = nsum(arrays, axis=0)
-                        return(ssum)
+                        return ssum
                             
                     else:
                         raise Exception('No enough file for sum method')
@@ -561,23 +252,23 @@ class Astronomy:
                     raise Exception('Unknown method')
 
             except Exception as e:
-                self.logger.log(e)
-                return(False)
+                self.logger.error(e)
+                return False
             
         def check(self, file):
             """Checks if file is fit"""
-            self.logger.log("Check if file({}) is fits".format(file))
+            self.logger.info("Check if file({}) is fits".format(file))
             try:
                 hdu = fts.open(file, "readonly")
                 hdu.close()
-                return(True)
+                return True
             except Exception as e:
-                self.logger.log(e)
-                return(False)
+                self.logger.error(e)
+                return False
                 
         def header(self, file, field="*"):
             """Returns header(s) from file"""
-            self.logger.log("Getting Header from {}".format(file))
+            self.logger.info("Getting Header from {}".format(file))
             ret = []
             try:
                 hdu = fts.open(file, mode='readonly')
@@ -588,17 +279,17 @@ class Astronomy:
                         ret.append([i, header[i]])
                     
                 if field == "*":
-                    return(ret)
+                    return ret
                 elif field == "?":
-                    return(header)
+                    return header
                 else:
-                    return(header[field])
+                    return header[field]
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def data(self, file, rot=None):
             """Return data from a given fits file"""
-            self.logger.log("Getting data from {}".format(file))
+            self.logger.info("Getting data from {}".format(file))
             try:
                 hdu = fts.open(file, mode='readonly')
                 data = hdu[0].data
@@ -607,66 +298,63 @@ class Astronomy:
                     data = rot90(data, rot)
                 
                 data = data.astype(f64)
-                return(data)
+                return data
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def delete_header(self, file, key):
             """Removes a key from header"""
-            self.logger.log("Deleting {}'s Header".format(file))
+            self.logger.info("Deleting {}'s Header".format(file))
             try:
                 hdu = fts.open(file, mode='update')
                 del hdu[0].header[key]
-                return(hdu.close())
+                return hdu.close()
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def update_header(self, src, key, value):
             """Adds/Updates a header to a given fits file"""
-            self.logger.log("Updating {}'s Header, {}={}".format(src,
+            self.logger.info("Updating {}'s Header, {}={}".format(src,
                             key, value))
             try:
                 hdu = fts.open(src, mode='update')
                 hdu[0].header[key] = value
-                return(hdu.close())
+                return hdu.close()
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def mupdate_header(self, src, key_values):
             """Adds/Updates a header to multiple fits files"""
-            self.logger.log("Updating multiple headers in {}".format(src))
+            self.logger.info("Updating multiple headers in {}".format(src))
             try:
                 hdu = fts.open(src, mode='update')
                 for key_val in key_values:
                     hdu[0].header[key_val[0]] = key_val[1]
-                return(hdu.close())
+                return hdu.close()
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def stats(self, file):
             """Returns statistics of a given fit file."""
-            self.logger.log("Getting Stats from {}".format(file))
+            self.logger.info("Getting Stats from {}".format(file))
             try:
                 hdu = fts.open(file)
                 image_data = hdu[0].data
-                return({'Min': nmin(image_data),
+                return {'Min': nmin(image_data),
                         'Max': nmax(image_data),
                         'Median': nmed(image_data),
                         'Mean': nmea(image_data),
-                        'Stdev': nstd(image_data)})
+                        'Stdev': nstd(image_data)}
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def write(self, dest, data, header=None, ow=True):
             """Writes data to a fits file"""
-            self.logger.log("Writeing data to file({})".format(dest))
+            self.logger.info("Writeing data to file({})".format(dest))
             try:
-                if ow and self.fop.is_file(dest):
-                    self.logger.log("Over Write is Enabled for {}".format(
-                            dest))
                 fts.writeto(dest, data, header=header, overwrite=ow)
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def photometry(self, file, x_coor, y_coor, zmag=25.0,
                        aper_radius=15.0, gain=1.21):
@@ -679,11 +367,11 @@ class Astronomy:
                                              aper_radius, err=bkg.globalrms,
                                              gain=gain)
                 mag, merr = self.sma.flux_to_mag(flx, ferr)
-                return(str(x_coor), str(y_coor), str(float(flx)),
-                       str(float(ferr)), str(float(flag)),
-                       str(mag + zmag), str(merr))
+                return [str(x_coor), str(y_coor), str(float(flx)),
+                        str(float(ferr)), str(float(flag)),
+                        str(mag + zmag), str(merr)]
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def mphotometry(self, file, coors, zmag=25.0,
                        apertures=[10.0 ,15.0], gain=1.21):
@@ -708,10 +396,10 @@ class Astronomy:
                                         str(float(flag)), str(mag + zmag),
                                         str(merr)])
                     except Exception as e:
-                        self.logger.log(e)
-                return(ret)
+                        self.logger.error(e)
+                return ret
             except Exception as e:
-                self.logger.log(e)
+                self.logger.error(e)
                 
         def psf(self, image):
             """PSF photometry"""
@@ -728,124 +416,6 @@ class Astronomy:
                 
             stars = extract_stars(nddata, stars_tbl, size=size*10)
             epsf_builder = EPSFBuilder(oversampling=4, maxiters=3,
-                                       progress_bar=self.verb)
+                                       progress_bar=False)
             epsf, fitted_stars = epsf_builder(stars)
             print(epsf)
-        
-    class Coordinates:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-            
-        def create_site(self, lati, long, alti):
-            """Creates a site"""
-            try:
-                site = EarthLocation(lat=float(lati)*U.deg,
-                                     lon=float(long)*U.deg,
-                                     height=float(alti)*U.m)
-                return(site)
-            except Exception as e:
-                self.logger.log(e)
-                
-        def create_object(self, ra, dec):
-            """Creates an object"""
-            try:
-                return(SkyCoord(ra=ra*U.hour, dec=dec*U.deg))
-            except Exception as e:
-                self.logger.log(e)
-                
-        def radec_to_alt_az(self, site, obj, utc):
-            """Returns alt/az of an object for a given time and site"""
-            try:
-                frame_of_sire = AltAz(obstime=utc, location=site)
-                object_alt_az = obj.transform_to(frame_of_sire)
-                return(object_alt_az)
-            except Exception as e:
-                self.logger.log(e)
-                
-        def airmass(self, object_altaz):
-            """Calculates airmass of a given alt/az"""
-            try:
-                return(object_altaz.secz)
-            except Exception as e:
-                self.logger.log(e)
-                
-        def convert_sex_to_deg(self, angle):
-            """Converts sexagecimal to degree"""
-            try:
-                an = angle.split(":")
-                if angle.startswith("-"):
-                    return(float(an[0]) - float(an[1])/60 - float(an[2])/3600)
-                else:
-                    return(float(an[0]) + float(an[1])/60 + float(an[2])/3600)
-            except Exception as e:
-                self.logger.log(e)
-            
-        def physical_distence(self, coord1, coord2):
-            """Calculates pixel distence of two coordinates"""
-            try:
-                return(sqrt(power(coord1[0] - coord2[0], 2) +
-                            power(coord1[1] - coord2[1], 2)))
-            except Exception as e:
-                self.logger.log(e)
-                
-        def find_closest(self, coordinates, coord):
-            """Finds closesst coordinate in coordinate array to a given coordinates"""
-            try:
-                dists = sqrt(power(coordinates[:, 0] - coord[0], 2) +
-                             power(coordinates[:, 1] - coord[1], 2))
-                if dists is not None:
-                    return(argmin(dists))
-            except Exception as e:
-                self.logger.log(e)
-    
-    class Query:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            
-class Statistics:
-    def __init__(self):
-        pass
-    
-    class Math:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-            
-        def flux_to_mag(self, flux, fluxerr):
-            """Calculates mag from flux"""
-            try:
-                mag, magerr = -2.5 * log10(flux), 2.5/log(10.0)*fluxerr/flux
-                return(mag, magerr)
-            except Exception as e:
-                self.logger.log(e)
-        
-    class Array:
-        def __init__(self, verb=False, debugger=False):
-            self.verb = verb
-            self.debugger = debugger
-            self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
-            self.fop = env.File(verb=self.verb, debugger=self.debugger)
-        
-        def rotate90(self, array, number=0):
-            """Rotates an array 90 degrees"""
-            if not number == 0 or number is not None:
-                return(rot90(array, number))
-            else:
-                return(array)
-                
-        def mean(self, array):
-            """returns mean of a given array"""
-            numpy_array = ar(array)
-            return(nmea(numpy_array))
-            
-        def lst2num(self, lst):
-            """returns numpy array from a list"""
-            return(ar(lst))
-            
-        def fnum(self, lst):
-            """Converts numpy array to float64"""
-            return(lst.astype(f64))

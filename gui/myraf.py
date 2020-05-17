@@ -2,482 +2,946 @@
 
 # Form implementation generated from reading ui file 'myraf.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1218, 765)
-        MainWindow.setMinimumSize(QtCore.QSize(776, 587))
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("./media/myraf/64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        MainWindow.setWindowIcon(icon)
-        MainWindow.setIconSize(QtCore.QSize(22, 22))
+        MainWindow.resize(900, 800)
+        MainWindow.setMinimumSize(QtCore.QSize(900, 800))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout_6 = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.play_ground = QtWidgets.QMdiArea(self.centralwidget)
-        self.play_ground.setAutoFillBackground(False)
-        brush = QtGui.QBrush(QtGui.QColor(136, 142, 147))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        self.play_ground.setBackground(brush)
-        self.play_ground.setObjectName("play_ground")
-        self.gridLayout_6.addWidget(self.play_ground, 0, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1218, 30))
-        self.menubar.setObjectName("menubar")
-        self.menuFile = QtWidgets.QMenu(self.menubar)
-        self.menuFile.setObjectName("menuFile")
-        self.menuData = QtWidgets.QMenu(self.menuFile)
-        self.menuData.setObjectName("menuData")
-        self.menuClear_Lists = QtWidgets.QMenu(self.menuFile)
-        self.menuClear_Lists.setObjectName("menuClear_Lists")
-        self.menuAnalyse = QtWidgets.QMenu(self.menubar)
-        self.menuAnalyse.setObjectName("menuAnalyse")
-        self.menuCombine = QtWidgets.QMenu(self.menuAnalyse)
-        self.menuCombine.setObjectName("menuCombine")
-        self.menuIRAF_Combine = QtWidgets.QMenu(self.menuCombine)
-        self.menuIRAF_Combine.setObjectName("menuIRAF_Combine")
-        self.menuAlign = QtWidgets.QMenu(self.menuAnalyse)
-        self.menuAlign.setObjectName("menuAlign")
-        self.menu_Photometry = QtWidgets.QMenu(self.menuAnalyse)
-        self.menu_Photometry.setObjectName("menu_Photometry")
-        self.menuEdit = QtWidgets.QMenu(self.menubar)
-        self.menuEdit.setObjectName("menuEdit")
-        self.menuHeader = QtWidgets.QMenu(self.menuEdit)
-        self.menuHeader.setObjectName("menuHeader")
-        self.menuSettings = QtWidgets.QMenu(self.menubar)
-        self.menuSettings.setObjectName("menuSettings")
-        self.menuHelp = QtWidgets.QMenu(self.menubar)
-        self.menuHelp.setObjectName("menuHelp")
-        self.menuHelp_2 = QtWidgets.QMenu(self.menuHelp)
-        self.menuHelp_2.setObjectName("menuHelp_2")
-        self.menuMYRaf = QtWidgets.QMenu(self.menuHelp_2)
-        self.menuMYRaf.setObjectName("menuMYRaf")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.dockWidget = QtWidgets.QDockWidget(MainWindow)
-        self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable|QtWidgets.QDockWidget.DockWidgetMovable)
-        self.dockWidget.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea|QtCore.Qt.RightDockWidgetArea)
-        self.dockWidget.setObjectName("dockWidget")
-        self.dockWidgetContents = QtWidgets.QWidget()
-        self.dockWidgetContents.setObjectName("dockWidgetContents")
-        self.gridLayout = QtWidgets.QGridLayout(self.dockWidgetContents)
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.file_containter = QtWidgets.QTabWidget(self.dockWidgetContents)
-        self.file_containter.setObjectName("file_containter")
+        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.tab)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.image_list = QtWidgets.QTreeWidget(self.tab)
-        self.image_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.image_list.setObjectName("image_list")
-        self.gridLayout_2.addWidget(self.image_list, 0, 0, 1, 3)
-        spacerItem = QtWidgets.QSpacerItem(137, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_2.addItem(spacerItem, 1, 0, 1, 1)
-        self.image_remove = QtWidgets.QPushButton(self.tab)
-        self.image_remove.setObjectName("image_remove")
-        self.gridLayout_2.addWidget(self.image_remove, 1, 1, 1, 1)
-        self.image_add = QtWidgets.QPushButton(self.tab)
-        self.image_add.setObjectName("image_add")
-        self.gridLayout_2.addWidget(self.image_add, 1, 2, 1, 1)
-        self.file_containter.addTab(self.tab, "")
+        self.tabWidget_2 = QtWidgets.QTabWidget(self.tab)
+        self.tabWidget_2.setObjectName("tabWidget_2")
+        self.tab_8 = QtWidgets.QWidget()
+        self.tab_8.setObjectName("tab_8")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.tab_8)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.calib_image_list = QtWidgets.QTreeWidget(self.tab_8)
+        self.calib_image_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.calib_image_list.setObjectName("calib_image_list")
+        self.gridLayout_4.addWidget(self.calib_image_list, 0, 0, 1, 3)
+        spacerItem = QtWidgets.QSpacerItem(563, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_4.addItem(spacerItem, 1, 0, 1, 1)
+        self.calib_image_remove = QtWidgets.QPushButton(self.tab_8)
+        self.calib_image_remove.setObjectName("calib_image_remove")
+        self.gridLayout_4.addWidget(self.calib_image_remove, 1, 1, 1, 1)
+        self.calib_image_add = QtWidgets.QPushButton(self.tab_8)
+        self.calib_image_add.setObjectName("calib_image_add")
+        self.gridLayout_4.addWidget(self.calib_image_add, 1, 2, 1, 1)
+        self.tabWidget_2.addTab(self.tab_8, "")
+        self.tab_9 = QtWidgets.QWidget()
+        self.tab_9.setObjectName("tab_9")
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.tab_9)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.calib_bias_list = QtWidgets.QTreeWidget(self.tab_9)
+        self.calib_bias_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.calib_bias_list.setObjectName("calib_bias_list")
+        self.gridLayout_5.addWidget(self.calib_bias_list, 0, 0, 1, 4)
+        spacerItem1 = QtWidgets.QSpacerItem(477, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_5.addItem(spacerItem1, 1, 0, 1, 1)
+        self.calib_bias_combine = QtWidgets.QPushButton(self.tab_9)
+        self.calib_bias_combine.setObjectName("calib_bias_combine")
+        self.gridLayout_5.addWidget(self.calib_bias_combine, 1, 1, 1, 1)
+        self.calib_bias_remove = QtWidgets.QPushButton(self.tab_9)
+        self.calib_bias_remove.setObjectName("calib_bias_remove")
+        self.gridLayout_5.addWidget(self.calib_bias_remove, 1, 2, 1, 1)
+        self.calib_bias_add = QtWidgets.QPushButton(self.tab_9)
+        self.calib_bias_add.setObjectName("calib_bias_add")
+        self.gridLayout_5.addWidget(self.calib_bias_add, 1, 3, 1, 1)
+        self.tabWidget_2.addTab(self.tab_9, "")
+        self.tab_10 = QtWidgets.QWidget()
+        self.tab_10.setObjectName("tab_10")
+        self.gridLayout_6 = QtWidgets.QGridLayout(self.tab_10)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.calib_dark_list = QtWidgets.QTreeWidget(self.tab_10)
+        self.calib_dark_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.calib_dark_list.setObjectName("calib_dark_list")
+        self.gridLayout_6.addWidget(self.calib_dark_list, 0, 0, 1, 4)
+        spacerItem2 = QtWidgets.QSpacerItem(477, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_6.addItem(spacerItem2, 1, 0, 1, 1)
+        self.calib_dark_combine = QtWidgets.QPushButton(self.tab_10)
+        self.calib_dark_combine.setObjectName("calib_dark_combine")
+        self.gridLayout_6.addWidget(self.calib_dark_combine, 1, 1, 1, 1)
+        self.calib_dark_remove = QtWidgets.QPushButton(self.tab_10)
+        self.calib_dark_remove.setObjectName("calib_dark_remove")
+        self.gridLayout_6.addWidget(self.calib_dark_remove, 1, 2, 1, 1)
+        self.calib_dark_add = QtWidgets.QPushButton(self.tab_10)
+        self.calib_dark_add.setObjectName("calib_dark_add")
+        self.gridLayout_6.addWidget(self.calib_dark_add, 1, 3, 1, 1)
+        self.tabWidget_2.addTab(self.tab_10, "")
+        self.tab_11 = QtWidgets.QWidget()
+        self.tab_11.setObjectName("tab_11")
+        self.gridLayout_7 = QtWidgets.QGridLayout(self.tab_11)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.calib_flat_list = QtWidgets.QTreeWidget(self.tab_11)
+        self.calib_flat_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.calib_flat_list.setObjectName("calib_flat_list")
+        self.gridLayout_7.addWidget(self.calib_flat_list, 0, 0, 1, 4)
+        spacerItem3 = QtWidgets.QSpacerItem(477, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_7.addItem(spacerItem3, 1, 0, 1, 1)
+        self.calib_flat_combine = QtWidgets.QPushButton(self.tab_11)
+        self.calib_flat_combine.setObjectName("calib_flat_combine")
+        self.gridLayout_7.addWidget(self.calib_flat_combine, 1, 1, 1, 1)
+        self.calib_flat_remove = QtWidgets.QPushButton(self.tab_11)
+        self.calib_flat_remove.setObjectName("calib_flat_remove")
+        self.gridLayout_7.addWidget(self.calib_flat_remove, 1, 2, 1, 1)
+        self.calib_flat_add = QtWidgets.QPushButton(self.tab_11)
+        self.calib_flat_add.setObjectName("calib_flat_add")
+        self.gridLayout_7.addWidget(self.calib_flat_add, 1, 3, 1, 1)
+        self.tabWidget_2.addTab(self.tab_11, "")
+        self.gridLayout_2.addWidget(self.tabWidget_2, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
-        self.gridLayout_3 = QtWidgets.QGridLayout(self.tab_2)
+        self.gridLayout_10 = QtWidgets.QGridLayout(self.tab_2)
+        self.gridLayout_10.setObjectName("gridLayout_10")
+        self.groupBox_2 = QtWidgets.QGroupBox(self.tab_2)
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.gridLayout_8 = QtWidgets.QGridLayout(self.groupBox_2)
+        self.gridLayout_8.setObjectName("gridLayout_8")
+        self.display_align = gingaWidget(self.groupBox_2)
+        self.display_align.setObjectName("display_align")
+        self.gridLayout_8.addWidget(self.display_align, 0, 0, 1, 1)
+        self.info_align = QtWidgets.QLabel(self.groupBox_2)
+        self.info_align.setMinimumSize(QtCore.QSize(0, 20))
+        self.info_align.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.info_align.setObjectName("info_align")
+        self.gridLayout_8.addWidget(self.info_align, 1, 0, 1, 1)
+        self.gridLayout_10.addWidget(self.groupBox_2, 0, 0, 1, 1)
+        self.groupBox = QtWidgets.QGroupBox(self.tab_2)
+        self.groupBox.setMinimumSize(QtCore.QSize(230, 0))
+        self.groupBox.setMaximumSize(QtCore.QSize(230, 16777215))
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.groupBox)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.bias_list = QtWidgets.QTreeWidget(self.tab_2)
-        self.bias_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.bias_list.setObjectName("bias_list")
-        self.gridLayout_3.addWidget(self.bias_list, 0, 0, 1, 3)
-        spacerItem1 = QtWidgets.QSpacerItem(137, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_3.addItem(spacerItem1, 1, 0, 1, 1)
-        self.bias_remove = QtWidgets.QPushButton(self.tab_2)
-        self.bias_remove.setObjectName("bias_remove")
-        self.gridLayout_3.addWidget(self.bias_remove, 1, 1, 1, 1)
-        self.bias_add = QtWidgets.QPushButton(self.tab_2)
-        self.bias_add.setObjectName("bias_add")
-        self.gridLayout_3.addWidget(self.bias_add, 1, 2, 1, 1)
-        self.file_containter.addTab(self.tab_2, "")
+        self.align_list = QtWidgets.QTreeWidget(self.groupBox)
+        self.align_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.align_list.setObjectName("align_list")
+        self.gridLayout_3.addWidget(self.align_list, 0, 0, 1, 2)
+        self.align_remove = QtWidgets.QPushButton(self.groupBox)
+        self.align_remove.setObjectName("align_remove")
+        self.gridLayout_3.addWidget(self.align_remove, 1, 0, 1, 1)
+        self.align_add = QtWidgets.QPushButton(self.groupBox)
+        self.align_add.setObjectName("align_add")
+        self.gridLayout_3.addWidget(self.align_add, 1, 1, 1, 1)
+        self.align_isauto = QtWidgets.QCheckBox(self.groupBox)
+        self.align_isauto.setChecked(True)
+        self.align_isauto.setObjectName("align_isauto")
+        self.gridLayout_3.addWidget(self.align_isauto, 2, 0, 1, 2)
+        self.gridLayout_10.addWidget(self.groupBox, 0, 1, 1, 1)
+        self.gridLayout_9 = QtWidgets.QGridLayout()
+        self.gridLayout_9.setObjectName("gridLayout_9")
+        self.align_info = QtWidgets.QLabel(self.tab_2)
+        self.align_info.setObjectName("align_info")
+        self.gridLayout_9.addWidget(self.align_info, 0, 0, 1, 1)
+        self.align_go = QtWidgets.QPushButton(self.tab_2)
+        self.align_go.setMinimumSize(QtCore.QSize(50, 50))
+        self.align_go.setMaximumSize(QtCore.QSize(50, 50))
+        self.align_go.setObjectName("align_go")
+        self.gridLayout_9.addWidget(self.align_go, 0, 1, 2, 1)
+        self.align_proc = QtWidgets.QProgressBar(self.tab_2)
+        self.align_proc.setProperty("value", 24)
+        self.align_proc.setObjectName("align_proc")
+        self.gridLayout_9.addWidget(self.align_proc, 1, 0, 1, 1)
+        self.gridLayout_10.addLayout(self.gridLayout_9, 1, 0, 1, 2)
+        self.tabWidget.addTab(self.tab_2, "")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
-        self.gridLayout_4 = QtWidgets.QGridLayout(self.tab_3)
-        self.gridLayout_4.setObjectName("gridLayout_4")
-        self.dark_list = QtWidgets.QTreeWidget(self.tab_3)
-        self.dark_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.dark_list.setObjectName("dark_list")
-        self.gridLayout_4.addWidget(self.dark_list, 0, 0, 1, 3)
-        spacerItem2 = QtWidgets.QSpacerItem(137, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_4.addItem(spacerItem2, 1, 0, 1, 1)
-        self.dark_remove = QtWidgets.QPushButton(self.tab_3)
-        self.dark_remove.setObjectName("dark_remove")
-        self.gridLayout_4.addWidget(self.dark_remove, 1, 1, 1, 1)
-        self.dark_add = QtWidgets.QPushButton(self.tab_3)
-        self.dark_add.setObjectName("dark_add")
-        self.gridLayout_4.addWidget(self.dark_add, 1, 2, 1, 1)
-        self.file_containter.addTab(self.tab_3, "")
+        self.gridLayout_20 = QtWidgets.QGridLayout(self.tab_3)
+        self.gridLayout_20.setObjectName("gridLayout_20")
+        self.groupBox_5 = QtWidgets.QGroupBox(self.tab_3)
+        self.groupBox_5.setObjectName("groupBox_5")
+        self.gridLayout_16 = QtWidgets.QGridLayout(self.groupBox_5)
+        self.gridLayout_16.setObjectName("gridLayout_16")
+        self.display_phot = gingaWidget(self.groupBox_5)
+        self.display_phot.setObjectName("display_phot")
+        self.gridLayout_16.addWidget(self.display_phot, 0, 0, 1, 1)
+        self.info_phot = QtWidgets.QLabel(self.groupBox_5)
+        self.info_phot.setMinimumSize(QtCore.QSize(0, 20))
+        self.info_phot.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.info_phot.setObjectName("info_phot")
+        self.gridLayout_16.addWidget(self.info_phot, 1, 0, 1, 1)
+        self.gridLayout_20.addWidget(self.groupBox_5, 0, 0, 2, 1)
+        self.groupBox_6 = QtWidgets.QGroupBox(self.tab_3)
+        self.groupBox_6.setMinimumSize(QtCore.QSize(230, 0))
+        self.groupBox_6.setMaximumSize(QtCore.QSize(230, 16777215))
+        self.groupBox_6.setObjectName("groupBox_6")
+        self.gridLayout_18 = QtWidgets.QGridLayout(self.groupBox_6)
+        self.gridLayout_18.setObjectName("gridLayout_18")
+        self.phot_list = QtWidgets.QTreeWidget(self.groupBox_6)
+        self.phot_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.phot_list.setObjectName("phot_list")
+        self.gridLayout_18.addWidget(self.phot_list, 0, 0, 1, 2)
+        self.phot_remove = QtWidgets.QPushButton(self.groupBox_6)
+        self.phot_remove.setObjectName("phot_remove")
+        self.gridLayout_18.addWidget(self.phot_remove, 1, 0, 1, 1)
+        self.phot_add = QtWidgets.QPushButton(self.groupBox_6)
+        self.phot_add.setObjectName("phot_add")
+        self.gridLayout_18.addWidget(self.phot_add, 1, 1, 1, 1)
+        self.gridLayout_20.addWidget(self.groupBox_6, 0, 1, 1, 1)
+        self.groupBox_7 = QtWidgets.QGroupBox(self.tab_3)
+        self.groupBox_7.setMinimumSize(QtCore.QSize(230, 0))
+        self.groupBox_7.setMaximumSize(QtCore.QSize(230, 16777215))
+        self.groupBox_7.setObjectName("groupBox_7")
+        self.gridLayout_19 = QtWidgets.QGridLayout(self.groupBox_7)
+        self.gridLayout_19.setObjectName("gridLayout_19")
+        self.phot_coor_sex = QtWidgets.QPushButton(self.groupBox_7)
+        self.phot_coor_sex.setObjectName("phot_coor_sex")
+        self.gridLayout_19.addWidget(self.phot_coor_sex, 0, 0, 1, 2)
+        self.phot_coor_list = QtWidgets.QListWidget(self.groupBox_7)
+        self.phot_coor_list.setObjectName("phot_coor_list")
+        self.gridLayout_19.addWidget(self.phot_coor_list, 1, 0, 1, 2)
+        spacerItem4 = QtWidgets.QSpacerItem(117, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_19.addItem(spacerItem4, 2, 0, 1, 1)
+        self.phot_coor_remove = QtWidgets.QPushButton(self.groupBox_7)
+        self.phot_coor_remove.setObjectName("phot_coor_remove")
+        self.gridLayout_19.addWidget(self.phot_coor_remove, 2, 1, 1, 1)
+        self.gridLayout_20.addWidget(self.groupBox_7, 1, 1, 1, 1)
+        self.gridLayout_17 = QtWidgets.QGridLayout()
+        self.gridLayout_17.setObjectName("gridLayout_17")
+        self.phot_info = QtWidgets.QLabel(self.tab_3)
+        self.phot_info.setObjectName("phot_info")
+        self.gridLayout_17.addWidget(self.phot_info, 0, 0, 1, 1)
+        self.phot_go = QtWidgets.QPushButton(self.tab_3)
+        self.phot_go.setMinimumSize(QtCore.QSize(50, 50))
+        self.phot_go.setMaximumSize(QtCore.QSize(50, 50))
+        self.phot_go.setObjectName("phot_go")
+        self.gridLayout_17.addWidget(self.phot_go, 0, 1, 2, 1)
+        self.phot_proc = QtWidgets.QProgressBar(self.tab_3)
+        self.phot_proc.setProperty("value", 24)
+        self.phot_proc.setObjectName("phot_proc")
+        self.gridLayout_17.addWidget(self.phot_proc, 1, 0, 1, 1)
+        self.gridLayout_20.addLayout(self.gridLayout_17, 2, 0, 1, 2)
+        self.tabWidget.addTab(self.tab_3, "")
         self.tab_4 = QtWidgets.QWidget()
         self.tab_4.setObjectName("tab_4")
-        self.gridLayout_5 = QtWidgets.QGridLayout(self.tab_4)
-        self.gridLayout_5.setObjectName("gridLayout_5")
-        self.flat_list = QtWidgets.QTreeWidget(self.tab_4)
-        self.flat_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.flat_list.setObjectName("flat_list")
-        self.gridLayout_5.addWidget(self.flat_list, 0, 0, 1, 3)
-        spacerItem3 = QtWidgets.QSpacerItem(137, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_5.addItem(spacerItem3, 1, 0, 1, 1)
-        self.flat_remove = QtWidgets.QPushButton(self.tab_4)
-        self.flat_remove.setObjectName("flat_remove")
-        self.gridLayout_5.addWidget(self.flat_remove, 1, 1, 1, 1)
-        self.flat_add = QtWidgets.QPushButton(self.tab_4)
-        self.flat_add.setObjectName("flat_add")
-        self.gridLayout_5.addWidget(self.flat_add, 1, 2, 1, 1)
-        self.file_containter.addTab(self.tab_4, "")
-        self.gridLayout.addWidget(self.file_containter, 0, 0, 1, 1)
-        self.annotation = QtWidgets.QLabel(self.dockWidgetContents)
-        self.annotation.setText("")
-        self.annotation.setObjectName("annotation")
-        self.gridLayout.addWidget(self.annotation, 1, 0, 1, 1)
-        self.progress = QtWidgets.QProgressBar(self.dockWidgetContents)
-        self.progress.setProperty("value", 24)
-        self.progress.setObjectName("progress")
-        self.gridLayout.addWidget(self.progress, 2, 0, 1, 1)
-        self.dockWidget.setWidget(self.dockWidgetContents)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockWidget)
-        self.actionQuit = QtWidgets.QAction(MainWindow)
-        self.actionQuit.setObjectName("actionQuit")
-        self.actionCalibration = QtWidgets.QAction(MainWindow)
-        self.actionCalibration.setObjectName("actionCalibration")
-        self.actionA_Track = QtWidgets.QAction(MainWindow)
-        self.actionA_Track.setObjectName("actionA_Track")
-        self.actionObservatory = QtWidgets.QAction(MainWindow)
-        self.actionObservatory.setObjectName("actionObservatory")
-        self.actionCosmic = QtWidgets.QAction(MainWindow)
-        self.actionCosmic.setObjectName("actionCosmic")
-        self.actionWCS = QtWidgets.QAction(MainWindow)
-        self.actionWCS.setObjectName("actionWCS")
-        self.actionHedit = QtWidgets.QAction(MainWindow)
-        self.actionHedit.setObjectName("actionHedit")
-        self.actionHeader_Calculator = QtWidgets.QAction(MainWindow)
-        self.actionHeader_Calculator.setObjectName("actionHeader_Calculator")
-        self.actionHeader_Extractor = QtWidgets.QAction(MainWindow)
-        self.actionHeader_Extractor.setObjectName("actionHeader_Extractor")
-        self.actionCalibration_2 = QtWidgets.QAction(MainWindow)
-        self.actionCalibration_2.setObjectName("actionCalibration_2")
-        self.actionPhotometry_2 = QtWidgets.QAction(MainWindow)
-        self.actionPhotometry_2.setObjectName("actionPhotometry_2")
-        self.actionCosmic_Cleaner = QtWidgets.QAction(MainWindow)
-        self.actionCosmic_Cleaner.setObjectName("actionCosmic_Cleaner")
-        self.actionWCS_2 = QtWidgets.QAction(MainWindow)
-        self.actionWCS_2.setObjectName("actionWCS_2")
-        self.actionAbout_MYRaf = QtWidgets.QAction(MainWindow)
-        self.actionAbout_MYRaf.setObjectName("actionAbout_MYRaf")
-        self.actionGinga = QtWidgets.QAction(MainWindow)
-        self.actionGinga.setObjectName("actionGinga")
-        self.actionAlipy = QtWidgets.QAction(MainWindow)
-        self.actionAlipy.setObjectName("actionAlipy")
-        self.actionLA_Cosmic_Cleaner = QtWidgets.QAction(MainWindow)
-        self.actionLA_Cosmic_Cleaner.setObjectName("actionLA_Cosmic_Cleaner")
-        self.actionAstrometry_net = QtWidgets.QAction(MainWindow)
-        self.actionAstrometry_net.setObjectName("actionAstrometry_net")
-        self.actionLicense = QtWidgets.QAction(MainWindow)
-        self.actionLicense.setObjectName("actionLicense")
-        self.actionCredits = QtWidgets.QAction(MainWindow)
-        self.actionCredits.setObjectName("actionCredits")
-        self.actionLog_Viewer = QtWidgets.QAction(MainWindow)
-        self.actionLog_Viewer.setObjectName("actionLog_Viewer")
-        self.actionImage = QtWidgets.QAction(MainWindow)
-        self.actionImage.setObjectName("actionImage")
-        self.actionBias = QtWidgets.QAction(MainWindow)
-        self.actionBias.setObjectName("actionBias")
-        self.actionDark = QtWidgets.QAction(MainWindow)
-        self.actionDark.setObjectName("actionDark")
-        self.actionFlat = QtWidgets.QAction(MainWindow)
-        self.actionFlat.setObjectName("actionFlat")
-        self.actionAddImage = QtWidgets.QAction(MainWindow)
-        self.actionAddImage.setObjectName("actionAddImage")
-        self.actionAddBias = QtWidgets.QAction(MainWindow)
-        self.actionAddBias.setObjectName("actionAddBias")
-        self.actionAddDark = QtWidgets.QAction(MainWindow)
-        self.actionAddDark.setObjectName("actionAddDark")
-        self.actionAddFlat = QtWidgets.QAction(MainWindow)
-        self.actionAddFlat.setObjectName("actionAddFlat")
-        self.actionBias_Combine = QtWidgets.QAction(MainWindow)
-        self.actionBias_Combine.setObjectName("actionBias_Combine")
-        self.actionDark_Combine = QtWidgets.QAction(MainWindow)
-        self.actionDark_Combine.setObjectName("actionDark_Combine")
-        self.actionFlat_Combine = QtWidgets.QAction(MainWindow)
-        self.actionFlat_Combine.setObjectName("actionFlat_Combine")
-        self.actionMedian = QtWidgets.QAction(MainWindow)
-        self.actionMedian.setObjectName("actionMedian")
-        self.actionAverage = QtWidgets.QAction(MainWindow)
-        self.actionAverage.setObjectName("actionAverage")
-        self.actionSum = QtWidgets.QAction(MainWindow)
-        self.actionSum.setObjectName("actionSum")
-        self.actionDifference = QtWidgets.QAction(MainWindow)
-        self.actionDifference.setObjectName("actionDifference")
-        self.actionGinga_2 = QtWidgets.QAction(MainWindow)
-        self.actionGinga_2.setObjectName("actionGinga_2")
-        self.actionAlipy_2 = QtWidgets.QAction(MainWindow)
-        self.actionAlipy_2.setObjectName("actionAlipy_2")
-        self.actionLA_Cosmic_Cleaner_2 = QtWidgets.QAction(MainWindow)
-        self.actionLA_Cosmic_Cleaner_2.setObjectName("actionLA_Cosmic_Cleaner_2")
-        self.actionAstrometry_net_2 = QtWidgets.QAction(MainWindow)
-        self.actionAstrometry_net_2.setObjectName("actionAstrometry_net_2")
-        self.actionEditor = QtWidgets.QAction(MainWindow)
-        self.actionEditor.setObjectName("actionEditor")
-        self.actionCombine = QtWidgets.QAction(MainWindow)
-        self.actionCombine.setObjectName("actionCombine")
-        self.actionCalibration_3 = QtWidgets.QAction(MainWindow)
-        self.actionCalibration_3.setObjectName("actionCalibration_3")
-        self.actionAnalyse_2 = QtWidgets.QAction(MainWindow)
-        self.actionAnalyse_2.setObjectName("actionAnalyse_2")
-        self.actionClose_All_Windows = QtWidgets.QAction(MainWindow)
-        self.actionClose_All_Windows.setObjectName("actionClose_All_Windows")
-        self.actionClear_All_Lists = QtWidgets.QAction(MainWindow)
-        self.actionClear_All_Lists.setObjectName("actionClear_All_Lists")
-        self.actionClear_Image_List = QtWidgets.QAction(MainWindow)
-        self.actionClear_Image_List.setObjectName("actionClear_Image_List")
-        self.actionClear_Bias_List = QtWidgets.QAction(MainWindow)
-        self.actionClear_Bias_List.setObjectName("actionClear_Bias_List")
-        self.actionClear_Dark_List = QtWidgets.QAction(MainWindow)
-        self.actionClear_Dark_List.setObjectName("actionClear_Dark_List")
-        self.actionClear_Flat_List = QtWidgets.QAction(MainWindow)
-        self.actionClear_Flat_List.setObjectName("actionClear_Flat_List")
-        self.actionClear_Image_L_st = QtWidgets.QAction(MainWindow)
-        self.actionClear_Image_L_st.setObjectName("actionClear_Image_L_st")
-        self.actionClear_Bias_List_2 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Bias_List_2.setObjectName("actionClear_Bias_List_2")
-        self.actionClear_Dark_L_st = QtWidgets.QAction(MainWindow)
-        self.actionClear_Dark_L_st.setObjectName("actionClear_Dark_L_st")
-        self.actionClear_Flat_List_2 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Flat_List_2.setObjectName("actionClear_Flat_List_2")
-        self.actionClear_Image_List_2 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Image_List_2.setObjectName("actionClear_Image_List_2")
-        self.actionClear_Image_List_3 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Image_List_3.setObjectName("actionClear_Image_List_3")
-        self.actionClear_Bias_List_3 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Bias_List_3.setObjectName("actionClear_Bias_List_3")
-        self.actionClear_Dark_List_3 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Dark_List_3.setObjectName("actionClear_Dark_List_3")
-        self.actionClear_Flat_List_3 = QtWidgets.QAction(MainWindow)
-        self.actionClear_Flat_List_3.setObjectName("actionClear_Flat_List_3")
-        self.actionZerocombine = QtWidgets.QAction(MainWindow)
-        self.actionZerocombine.setObjectName("actionZerocombine")
-        self.actionDarlcombine = QtWidgets.QAction(MainWindow)
-        self.actionDarlcombine.setObjectName("actionDarlcombine")
-        self.actionFlatcombine = QtWidgets.QAction(MainWindow)
-        self.actionFlatcombine.setObjectName("actionFlatcombine")
-        self.actionDarkcombine = QtWidgets.QAction(MainWindow)
-        self.actionDarkcombine.setObjectName("actionDarkcombine")
-        self.actionManualAlign = QtWidgets.QAction(MainWindow)
-        self.actionManualAlign.setObjectName("actionManualAlign")
-        self.actionAutoAlign = QtWidgets.QAction(MainWindow)
-        self.actionAutoAlign.setObjectName("actionAutoAlign")
-        self.actionMain = QtWidgets.QAction(MainWindow)
-        self.actionMain.setObjectName("actionMain")
-        self.actionAlbatenius = QtWidgets.QAction(MainWindow)
-        self.actionAlbatenius.setObjectName("actionAlbatenius")
-        self.actionAperture = QtWidgets.QAction(MainWindow)
-        self.actionAperture.setObjectName("actionAperture")
-        self.actionPSF = QtWidgets.QAction(MainWindow)
-        self.actionPSF.setObjectName("actionPSF")
-        self.actionGraph = QtWidgets.QAction(MainWindow)
-        self.actionGraph.setObjectName("actionGraph")
-        self.menuData.addAction(self.actionAddImage)
-        self.menuData.addAction(self.actionAddBias)
-        self.menuData.addAction(self.actionAddDark)
-        self.menuData.addAction(self.actionAddFlat)
-        self.menuClear_Lists.addAction(self.actionClear_All_Lists)
-        self.menuClear_Lists.addAction(self.actionClear_Image_List_3)
-        self.menuClear_Lists.addAction(self.actionClear_Bias_List_3)
-        self.menuClear_Lists.addAction(self.actionClear_Dark_List_3)
-        self.menuClear_Lists.addAction(self.actionClear_Flat_List_3)
-        self.menuFile.addAction(self.menuData.menuAction())
-        self.menuFile.addAction(self.menuClear_Lists.menuAction())
-        self.menuFile.addAction(self.actionClose_All_Windows)
-        self.menuFile.addAction(self.actionQuit)
-        self.menuIRAF_Combine.addAction(self.actionZerocombine)
-        self.menuIRAF_Combine.addAction(self.actionDarkcombine)
-        self.menuIRAF_Combine.addAction(self.actionFlatcombine)
-        self.menuCombine.addAction(self.menuIRAF_Combine.menuAction())
-        self.menuCombine.addAction(self.actionMedian)
-        self.menuCombine.addAction(self.actionAverage)
-        self.menuCombine.addAction(self.actionSum)
-        self.menuCombine.addAction(self.actionDifference)
-        self.menuAlign.addAction(self.actionAutoAlign)
-        self.menuAlign.addAction(self.actionManualAlign)
-        self.menu_Photometry.addAction(self.actionAperture)
-        self.menu_Photometry.addAction(self.actionPSF)
-        self.menuAnalyse.addAction(self.menuCombine.menuAction())
-        self.menuAnalyse.addAction(self.actionCalibration)
-        self.menuAnalyse.addAction(self.menuAlign.menuAction())
-        self.menuAnalyse.addAction(self.menu_Photometry.menuAction())
-        self.menuAnalyse.addAction(self.actionA_Track)
-        self.menuHeader.addAction(self.actionHedit)
-        self.menuHeader.addAction(self.actionHeader_Calculator)
-        self.menuHeader.addAction(self.actionHeader_Extractor)
-        self.menuEdit.addAction(self.menuHeader.menuAction())
-        self.menuEdit.addAction(self.actionObservatory)
-        self.menuEdit.addAction(self.actionCosmic)
-        self.menuEdit.addAction(self.actionWCS)
-        self.menuEdit.addAction(self.actionGraph)
-        self.menuSettings.addAction(self.actionCalibration_2)
-        self.menuSettings.addAction(self.actionPhotometry_2)
-        self.menuSettings.addAction(self.actionCosmic_Cleaner)
-        self.menuSettings.addAction(self.actionWCS_2)
-        self.menuMYRaf.addAction(self.actionMain)
-        self.menuMYRaf.addAction(self.actionAnalyse_2)
-        self.menuMYRaf.addAction(self.actionEditor)
-        self.menuHelp_2.addAction(self.menuMYRaf.menuAction())
-        self.menuHelp_2.addAction(self.actionGinga_2)
-        self.menuHelp_2.addAction(self.actionAlipy_2)
-        self.menuHelp_2.addAction(self.actionLA_Cosmic_Cleaner_2)
-        self.menuHelp_2.addAction(self.actionAstrometry_net_2)
-        self.menuHelp.addAction(self.menuHelp_2.menuAction())
-        self.menuHelp.addAction(self.actionLicense)
-        self.menuHelp.addAction(self.actionCredits)
-        self.menuHelp.addAction(self.actionLog_Viewer)
-        self.menuHelp.addAction(self.actionAbout_MYRaf)
-        self.menuHelp.addAction(self.actionAlbatenius)
-        self.menubar.addAction(self.menuFile.menuAction())
-        self.menubar.addAction(self.menuAnalyse.menuAction())
-        self.menubar.addAction(self.menuEdit.menuAction())
-        self.menubar.addAction(self.menuSettings.menuAction())
-        self.menubar.addAction(self.menuHelp.menuAction())
+        self.tabWidget.addTab(self.tab_4, "")
+        self.tab_5 = QtWidgets.QWidget()
+        self.tab_5.setObjectName("tab_5")
+        self.gridLayout_21 = QtWidgets.QGridLayout(self.tab_5)
+        self.gridLayout_21.setObjectName("gridLayout_21")
+        self.tabWidget_4 = QtWidgets.QTabWidget(self.tab_5)
+        self.tabWidget_4.setObjectName("tabWidget_4")
+        self.tab_14 = QtWidgets.QWidget()
+        self.tab_14.setObjectName("tab_14")
+        self.gridLayout_26 = QtWidgets.QGridLayout(self.tab_14)
+        self.gridLayout_26.setObjectName("gridLayout_26")
+        self.groupBox_10 = QtWidgets.QGroupBox(self.tab_14)
+        self.groupBox_10.setObjectName("groupBox_10")
+        self.gridLayout_25 = QtWidgets.QGridLayout(self.groupBox_10)
+        self.gridLayout_25.setObjectName("gridLayout_25")
+        self.tableWidget = QtWidgets.QTableWidget(self.groupBox_10)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget.setColumnCount(3)
+        self.tableWidget.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(2, item)
+        self.gridLayout_25.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.gridLayout_26.addWidget(self.groupBox_10, 0, 0, 1, 1)
+        self.groupBox_8 = QtWidgets.QGroupBox(self.tab_14)
+        self.groupBox_8.setMinimumSize(QtCore.QSize(230, 0))
+        self.groupBox_8.setMaximumSize(QtCore.QSize(230, 16777215))
+        self.groupBox_8.setObjectName("groupBox_8")
+        self.gridLayout_22 = QtWidgets.QGridLayout(self.groupBox_8)
+        self.gridLayout_22.setObjectName("gridLayout_22")
+        self.hedit_list = QtWidgets.QTreeWidget(self.groupBox_8)
+        self.hedit_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.hedit_list.setObjectName("hedit_list")
+        self.gridLayout_22.addWidget(self.hedit_list, 0, 0, 1, 2)
+        self.hedit_remove = QtWidgets.QPushButton(self.groupBox_8)
+        self.hedit_remove.setObjectName("hedit_remove")
+        self.gridLayout_22.addWidget(self.hedit_remove, 1, 0, 1, 1)
+        self.hedit_add = QtWidgets.QPushButton(self.groupBox_8)
+        self.hedit_add.setObjectName("hedit_add")
+        self.gridLayout_22.addWidget(self.hedit_add, 1, 1, 1, 1)
+        self.gridLayout_26.addWidget(self.groupBox_8, 0, 1, 2, 1)
+        self.groupBox_9 = QtWidgets.QGroupBox(self.tab_14)
+        self.groupBox_9.setObjectName("groupBox_9")
+        self.gridLayout_24 = QtWidgets.QGridLayout(self.groupBox_9)
+        self.gridLayout_24.setObjectName("gridLayout_24")
+        self.label = QtWidgets.QLabel(self.groupBox_9)
+        self.label.setObjectName("label")
+        self.gridLayout_24.addWidget(self.label, 0, 0, 1, 1)
+        self.hedit_field = QtWidgets.QLineEdit(self.groupBox_9)
+        self.hedit_field.setObjectName("hedit_field")
+        self.gridLayout_24.addWidget(self.hedit_field, 0, 1, 1, 1)
+        self.hedit_isvaluefromheader = QtWidgets.QCheckBox(self.groupBox_9)
+        self.hedit_isvaluefromheader.setObjectName("hedit_isvaluefromheader")
+        self.gridLayout_24.addWidget(self.hedit_isvaluefromheader, 0, 2, 1, 1)
+        self.label_2 = QtWidgets.QLabel(self.groupBox_9)
+        self.label_2.setObjectName("label_2")
+        self.gridLayout_24.addWidget(self.label_2, 1, 0, 1, 1)
+        self.hedit_value = QtWidgets.QLineEdit(self.groupBox_9)
+        self.hedit_value.setObjectName("hedit_value")
+        self.gridLayout_24.addWidget(self.hedit_value, 1, 1, 1, 1)
+        self.hedit_valuefromheader = QtWidgets.QComboBox(self.groupBox_9)
+        self.hedit_valuefromheader.setEnabled(False)
+        self.hedit_valuefromheader.setObjectName("hedit_valuefromheader")
+        self.gridLayout_24.addWidget(self.hedit_valuefromheader, 1, 2, 1, 1)
+        self.gridLayout_26.addWidget(self.groupBox_9, 1, 0, 1, 1)
+        self.gridLayout_23 = QtWidgets.QGridLayout()
+        self.gridLayout_23.setObjectName("gridLayout_23")
+        self.hedit_info = QtWidgets.QLabel(self.tab_14)
+        self.hedit_info.setObjectName("hedit_info")
+        self.gridLayout_23.addWidget(self.hedit_info, 0, 0, 1, 1)
+        self.hedit_go = QtWidgets.QPushButton(self.tab_14)
+        self.hedit_go.setMinimumSize(QtCore.QSize(50, 50))
+        self.hedit_go.setMaximumSize(QtCore.QSize(50, 50))
+        self.hedit_go.setObjectName("hedit_go")
+        self.gridLayout_23.addWidget(self.hedit_go, 0, 1, 2, 1)
+        self.hedit_proc = QtWidgets.QProgressBar(self.tab_14)
+        self.hedit_proc.setProperty("value", 24)
+        self.hedit_proc.setObjectName("hedit_proc")
+        self.gridLayout_23.addWidget(self.hedit_proc, 1, 0, 1, 1)
+        self.gridLayout_26.addLayout(self.gridLayout_23, 2, 0, 1, 2)
+        self.tabWidget_4.addTab(self.tab_14, "")
+        self.tab_15 = QtWidgets.QWidget()
+        self.tab_15.setObjectName("tab_15")
+        self.tabWidget_4.addTab(self.tab_15, "")
+        self.tab_16 = QtWidgets.QWidget()
+        self.tab_16.setObjectName("tab_16")
+        self.tabWidget_4.addTab(self.tab_16, "")
+        self.tab_29 = QtWidgets.QWidget()
+        self.tab_29.setObjectName("tab_29")
+        self.tabWidget_4.addTab(self.tab_29, "")
+        self.gridLayout_21.addWidget(self.tabWidget_4, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_5, "")
+        self.tab_6 = QtWidgets.QWidget()
+        self.tab_6.setObjectName("tab_6")
+        self.gridLayout_29 = QtWidgets.QGridLayout(self.tab_6)
+        self.gridLayout_29.setObjectName("gridLayout_29")
+        self.tabWidget_6 = QtWidgets.QTabWidget(self.tab_6)
+        self.tabWidget_6.setObjectName("tabWidget_6")
+        self.tab_28 = QtWidgets.QWidget()
+        self.tab_28.setObjectName("tab_28")
+        self.tabWidget_6.addTab(self.tab_28, "")
+        self.tab_24 = QtWidgets.QWidget()
+        self.tab_24.setObjectName("tab_24")
+        self.tabWidget_6.addTab(self.tab_24, "")
+        self.tab_25 = QtWidgets.QWidget()
+        self.tab_25.setObjectName("tab_25")
+        self.tabWidget_6.addTab(self.tab_25, "")
+        self.tab_26 = QtWidgets.QWidget()
+        self.tab_26.setObjectName("tab_26")
+        self.tabWidget_6.addTab(self.tab_26, "")
+        self.tab_27 = QtWidgets.QWidget()
+        self.tab_27.setObjectName("tab_27")
+        self.tabWidget_6.addTab(self.tab_27, "")
+        self.gridLayout_29.addWidget(self.tabWidget_6, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_6, "")
+        self.tab_7 = QtWidgets.QWidget()
+        self.tab_7.setObjectName("tab_7")
+        self.gridLayout_27 = QtWidgets.QGridLayout(self.tab_7)
+        self.gridLayout_27.setObjectName("gridLayout_27")
+        self.tabWidget_5 = QtWidgets.QTabWidget(self.tab_7)
+        self.tabWidget_5.setObjectName("tabWidget_5")
+        self.tab_17 = QtWidgets.QWidget()
+        self.tab_17.setObjectName("tab_17")
+        self.tabWidget_5.addTab(self.tab_17, "")
+        self.tab_18 = QtWidgets.QWidget()
+        self.tab_18.setObjectName("tab_18")
+        self.tabWidget_5.addTab(self.tab_18, "")
+        self.tab_19 = QtWidgets.QWidget()
+        self.tab_19.setObjectName("tab_19")
+        self.tabWidget_5.addTab(self.tab_19, "")
+        self.tab_20 = QtWidgets.QWidget()
+        self.tab_20.setObjectName("tab_20")
+        self.tabWidget_5.addTab(self.tab_20, "")
+        self.tab_21 = QtWidgets.QWidget()
+        self.tab_21.setObjectName("tab_21")
+        self.tabWidget_5.addTab(self.tab_21, "")
+        self.tab_22 = QtWidgets.QWidget()
+        self.tab_22.setObjectName("tab_22")
+        self.tabWidget_5.addTab(self.tab_22, "")
+        self.tab_13 = QtWidgets.QWidget()
+        self.tab_13.setObjectName("tab_13")
+        self.gridLayout_12 = QtWidgets.QGridLayout(self.tab_13)
+        self.gridLayout_12.setObjectName("gridLayout_12")
+        self.textBrowser_4 = QtWidgets.QTextBrowser(self.tab_13)
+        self.textBrowser_4.setMinimumSize(QtCore.QSize(581, 391))
+        self.textBrowser_4.setObjectName("textBrowser_4")
+        self.gridLayout_12.addWidget(self.textBrowser_4, 0, 0, 1, 1)
+        self.tabWidget_5.addTab(self.tab_13, "")
+        self.tab_12 = QtWidgets.QWidget()
+        self.tab_12.setObjectName("tab_12")
+        self.gridLayout_11 = QtWidgets.QGridLayout(self.tab_12)
+        self.gridLayout_11.setObjectName("gridLayout_11")
+        self.textBrowser_5 = QtWidgets.QTextBrowser(self.tab_12)
+        self.textBrowser_5.setMinimumSize(QtCore.QSize(581, 391))
+        self.textBrowser_5.setObjectName("textBrowser_5")
+        self.gridLayout_11.addWidget(self.textBrowser_5, 0, 0, 1, 1)
+        self.tabWidget_5.addTab(self.tab_12, "")
+        self.tab_23 = QtWidgets.QWidget()
+        self.tab_23.setObjectName("tab_23")
+        self.gridLayout_28 = QtWidgets.QGridLayout(self.tab_23)
+        self.gridLayout_28.setObjectName("gridLayout_28")
+        self.log_list = QtWidgets.QTableWidget(self.tab_23)
+        self.log_list.setObjectName("log_list")
+        self.log_list.setColumnCount(4)
+        self.log_list.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.log_list.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.log_list.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.log_list.setHorizontalHeaderItem(2, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.log_list.setHorizontalHeaderItem(3, item)
+        self.gridLayout_28.addWidget(self.log_list, 0, 0, 1, 2)
+        self.log_info = QtWidgets.QLabel(self.tab_23)
+        self.log_info.setObjectName("log_info")
+        self.gridLayout_28.addWidget(self.log_info, 1, 0, 1, 1)
+        self.log_save = QtWidgets.QPushButton(self.tab_23)
+        self.log_save.setMinimumSize(QtCore.QSize(80, 25))
+        self.log_save.setMaximumSize(QtCore.QSize(80, 25))
+        self.log_save.setObjectName("log_save")
+        self.gridLayout_28.addWidget(self.log_save, 1, 1, 1, 1)
+        self.tabWidget_5.addTab(self.tab_23, "")
+        self.gridLayout_27.addWidget(self.tabWidget_5, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_7, "")
+        self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 900, 22))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.file_containter.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget_2.setCurrentIndex(0)
+        self.tabWidget_4.setCurrentIndex(0)
+        self.tabWidget_6.setCurrentIndex(0)
+        self.tabWidget_5.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MYRaf (V3 - Beta) Albatenius"))
-        self.menuFile.setTitle(_translate("MainWindow", "File"))
-        self.menuData.setTitle(_translate("MainWindow", "&Import Data"))
-        self.menuClear_Lists.setTitle(_translate("MainWindow", "&Clear List"))
-        self.menuAnalyse.setTitle(_translate("MainWindow", "A&nalyse"))
-        self.menuCombine.setTitle(_translate("MainWindow", "&Combine"))
-        self.menuIRAF_Combine.setTitle(_translate("MainWindow", "&IRAF Combine"))
-        self.menuAlign.setTitle(_translate("MainWindow", "&Align"))
-        self.menu_Photometry.setTitle(_translate("MainWindow", "&Photometry"))
-        self.menuEdit.setTitle(_translate("MainWindow", "E&ditor"))
-        self.menuHeader.setTitle(_translate("MainWindow", "&Header"))
-        self.menuSettings.setTitle(_translate("MainWindow", "Settin&gs"))
-        self.menuHelp.setTitle(_translate("MainWindow", "Help"))
-        self.menuHelp_2.setTitle(_translate("MainWindow", "&Help"))
-        self.menuMYRaf.setTitle(_translate("MainWindow", "&MYRaf"))
-        self.dockWidget.setWindowTitle(_translate("MainWindow", "Fi&les"))
-        self.image_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
-        self.image_list.headerItem().setText(1, _translate("MainWindow", "Value"))
-        self.image_remove.setText(_translate("MainWindow", "Remove"))
-        self.image_add.setText(_translate("MainWindow", "Add"))
-        self.file_containter.setTabText(self.file_containter.indexOf(self.tab), _translate("MainWindow", "Image"))
-        self.bias_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
-        self.bias_list.headerItem().setText(1, _translate("MainWindow", "Value"))
-        self.bias_remove.setText(_translate("MainWindow", "Remove"))
-        self.bias_add.setText(_translate("MainWindow", "Add"))
-        self.file_containter.setTabText(self.file_containter.indexOf(self.tab_2), _translate("MainWindow", "Bias"))
-        self.dark_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
-        self.dark_list.headerItem().setText(1, _translate("MainWindow", "Value"))
-        self.dark_remove.setText(_translate("MainWindow", "Remove"))
-        self.dark_add.setText(_translate("MainWindow", "Add"))
-        self.file_containter.setTabText(self.file_containter.indexOf(self.tab_3), _translate("MainWindow", "Dark"))
-        self.flat_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
-        self.flat_list.headerItem().setText(1, _translate("MainWindow", "Value"))
-        self.flat_remove.setText(_translate("MainWindow", "Remove"))
-        self.flat_add.setText(_translate("MainWindow", "Add"))
-        self.file_containter.setTabText(self.file_containter.indexOf(self.tab_4), _translate("MainWindow", "Flat"))
-        self.actionQuit.setText(_translate("MainWindow", "&Quit"))
-        self.actionCalibration.setText(_translate("MainWindow", "Ca&libration"))
-        self.actionA_Track.setText(_translate("MainWindow", "A-T&rack"))
-        self.actionObservatory.setText(_translate("MainWindow", "&Observatory ..."))
-        self.actionCosmic.setText(_translate("MainWindow", "&Cosmic Cleaner"))
-        self.actionWCS.setText(_translate("MainWindow", "&WCS"))
-        self.actionHedit.setText(_translate("MainWindow", "&Hedit ..."))
-        self.actionHeader_Calculator.setText(_translate("MainWindow", "Header &Calculator ..."))
-        self.actionHeader_Extractor.setText(_translate("MainWindow", "Header &Extractor ..."))
-        self.actionCalibration_2.setText(_translate("MainWindow", "&Calibration"))
-        self.actionPhotometry_2.setText(_translate("MainWindow", "&Photometry"))
-        self.actionCosmic_Cleaner.setText(_translate("MainWindow", "C&osmic Cleaner"))
-        self.actionWCS_2.setText(_translate("MainWindow", "&WCS"))
-        self.actionAbout_MYRaf.setText(_translate("MainWindow", "&About MYRaf ..."))
-        self.actionGinga.setText(_translate("MainWindow", "Ginga"))
-        self.actionAlipy.setText(_translate("MainWindow", "Alipy"))
-        self.actionLA_Cosmic_Cleaner.setText(_translate("MainWindow", "LA. Cosmic Cleaner"))
-        self.actionAstrometry_net.setText(_translate("MainWindow", "Astrometry.net"))
-        self.actionLicense.setText(_translate("MainWindow", "&License ..."))
-        self.actionCredits.setText(_translate("MainWindow", "&Credits ..."))
-        self.actionLog_Viewer.setText(_translate("MainWindow", "Log &Viewer ..."))
-        self.actionImage.setText(_translate("MainWindow", "Image"))
-        self.actionBias.setText(_translate("MainWindow", "Bias"))
-        self.actionDark.setText(_translate("MainWindow", "Dark"))
-        self.actionFlat.setText(_translate("MainWindow", "Flat"))
-        self.actionAddImage.setText(_translate("MainWindow", "&Image"))
-        self.actionAddBias.setText(_translate("MainWindow", "&Bias"))
-        self.actionAddDark.setText(_translate("MainWindow", "&Dark"))
-        self.actionAddFlat.setText(_translate("MainWindow", "&Flat"))
-        self.actionBias_Combine.setText(_translate("MainWindow", "Bias Combine"))
-        self.actionDark_Combine.setText(_translate("MainWindow", "Dark Combine"))
-        self.actionFlat_Combine.setText(_translate("MainWindow", "Flat Combine"))
-        self.actionMedian.setText(_translate("MainWindow", "&Median..."))
-        self.actionAverage.setText(_translate("MainWindow", "&Average..."))
-        self.actionSum.setText(_translate("MainWindow", "&Sum..."))
-        self.actionDifference.setText(_translate("MainWindow", "&Difference ..."))
-        self.actionGinga_2.setText(_translate("MainWindow", "&Ginga ..."))
-        self.actionAlipy_2.setText(_translate("MainWindow", "&Alipy ..."))
-        self.actionLA_Cosmic_Cleaner_2.setText(_translate("MainWindow", "&LA. Cosmic Cleaner ..."))
-        self.actionAstrometry_net_2.setText(_translate("MainWindow", "Astrometry.&net ..."))
-        self.actionEditor.setText(_translate("MainWindow", "&Editor"))
-        self.actionCombine.setText(_translate("MainWindow", "Combine"))
-        self.actionCalibration_3.setText(_translate("MainWindow", "Calibration"))
-        self.actionAnalyse_2.setText(_translate("MainWindow", "&Analyse"))
-        self.actionClose_All_Windows.setText(_translate("MainWindow", "Close All &Open Windows"))
-        self.actionClear_All_Lists.setText(_translate("MainWindow", "&Clear All Lists"))
-        self.actionClear_Image_List.setText(_translate("MainWindow", "Clear Image List"))
-        self.actionClear_Bias_List.setText(_translate("MainWindow", "Clear Bias List"))
-        self.actionClear_Dark_List.setText(_translate("MainWindow", "Clear Dark List"))
-        self.actionClear_Flat_List.setText(_translate("MainWindow", "Clear Flat List"))
-        self.actionClear_Image_L_st.setText(_translate("MainWindow", "Clear Image Lİst"))
-        self.actionClear_Bias_List_2.setText(_translate("MainWindow", "Clear Bias List"))
-        self.actionClear_Dark_L_st.setText(_translate("MainWindow", "Clear Dark Lİst"))
-        self.actionClear_Flat_List_2.setText(_translate("MainWindow", "Clear Flat List"))
-        self.actionClear_Image_List_2.setText(_translate("MainWindow", "Clear Image List"))
-        self.actionClear_Image_List_3.setText(_translate("MainWindow", "Clear &Image List"))
-        self.actionClear_Bias_List_3.setText(_translate("MainWindow", "Clear &Bias List"))
-        self.actionClear_Dark_List_3.setText(_translate("MainWindow", "Clear &Dark List"))
-        self.actionClear_Flat_List_3.setText(_translate("MainWindow", "Clear &Flat List"))
-        self.actionZerocombine.setText(_translate("MainWindow", "&Zerocombine..."))
-        self.actionDarlcombine.setText(_translate("MainWindow", "Darlcombine"))
-        self.actionFlatcombine.setText(_translate("MainWindow", "&Flatcombine..."))
-        self.actionDarkcombine.setText(_translate("MainWindow", "&Darkcombine..."))
-        self.actionManualAlign.setText(_translate("MainWindow", "&Manual..."))
-        self.actionAutoAlign.setText(_translate("MainWindow", "&Auto"))
-        self.actionMain.setText(_translate("MainWindow", "&Main"))
-        self.actionAlbatenius.setText(_translate("MainWindow", "Al&batenius ..."))
-        self.actionAperture.setText(_translate("MainWindow", "&Aperture..."))
-        self.actionPSF.setText(_translate("MainWindow", "&PSF..."))
-        self.actionGraph.setText(_translate("MainWindow", "Graph"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MYRaf V3"))
+        self.calib_image_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.calib_image_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.calib_image_remove.setText(_translate("MainWindow", "Remove"))
+        self.calib_image_add.setText(_translate("MainWindow", "Add"))
+        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_8), _translate("MainWindow", "Images"))
+        self.calib_bias_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.calib_bias_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.calib_bias_combine.setText(_translate("MainWindow", "Export"))
+        self.calib_bias_remove.setText(_translate("MainWindow", "Remove"))
+        self.calib_bias_add.setText(_translate("MainWindow", "Add"))
+        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_9), _translate("MainWindow", "Bias"))
+        self.calib_dark_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.calib_dark_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.calib_dark_combine.setText(_translate("MainWindow", "Export"))
+        self.calib_dark_remove.setText(_translate("MainWindow", "Remove"))
+        self.calib_dark_add.setText(_translate("MainWindow", "Add"))
+        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_10), _translate("MainWindow", "Dark"))
+        self.calib_flat_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.calib_flat_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.calib_flat_combine.setText(_translate("MainWindow", "Export"))
+        self.calib_flat_remove.setText(_translate("MainWindow", "Remove"))
+        self.calib_flat_add.setText(_translate("MainWindow", "Add"))
+        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_11), _translate("MainWindow", "Flat"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Calibration"))
+        self.groupBox_2.setTitle(_translate("MainWindow", "Image"))
+        self.info_align.setText(_translate("MainWindow", "TextLabel"))
+        self.groupBox.setTitle(_translate("MainWindow", "Files"))
+        self.align_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.align_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.align_remove.setText(_translate("MainWindow", "Remove"))
+        self.align_add.setText(_translate("MainWindow", "Add"))
+        self.align_isauto.setText(_translate("MainWindow", "Auto Align"))
+        self.align_info.setText(_translate("MainWindow", "TextLabel"))
+        self.align_go.setText(_translate("MainWindow", ":go"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Align"))
+        self.groupBox_5.setTitle(_translate("MainWindow", "Image"))
+        self.info_phot.setText(_translate("MainWindow", "TextLabel"))
+        self.groupBox_6.setTitle(_translate("MainWindow", "Files"))
+        self.phot_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.phot_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.phot_remove.setText(_translate("MainWindow", "Remove"))
+        self.phot_add.setText(_translate("MainWindow", "Add"))
+        self.groupBox_7.setTitle(_translate("MainWindow", "Coords"))
+        self.phot_coor_sex.setText(_translate("MainWindow", "Run SEX!"))
+        self.phot_coor_remove.setText(_translate("MainWindow", "Remove"))
+        self.phot_info.setText(_translate("MainWindow", "TextLabel"))
+        self.phot_go.setText(_translate("MainWindow", ":go"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Photometry"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("MainWindow", "Graph"))
+        self.groupBox_10.setTitle(_translate("MainWindow", "Header"))
+        item = self.tableWidget.horizontalHeaderItem(0)
+        item.setText(_translate("MainWindow", "Field"))
+        item = self.tableWidget.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "Value"))
+        item = self.tableWidget.horizontalHeaderItem(2)
+        item.setText(_translate("MainWindow", "Command"))
+        self.groupBox_8.setTitle(_translate("MainWindow", "Files"))
+        self.hedit_list.headerItem().setText(0, _translate("MainWindow", "Attribute"))
+        self.hedit_list.headerItem().setText(1, _translate("MainWindow", "Value"))
+        self.hedit_remove.setText(_translate("MainWindow", "Remove"))
+        self.hedit_add.setText(_translate("MainWindow", "Add"))
+        self.groupBox_9.setTitle(_translate("MainWindow", "GroupBox"))
+        self.label.setText(_translate("MainWindow", "Field"))
+        self.hedit_isvaluefromheader.setText(_translate("MainWindow", "Value From Header"))
+        self.label_2.setText(_translate("MainWindow", "Value"))
+        self.hedit_info.setText(_translate("MainWindow", "TextLabel"))
+        self.hedit_go.setText(_translate("MainWindow", ":go"))
+        self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_14), _translate("MainWindow", "Header"))
+        self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_15), _translate("MainWindow", "Header Calculator"))
+        self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_16), _translate("MainWindow", "Cosmic Cleaner"))
+        self.tabWidget_4.setTabText(self.tabWidget_4.indexOf(self.tab_29), _translate("MainWindow", "WCS"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("MainWindow", "Editor"))
+        self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_28), _translate("MainWindow", "MYRaf"))
+        self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_24), _translate("MainWindow", "Calibration"))
+        self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_25), _translate("MainWindow", "Align"))
+        self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_26), _translate("MainWindow", "Photometry"))
+        self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_27), _translate("MainWindow", "WCS"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), _translate("MainWindow", "Settings"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_17), _translate("MainWindow", "MYRaf"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_18), _translate("MainWindow", "Calibration"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_19), _translate("MainWindow", "Align"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_20), _translate("MainWindow", "Photometry"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_21), _translate("MainWindow", "Graph"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_22), _translate("MainWindow", "Editor"))
+        self.textBrowser_4.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040; background-color:#fcfcfc;\">Ginga Quick Reference</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"main-image-window\"></a><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">M</span><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">ain image window</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040;\">These keyboard and mouse operations are available when the main image window has the focus.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"panning-and-zooming-commands\"></a><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">P</span><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">anning and Zooming commands</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<table border=\"1\" style=\" margin-top:0px; margin-bottom:24px; margin-left:0px; margin-right:0px;\" cellspacing=\"2\" cellpadding=\"0\">\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Scroll wheel turned</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Zoom in or out</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Digit (1234567890)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Zoom image to zoom steps 1, 2, ..., 9, 10</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Shift + Digit</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Zoom image to zoom steps -1, -2, ..., -9, -10</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Backquote (`)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Zoom image to fit window and center it</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#404040;\">Minus, Underscore</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040;\">(-, _)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Zoom out</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#ffffff;\">Equals, Plus</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff;\">(=, +)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Zoom in</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Middle (scroll) button drag</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Pan image freely (when zoomed in)</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">p</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Set pan position for zooming</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Shift + Left click</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Set pan position for zooming</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">c</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Set pan position to the center of the image</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">q</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Pan image freely (when zoomed in); Left drag</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Ctrl + Left drag</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#ffffff;\">Proportional pan (press and drag left mouse</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff;\">button</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">apostrophe (‘)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Set autozoom for new images to</span><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-style:italic; color:#404040;\">override</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">doublequote (”)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Set autozoom for new images to</span><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-style:italic; color:#ffffff;\">on</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#404040;\">Ctrl + Scroll wheel</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040;\">turned</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Adjust zoom by intermediate coarse steps</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#ffffff;\">Shift + Scroll wheel</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff;\">turned</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Adjust zoom by intermediate fine steps</span></p></td></tr></table>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"cut-levels-and-colormap-commands\"></a><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">C</span><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">ut levels and colormap commands</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<table border=\"1\" style=\" margin-top:0px; margin-bottom:24px; margin-left:0px; margin-right:0px;\" cellspacing=\"2\" cellpadding=\"0\">\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">a</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Auto cut levels</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">s</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Cycle color distribution algorithm</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">S</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Reset color distribution algorithm to “linear”</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">period (.)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#ffffff;\">Interactive cut </span><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; font-style:italic; color:#ffffff;\">both</span><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#ffffff;\"> low and high (with left</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff;\">mouse button)</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">slash (/)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-weight:600; color:#404040;\">Interactive warp colormap (with left mouse</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040;\">button)</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">semicolon (;)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Set autocuts for new images to</span><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-style:italic; color:#ffffff;\">override</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">colon (:)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Set autocuts for new images to</span><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; font-style:italic; color:#404040;\">on</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">question (?)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Restore the color map to its original state</span></p></td></tr></table>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"transform-commands\"></a><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">T</span><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">ransform commands</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<table border=\"1\" style=\" margin-top:0px; margin-bottom:24px; margin-left:0px; margin-right:0px;\" cellspacing=\"2\" cellpadding=\"0\">\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Left bracket ([)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Toggle flip image in X</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Left brace ({)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Reset to no flip of image in X</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Right bracket (])</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Toggle flip image in Y</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Right brace (})</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Reset to no flip image in Y</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Backslash (\\)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Swap X and Y axes</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Vertical bar (|)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Reset to no swap of X and Y axes</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">r</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Interactive rotate (with left mouse button)</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">R</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Restore rotation to 0 degrees</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">e</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Increment current rotation by 90 degrees</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">E</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Increment current rotation by -90 degrees</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">o</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Orient image by WCS so North=Up and East=Left</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">O</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Orient image by WCS so North=Up and East=Right</span></p></td></tr></table>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"reference-viewer-only\"></a><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">R</span><span style=\" font-family:\'Roboto Slab,ff-tisa-web-pro,Georgia,Arial,sans-serif\'; font-weight:696; color:#404040;\">eference Viewer Only</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<table border=\"1\" style=\" margin-top:0px; margin-bottom:24px; margin-left:0px; margin-right:0px;\" cellspacing=\"2\" cellpadding=\"0\">\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">I</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Raise Info tab</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">H</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Raise Header tab</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Z</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Raise Zoom tab</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">D</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Raise Dialogs tab</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">T</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Raise Thumbs tab</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">C</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Raise Contents tab</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">left angle (&lt;)</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Toggle collapse left pane</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">right angle (&gt;)</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Toggle collapse right pane</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">f</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Toggle full screen</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">F</span></p></td>\n"
+"<td bgcolor=\"#000000\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#ffffff; background-color:#000000;\">Panoramic full screen</span></p></td></tr>\n"
+"<tr>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">m</span></p></td>\n"
+"<td bgcolor=\"#f3f6f6\" style=\" vertical-align:middle; padding-left:16; padding-right:16; padding-top:8; padding-bottom:8;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040; background-color:#f3f6f6;\">Maximize window</span></p></td></tr></table>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Note:</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040;\">If there are one or more plugins active, additional mouse or keyboard bindings may be present. In general, the left mouse button is used to select, pick or move, and the right mouse button is used to draw a shape for the operation.</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Lato,proxima-nova,Helvetica Neue,Arial,sans-serif\'; color:#404040;\">On the Mac, control + mouse button can also be used to draw or right click. You can also press and release the space bar to make the next drag operation a drawing operation.</span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Ref = http://ginga.readthedocs.org/en/latest/quickref.html</p></body></html>"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_13), _translate("MainWindow", "Ginga"))
+        self.textBrowser_5.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><title>GNU General Public License v3.0 - GNU Project - Free Software Foundation (FSF)</title><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<h3 align=\"center\" style=\" margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:large; font-weight:600;\">GNU GENERAL PUBLIC LICENSE</span></h3>\n"
+"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Version 3, 29 June 2007 </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Copyright © 2007 Free Software Foundation, Inc. &lt;<a href=\"https://fsf.org/\"><span style=\" text-decoration: underline; color:#0000ff;\">https://fsf.org/</span></a>&gt;</p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed. </p>\n"
+"<h3 style=\" margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"preamble\"></a><span style=\" font-size:large; font-weight:600;\">P</span><span style=\" font-size:large; font-weight:600;\">reamble </span></h3>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The GNU General Public License is a free, copyleft license for software and other kinds of works. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The licenses for most software and other practical works are designed to take away your freedom to share and change the works. By contrast, the GNU General Public License is intended to guarantee your freedom to share and change all versions of a program--to make sure it remains free software for all its users. We, the Free Software Foundation, use the GNU General Public License for most of our software; it applies also to any other work released this way by its authors. You can apply it to your programs, too. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">When we speak of free software, we are referring to freedom, not price. Our General Public Licenses are designed to make sure that you have the freedom to distribute copies of free software (and charge for them if you wish), that you receive source code or can get it if you want it, that you can change the software or use pieces of it in new free programs, and that you know you can do these things. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">To protect your rights, we need to prevent others from denying you these rights or asking you to surrender the rights. Therefore, you have certain responsibilities if you distribute copies of the software, or if you modify it: responsibilities to respect the freedom of others. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">For example, if you distribute copies of such a program, whether gratis or for a fee, you must pass on to the recipients the same freedoms that you received. You must make sure that they, too, receive or can get the source code. And you must show them these terms so they know their rights. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Developers that use the GNU GPL protect your rights with two steps: (1) assert copyright on the software, and (2) offer you this License giving you legal permission to copy, distribute and/or modify it. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">For the developers\' and authors\' protection, the GPL clearly explains that there is no warranty for this free software. For both users\' and authors\' sake, the GPL requires that modified versions be marked as changed, so that their problems will not be attributed erroneously to authors of previous versions. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Some devices are designed to deny users access to install or run modified versions of the software inside them, although the manufacturer can do so. This is fundamentally incompatible with the aim of protecting users\' freedom to change the software. The systematic pattern of such abuse occurs in the area of products for individuals to use, which is precisely where it is most unacceptable. Therefore, we have designed this version of the GPL to prohibit the practice for those products. If such problems arise substantially in other domains, we stand ready to extend this provision to those domains in future versions of the GPL, as needed to protect the freedom of users. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Finally, every program is threatened constantly by software patents. States should not allow patents to restrict development and use of software on general-purpose computers, but in those that do, we wish to avoid the special danger that patents applied to a free program could make it effectively proprietary. To prevent this, the GPL assures that patents cannot be used to render the program non-free. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The precise terms and conditions for copying, distribution and modification follow. </p>\n"
+"<h3 style=\" margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"terms\"></a><span style=\" font-size:large; font-weight:600;\">T</span><span style=\" font-size:large; font-weight:600;\">ERMS AND CONDITIONS </span></h3>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section0\"></a><span style=\" font-size:medium; font-weight:600;\">0</span><span style=\" font-size:medium; font-weight:600;\">. Definitions. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">“This License” refers to version 3 of the GNU General Public License. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">“Copyright” also means copyright-like laws that apply to other kinds of works, such as semiconductor masks. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">“The Program” refers to any copyrightable work licensed under this License. Each licensee is addressed as “you”. “Licensees” and “recipients” may be individuals or organizations. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">To “modify” a work means to copy from or adapt all or part of the work in a fashion requiring copyright permission, other than the making of an exact copy. The resulting work is called a “modified version” of the earlier work or a work “based on” the earlier work. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A “covered work” means either the unmodified Program or a work based on the Program. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">To “propagate” a work means to do anything with it that, without permission, would make you directly or secondarily liable for infringement under applicable copyright law, except executing it on a computer or modifying a private copy. Propagation includes copying, distribution (with or without modification), making available to the public, and in some countries other activities as well. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">To “convey” a work means any kind of propagation that enables other parties to make or receive copies. Mere interaction with a user through a computer network, with no transfer of a copy, is not conveying. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">An interactive user interface displays “Appropriate Legal Notices” to the extent that it includes a convenient and prominently visible feature that (1) displays an appropriate copyright notice, and (2) tells the user that there is no warranty for the work (except to the extent that warranties are provided), that licensees may convey the work under this License, and how to view a copy of this License. If the interface presents a list of user commands or options, such as a menu, a prominent item in the list meets this criterion. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section1\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">. Source Code. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The “source code” for a work means the preferred form of the work for making modifications to it. “Object code” means any non-source form of a work. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A “Standard Interface” means an interface that either is an official standard defined by a recognized standards body, or, in the case of interfaces specified for a particular programming language, one that is widely used among developers working in that language. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The “System Libraries” of an executable work include anything, other than the work as a whole, that (a) is included in the normal form of packaging a Major Component, but which is not part of that Major Component, and (b) serves only to enable use of the work with that Major Component, or to implement a Standard Interface for which an implementation is available to the public in source code form. A “Major Component”, in this context, means a major essential component (kernel, window system, and so on) of the specific operating system (if any) on which the executable work runs, or a compiler used to produce the work, or an object code interpreter used to run it. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The “Corresponding Source” for a work in object code form means all the source code needed to generate, install, and (for an executable work) run the object code and to modify the work, including scripts to control those activities. However, it does not include the work\'s System Libraries, or general-purpose tools or generally available free programs which are used unmodified in performing those activities but which are not part of the work. For example, Corresponding Source includes interface definition files associated with source files for the work, and the source code for shared libraries and dynamically linked subprograms that the work is specifically designed to require, such as by intimate data communication or control flow between those subprograms and other parts of the work. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The Corresponding Source need not include anything that users can regenerate automatically from other parts of the Corresponding Source. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The Corresponding Source for a work in source code form is that same work. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section2\"></a><span style=\" font-size:medium; font-weight:600;\">2</span><span style=\" font-size:medium; font-weight:600;\">. Basic Permissions. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">All rights granted under this License are granted for the term of copyright on the Program, and are irrevocable provided the stated conditions are met. This License explicitly affirms your unlimited permission to run the unmodified Program. The output from running a covered work is covered by this License only if the output, given its content, constitutes a covered work. This License acknowledges your rights of fair use or other equivalent, as provided by copyright law. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may make, run and propagate covered works that you do not convey, without conditions so long as your license otherwise remains in force. You may convey covered works to others for the sole purpose of having them make modifications exclusively for you, or provide you with facilities for running those works, provided that you comply with the terms of this License in conveying all material for which you do not control copyright. Those thus making or running the covered works for you must do so exclusively on your behalf, under your direction and control, on terms that prohibit them from making any copies of your copyrighted material outside their relationship with you. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Conveying under any other circumstances is permitted solely under the conditions stated below. Sublicensing is not allowed; section 10 makes it unnecessary. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section3\"></a><span style=\" font-size:medium; font-weight:600;\">3</span><span style=\" font-size:medium; font-weight:600;\">. Protecting Users\' Legal Rights From Anti-Circumvention Law. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">No covered work shall be deemed part of an effective technological measure under any applicable law fulfilling obligations under article 11 of the WIPO copyright treaty adopted on 20 December 1996, or similar laws prohibiting or restricting circumvention of such measures. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">When you convey a covered work, you waive any legal power to forbid circumvention of technological measures to the extent such circumvention is effected by exercising rights under this License with respect to the covered work, and you disclaim any intention to limit operation or modification of the work as a means of enforcing, against the work\'s users, your or third parties\' legal rights to forbid circumvention of technological measures. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section4\"></a><span style=\" font-size:medium; font-weight:600;\">4</span><span style=\" font-size:medium; font-weight:600;\">. Conveying Verbatim Copies. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may convey verbatim copies of the Program\'s source code as you receive it, in any medium, provided that you conspicuously and appropriately publish on each copy an appropriate copyright notice; keep intact all notices stating that this License and any non-permissive terms added in accord with section 7 apply to the code; keep intact all notices of the absence of any warranty; and give all recipients a copy of this License along with the Program. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may charge any price or no price for each copy that you convey, and you may offer support or warranty protection for a fee. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section5\"></a><span style=\" font-size:medium; font-weight:600;\">5</span><span style=\" font-size:medium; font-weight:600;\">. Conveying Modified Source Versions. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may convey a work based on the Program, or the modifications to produce it from the Program, in the form of source code under the terms of section 4, provided that you also meet all of these conditions: </p>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">a) The work must carry prominent notices stating that you modified it, and giving a relevant date. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">b) The work must carry prominent notices stating that it is released under this License and any conditions added under section 7. This requirement modifies the requirement in section 4 to “keep intact all notices”. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">c) You must license the entire work, as a whole, under this License to anyone who comes into possession of a copy. This License will therefore apply, along with any applicable section 7 additional terms, to the whole of the work, and all its parts, regardless of how they are packaged. This License gives no permission to license the work in any other way, but it does not invalidate such permission if you have separately received it. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">d) If the work has interactive user interfaces, each must display Appropriate Legal Notices; however, if the Program has interactive interfaces that do not display Appropriate Legal Notices, your work need not make them do so. </li></ul>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A compilation of a covered work with other separate and independent works, which are not by their nature extensions of the covered work, and which are not combined with it such as to form a larger program, in or on a volume of a storage or distribution medium, is called an “aggregate” if the compilation and its resulting copyright are not used to limit the access or legal rights of the compilation\'s users beyond what the individual works permit. Inclusion of a covered work in an aggregate does not cause this License to apply to the other parts of the aggregate. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section6\"></a><span style=\" font-size:medium; font-weight:600;\">6</span><span style=\" font-size:medium; font-weight:600;\">. Conveying Non-Source Forms. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may convey a covered work in object code form under the terms of sections 4 and 5, provided that you also convey the machine-readable Corresponding Source under the terms of this License, in one of these ways: </p>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">a) Convey the object code in, or embodied in, a physical product (including a physical distribution medium), accompanied by the Corresponding Source fixed on a durable physical medium customarily used for software interchange. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">b) Convey the object code in, or embodied in, a physical product (including a physical distribution medium), accompanied by a written offer, valid for at least three years and valid for as long as you offer spare parts or customer support for that product model, to give anyone who possesses the object code either (1) a copy of the Corresponding Source for all the software in the product that is covered by this License, on a durable physical medium customarily used for software interchange, for a price no more than your reasonable cost of physically performing this conveying of source, or (2) access to copy the Corresponding Source from a network server at no charge. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">c) Convey individual copies of the object code with a copy of the written offer to provide the Corresponding Source. This alternative is allowed only occasionally and noncommercially, and only if you received the object code with such an offer, in accord with subsection 6b. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">d) Convey the object code by offering access from a designated place (gratis or for a charge), and offer equivalent access to the Corresponding Source in the same way through the same place at no further charge. You need not require recipients to copy the Corresponding Source along with the object code. If the place to copy the object code is a network server, the Corresponding Source may be on a different server (operated by you or a third party) that supports equivalent copying facilities, provided you maintain clear directions next to the object code saying where to find the Corresponding Source. Regardless of what server hosts the Corresponding Source, you remain obligated to ensure that it is available for as long as needed to satisfy these requirements. </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">e) Convey the object code using peer-to-peer transmission, provided you inform other peers where the object code and Corresponding Source of the work are being offered to the general public at no charge under subsection 6d. </li></ul>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A separable portion of the object code, whose source code is excluded from the Corresponding Source as a System Library, need not be included in conveying the object code work. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A “User Product” is either (1) a “consumer product”, which means any tangible personal property which is normally used for personal, family, or household purposes, or (2) anything designed or sold for incorporation into a dwelling. In determining whether a product is a consumer product, doubtful cases shall be resolved in favor of coverage. For a particular product received by a particular user, “normally used” refers to a typical or common use of that class of product, regardless of the status of the particular user or of the way in which the particular user actually uses, or expects or is expected to use, the product. A product is a consumer product regardless of whether the product has substantial commercial, industrial or non-consumer uses, unless such uses represent the only significant mode of use of the product. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">“Installation Information” for a User Product means any methods, procedures, authorization keys, or other information required to install and execute modified versions of a covered work in that User Product from a modified version of its Corresponding Source. The information must suffice to ensure that the continued functioning of the modified object code is in no case prevented or interfered with solely because modification has been made. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If you convey an object code work under this section in, or with, or specifically for use in, a User Product, and the conveying occurs as part of a transaction in which the right of possession and use of the User Product is transferred to the recipient in perpetuity or for a fixed term (regardless of how the transaction is characterized), the Corresponding Source conveyed under this section must be accompanied by the Installation Information. But this requirement does not apply if neither you nor any third party retains the ability to install modified object code on the User Product (for example, the work has been installed in ROM). </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The requirement to provide Installation Information does not include a requirement to continue to provide support service, warranty, or updates for a work that has been modified or installed by the recipient, or for the User Product in which it has been modified or installed. Access to a network may be denied when the modification itself materially and adversely affects the operation of the network or violates the rules and protocols for communication across the network. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Corresponding Source conveyed, and Installation Information provided, in accord with this section must be in a format that is publicly documented (and with an implementation available to the public in source code form), and must require no special password or key for unpacking, reading or copying. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section7\"></a><span style=\" font-size:medium; font-weight:600;\">7</span><span style=\" font-size:medium; font-weight:600;\">. Additional Terms. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">“Additional permissions” are terms that supplement the terms of this License by making exceptions from one or more of its conditions. Additional permissions that are applicable to the entire Program shall be treated as though they were included in this License, to the extent that they are valid under applicable law. If additional permissions apply only to part of the Program, that part may be used separately under those permissions, but the entire Program remains governed by this License without regard to the additional permissions. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">When you convey a copy of a covered work, you may at your option remove any additional permissions from that copy, or from any part of it. (Additional permissions may be written to require their own removal in certain cases when you modify the work.) You may place additional permissions on material, added by you to a covered work, for which you have or can give appropriate copyright permission. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Notwithstanding any other provision of this License, for material you add to a covered work, you may (if authorized by the copyright holders of that material) supplement the terms of this License with terms: </p>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">a) Disclaiming warranty or limiting liability differently from the terms of sections 15 and 16 of this License; or </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">b) Requiring preservation of specified reasonable legal notices or author attributions in that material or in the Appropriate Legal Notices displayed by works containing it; or </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">c) Prohibiting misrepresentation of the origin of that material, or requiring that modified versions of such material be marked in reasonable ways as different from the original version; or </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">d) Limiting the use for publicity purposes of names of licensors or authors of the material; or </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">e) Declining to grant rights under trademark law for use of some trade names, trademarks, or service marks; or </li>\n"
+"<li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">f) Requiring indemnification of licensors and authors of that material by anyone who conveys the material (or modified versions of it) with contractual assumptions of liability to the recipient, for any liability that these contractual assumptions directly impose on those licensors and authors. </li></ul>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">All other non-permissive additional terms are considered “further restrictions” within the meaning of section 10. If the Program as you received it, or any part of it, contains a notice stating that it is governed by this License along with a term that is a further restriction, you may remove that term. If a license document contains a further restriction but permits relicensing or conveying under this License, you may add to a covered work material governed by the terms of that license document, provided that the further restriction does not survive such relicensing or conveying. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If you add terms to a covered work in accord with this section, you must place, in the relevant source files, a statement of the additional terms that apply to those files, or a notice indicating where to find the applicable terms. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Additional terms, permissive or non-permissive, may be stated in the form of a separately written license, or stated as exceptions; the above requirements apply either way. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section8\"></a><span style=\" font-size:medium; font-weight:600;\">8</span><span style=\" font-size:medium; font-weight:600;\">. Termination. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may not propagate or modify a covered work except as expressly provided under this License. Any attempt otherwise to propagate or modify it is void, and will automatically terminate your rights under this License (including any patent licenses granted under the third paragraph of section 11). </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">However, if you cease all violation of this License, then your license from a particular copyright holder is reinstated (a) provisionally, unless and until the copyright holder explicitly and finally terminates your license, and (b) permanently, if the copyright holder fails to notify you of the violation by some reasonable means prior to 60 days after the cessation. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Moreover, your license from a particular copyright holder is reinstated permanently if the copyright holder notifies you of the violation by some reasonable means, this is the first time you have received notice of violation of this License (for any work) from that copyright holder, and you cure the violation prior to 30 days after your receipt of the notice. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Termination of your rights under this section does not terminate the licenses of parties who have received copies or rights from you under this License. If your rights have been terminated and not permanently reinstated, you do not qualify to receive new licenses for the same material under section 10. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section9\"></a><span style=\" font-size:medium; font-weight:600;\">9</span><span style=\" font-size:medium; font-weight:600;\">. Acceptance Not Required for Having Copies. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You are not required to accept this License in order to receive or run a copy of the Program. Ancillary propagation of a covered work occurring solely as a consequence of using peer-to-peer transmission to receive a copy likewise does not require acceptance. However, nothing other than this License grants you permission to propagate or modify any covered work. These actions infringe copyright if you do not accept this License. Therefore, by modifying or propagating a covered work, you indicate your acceptance of this License to do so. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section10\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">0. Automatic Licensing of Downstream Recipients. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Each time you convey a covered work, the recipient automatically receives a license from the original licensors, to run, modify and propagate that work, subject to this License. You are not responsible for enforcing compliance by third parties with this License. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">An “entity transaction” is a transaction transferring control of an organization, or substantially all assets of one, or subdividing an organization, or merging organizations. If propagation of a covered work results from an entity transaction, each party to that transaction who receives a copy of the work also receives whatever licenses to the work the party\'s predecessor in interest had or could give under the previous paragraph, plus a right to possession of the Corresponding Source of the work from the predecessor in interest, if the predecessor has it or can get it with reasonable efforts. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You may not impose any further restrictions on the exercise of the rights granted or affirmed under this License. For example, you may not impose a license fee, royalty, or other charge for exercise of rights granted under this License, and you may not initiate litigation (including a cross-claim or counterclaim in a lawsuit) alleging that any patent claim is infringed by making, using, selling, offering for sale, or importing the Program or any portion of it. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section11\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">1. Patents. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A “contributor” is a copyright holder who authorizes use under this License of the Program or a work on which the Program is based. The work thus licensed is called the contributor\'s “contributor version”. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A contributor\'s “essential patent claims” are all patent claims owned or controlled by the contributor, whether already acquired or hereafter acquired, that would be infringed by some manner, permitted by this License, of making, using, or selling its contributor version, but do not include claims that would be infringed only as a consequence of further modification of the contributor version. For purposes of this definition, “control” includes the right to grant patent sublicenses in a manner consistent with the requirements of this License. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Each contributor grants you a non-exclusive, worldwide, royalty-free patent license under the contributor\'s essential patent claims, to make, use, sell, offer for sale, import and otherwise run, modify and propagate the contents of its contributor version. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">In the following three paragraphs, a “patent license” is any express agreement or commitment, however denominated, not to enforce a patent (such as an express permission to practice a patent or covenant not to sue for patent infringement). To “grant” such a patent license to a party means to make such an agreement or commitment not to enforce a patent against the party. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If you convey a covered work, knowingly relying on a patent license, and the Corresponding Source of the work is not available for anyone to copy, free of charge and under the terms of this License, through a publicly available network server or other readily accessible means, then you must either (1) cause the Corresponding Source to be so available, or (2) arrange to deprive yourself of the benefit of the patent license for this particular work, or (3) arrange, in a manner consistent with the requirements of this License, to extend the patent license to downstream recipients. “Knowingly relying” means you have actual knowledge that, but for the patent license, your conveying the covered work in a country, or your recipient\'s use of the covered work in a country, would infringe one or more identifiable patents in that country that you have reason to believe are valid. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If, pursuant to or in connection with a single transaction or arrangement, you convey, or propagate by procuring conveyance of, a covered work, and grant a patent license to some of the parties receiving the covered work authorizing them to use, propagate, modify or convey a specific copy of the covered work, then the patent license you grant is automatically extended to all recipients of the covered work and works based on it. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A patent license is “discriminatory” if it does not include within the scope of its coverage, prohibits the exercise of, or is conditioned on the non-exercise of one or more of the rights that are specifically granted under this License. You may not convey a covered work if you are a party to an arrangement with a third party that is in the business of distributing software, under which you make payment to the third party based on the extent of your activity of conveying the work, and under which the third party grants, to any of the parties who would receive the covered work from you, a discriminatory patent license (a) in connection with copies of the covered work conveyed by you (or copies made from those copies), or (b) primarily for and in connection with specific products or compilations that contain the covered work, unless you entered into that arrangement, or that patent license was granted, prior to 28 March 2007. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Nothing in this License shall be construed as excluding or limiting any implied license or other defenses to infringement that may otherwise be available to you under applicable patent law. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section12\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">2. No Surrender of Others\' Freedom. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If conditions are imposed on you (whether by court order, agreement or otherwise) that contradict the conditions of this License, they do not excuse you from the conditions of this License. If you cannot convey a covered work so as to satisfy simultaneously your obligations under this License and any other pertinent obligations, then as a consequence you may not convey it at all. For example, if you agree to terms that obligate you to collect a royalty for further conveying from those to whom you convey the Program, the only way you could satisfy both those terms and this License would be to refrain entirely from conveying the Program. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section13\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">3. Use with the GNU Affero General Public License. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Notwithstanding any other provision of this License, you have permission to link or combine any covered work with a work licensed under version 3 of the GNU Affero General Public License into a single combined work, and to convey the resulting work. The terms of this License will continue to apply to the part which is the covered work, but the special requirements of the GNU Affero General Public License, section 13, concerning interaction through a network will apply to the combination as such. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section14\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">4. Revised Versions of this License. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The Free Software Foundation may publish revised and/or new versions of the GNU General Public License from time to time. Such new versions will be similar in spirit to the present version, but may differ in detail to address new problems or concerns. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Each version is given a distinguishing version number. If the Program specifies that a certain numbered version of the GNU General Public License “or any later version” applies to it, you have the option of following the terms and conditions either of that numbered version or of any later version published by the Free Software Foundation. If the Program does not specify a version number of the GNU General Public License, you may choose any version ever published by the Free Software Foundation. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If the Program specifies that a proxy can decide which future versions of the GNU General Public License can be used, that proxy\'s public statement of acceptance of a version permanently authorizes you to choose that version for the Program. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Later license versions may give you additional or different permissions. However, no additional obligations are imposed on any author or copyright holder as a result of your choosing to follow a later version. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section15\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">5. Disclaimer of Warranty. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section16\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">6. Limitation of Liability. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. </p>\n"
+"<h4 style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"section17\"></a><span style=\" font-size:medium; font-weight:600;\">1</span><span style=\" font-size:medium; font-weight:600;\">7. Interpretation of Sections 15 and 16. </span></h4>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If the disclaimer of warranty and limitation of liability provided above cannot be given local legal effect according to their terms, reviewing courts shall apply local law that most closely approximates an absolute waiver of all civil liability in connection with the Program, unless a warranty or assumption of liability accompanies a copy of the Program in return for a fee. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">END OF TERMS AND CONDITIONS </p>\n"
+"<h3 style=\" margin-top:14px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a name=\"howto\"></a><span style=\" font-size:large; font-weight:600;\">H</span><span style=\" font-size:large; font-weight:600;\">ow to Apply These Terms to Your New Programs </span></h3>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If you develop a new program, and you want it to be of the greatest possible use to the public, the best way to achieve this is to make it free software which everyone can redistribute and change under these terms. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">To do so, attach the following notices to the program. It is safest to attach them to the start of each source file to most effectively state the exclusion of warranty; and each file should have at least the “copyright” line and a pointer to where the full notice is found. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    MYRaf V3 An Easy GUI for IRAF Photometry</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    Copyright (C) 2020  M. S.NIAEI &amp; Y. KILIC</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'monospace\';\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    This program is free software: you can redistribute it and/or modify</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    it under the terms of the GNU General Public License as published by</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    the Free Software Foundation, either version 3 of the License, or</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    (at your option) any later version.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'monospace\';\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    This program is distributed in the hope that it will be useful,</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    but WITHOUT ANY WARRANTY; without even the implied warranty of</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    GNU General Public License for more details.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'monospace\';\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    You should have received a copy of the GNU General Public License</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;. </span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Also add information on how to contact you by electronic and paper mail. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If the program does terminal interaction, make it output a short notice like this when it starts in an interactive mode: </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    MYRaf V3  Copyright (C) 2020  M. S.NIAEI &amp; Y. KILIC</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w\'.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    This is free software, and you are welcome to redistribute it</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'monospace\';\">    under certain conditions; type `show c\' for details. </span></p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The hypothetical commands `show w\' and `show c\' should show the appropriate parts of the General Public License. Of course, your program\'s commands might be different; for a GUI interface, you would use an “about box”. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">You should also get your employer (if you work as a programmer) or school, if any, to sign a “copyright disclaimer” for the program, if necessary. For more information on this, and how to apply and follow the GNU GPL, see &lt;<a href=\"https://www.gnu.org/licenses/\"><span style=\" text-decoration: underline; color:#0000ff;\">https://www.gnu.org/licenses/</span></a>&gt;. </p>\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">The GNU General Public License does not permit incorporating your program into proprietary programs. If your program is a subroutine library, you may consider it more useful to permit linking proprietary applications with the library. If this is what you want to do, use the GNU Lesser General Public License instead of this License. But first, please read &lt;<a href=\"https://www.gnu.org/licenses/why-not-lgpl.html\"><span style=\" text-decoration: underline; color:#0000ff;\">https://www.gnu.org/licenses/why-not-lgpl.html</span></a>&gt;. </p></body></html>"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_12), _translate("MainWindow", "License"))
+        item = self.log_list.horizontalHeaderItem(0)
+        item.setText(_translate("MainWindow", "Time"))
+        item = self.log_list.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "Type"))
+        item = self.log_list.horizontalHeaderItem(2)
+        item.setText(_translate("MainWindow", "Info"))
+        item = self.log_list.horizontalHeaderItem(3)
+        item.setText(_translate("MainWindow", "Massage"))
+        self.log_info.setText(_translate("MainWindow", "TextLabel"))
+        self.log_save.setText(_translate("MainWindow", "Export"))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_23), _translate("MainWindow", "Log"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), _translate("MainWindow", "Help"))
 
-
-#import myraf_sources_rc
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+from gingawidgetFile import gingaWidget

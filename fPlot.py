@@ -6,12 +6,6 @@
 # Copyleft, Yücel Kılıç (yucelkilic@myrafproject.org) and
 #                Mohammad Niaei Shameoni (mshemuni@myrafproject.org).
 # This is open-source software licensed under a GPLv3 license.
-
-try:
-    from myraflib import env
-except Exception as e:
-    print("{}: Can't import myraflib. MYRaf is not installed properly.".format(e))
-    exit(0)
     
 try:
     from ginga.mplw.ImageViewCanvasMpl import ImageViewCanvas
@@ -23,19 +17,15 @@ except Exception as e:
     exit(0)
 
 class FitsPlot(object):
-    def __init__(self, chartDev, verb=False, debugger=False):
-        self.verb = verb
-        self.debugger = debugger
-        self.logger = env.Logger(verb=self.verb, debugger=self.debugger)
+    def __init__(self, chartDev, logger):
+        self.logger = logger
         self.chartDev = chartDev
-        use_logger = debugger
-        self.logger.log("fplot is doning something.")
+        self.logger.info("fplot is doning something.")
         self.images = []
         try:
-            logger = log.get_logger(null=not use_logger, log_stderr=True)
             # create a ginga object and tell it about the figure
             self.chartDev.fig.clf()
-            fi = ImageViewCanvas(logger)
+            fi = ImageViewCanvas(self.logger)
             fi.enable_autocuts('on')
             fi.set_autocut_params('zscale')
     
@@ -49,7 +39,7 @@ class FitsPlot(object):
             fi.get_bindings().enable_all(True)
             self.fitsimage = fi
         except Exception as e:
-            self.logger.log(e)
+            self.logger.error(e)
             
     def get_xy(self):
         return(self.fitsimage.get_last_data_xy())
@@ -58,34 +48,37 @@ class FitsPlot(object):
         return(self.fitsimage.get_data_size())
         
     def get_data(self, point=True):
-        if point:
-            x, y = self.get_xy()
-            w, h = self.get_data_size()
-            if 0 < x < w and 0 < y < h:
-                return(self.fitsimage.get_data(int(x), int(y)))
+        try:
+            if point:
+                x, y = self.get_xy()
+                w, h = self.get_data_size()
+                if 0 < x < w and 0 < y < h:
+                    return(self.fitsimage.get_data(int(x), int(y)))
+                else:
+                    return(float('NaN'))
             else:
-                return(float('NaN'))
-        else:
-            return(self.fitsimage.get_data())
+                return(self.fitsimage.get_data())
+        except Exception as e:
+            self.logger.error(e)
 
     def clear(self):
         try:
             self.fitsimage.clear()
         except Exception as e:
-            self.logger.log(e)
+            self.logger.error(e)
 
     def load(self, fitspath):
-        self.logger.log("fplot is loading image.")
+        self.logger.info("fplot is loading image.")
         try:
             # clear plotting area
             self.chartDev.fig.gca().cla()
             # load an image
-            image = AstroImage()
+            image = AstroImage(logger=self.logger)
             image.load_file(fitspath)
             self.fitsimage.set_image(image)
             self.fitsimage.add_axes()
         except Exception as e:
-            self.logger.log(e)
+            self.logger.error(e)
             
     def load_array(self, fitspath):
         self.chartDev.fig.gca().cla()
@@ -100,4 +93,3 @@ class FitsPlot(object):
             if 0 <= number < len(self.images):
                 self.fitsimage.set_image(self.images[number])
                 self.fitsimage.add_axes()
-        
