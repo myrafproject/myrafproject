@@ -280,14 +280,14 @@
          <widget class="QPushButton" name="calibration_go">
           <property name="minimumSize">
            <size>
-            <width>50</width>
-            <height>50</height>
+            <width>80</width>
+            <height>25</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>50</width>
-            <height>50</height>
+            <width>80</width>
+            <height>25</height>
            </size>
           </property>
           <property name="text">
@@ -326,7 +326,7 @@
               </size>
              </property>
              <property name="text">
-              <string>TextLabel</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -398,35 +398,34 @@
         <item row="1" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_9">
           <item row="0" column="0">
-           <widget class="QLabel" name="align_info">
-            <property name="text">
-             <string>TextLabel</string>
+           <spacer name="horizontalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-           </widget>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>718</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
-          <item row="0" column="1" rowspan="2">
+          <item row="0" column="1">
            <widget class="QPushButton" name="align_go">
             <property name="minimumSize">
              <size>
-              <width>50</width>
-              <height>50</height>
+              <width>80</width>
+              <height>25</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
-              <height>50</height>
+              <width>80</width>
+              <height>25</height>
              </size>
             </property>
             <property name="text">
              <string>:go</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QProgressBar" name="align_proc">
-            <property name="value">
-             <number>24</number>
             </property>
            </widget>
           </item>
@@ -463,7 +462,7 @@
               </size>
              </property>
              <property name="text">
-              <string>TextLabel</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -814,6 +813,97 @@
            <attribute name="title">
             <string>Cosmic Cleaner</string>
            </attribute>
+           <layout class="QGridLayout" name="gridLayout_35">
+            <item row="0" column="0">
+             <widget class="QGroupBox" name="groupBox_12">
+              <property name="title">
+               <string>Files</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_34">
+               <item row="0" column="0" colspan="3">
+                <widget class="QTreeWidget" name="cclean_list">
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::ExtendedSelection</enum>
+                 </property>
+                 <column>
+                  <property name="text">
+                   <string>Attribute</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Value</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <spacer name="horizontalSpacer_8">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>639</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="1">
+                <widget class="QPushButton" name="cclean_remove">
+                 <property name="text">
+                  <string>Remove</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QPushButton" name="cclean_add">
+                 <property name="text">
+                  <string>Add</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <layout class="QGridLayout" name="gridLayout_28">
+              <item row="0" column="0">
+               <spacer name="horizontalSpacer_9">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>779</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="cclean_go">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>80</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>:go</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
           <widget class="QWidget" name="tab_29">
            <attribute name="title">
@@ -829,6 +919,13 @@
         <string>Settings</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_29">
+        <item row="1" column="1">
+         <widget class="QPushButton" name="settings_save">
+          <property name="text">
+           <string>Save</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <spacer name="horizontalSpacer_10">
           <property name="orientation">
@@ -842,17 +939,10 @@
           </property>
          </spacer>
         </item>
-        <item row="1" column="1">
-         <widget class="QPushButton" name="settings_save">
-          <property name="text">
-           <string>Save</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0" colspan="2">
          <widget class="QTabWidget" name="tabWidget_6">
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab_28">
            <attribute name="title">
@@ -875,7 +965,7 @@
                  <item row="1" column="1">
                   <widget class="QComboBox" name="zero_reject">
                    <property name="currentText">
-                    <string>minmax</string>
+                    <string>none</string>
                    </property>
                    <item>
                     <property name="text">
@@ -917,7 +1007,7 @@
                  <item row="0" column="1">
                   <widget class="QComboBox" name="zero_combine">
                    <property name="currentText">
-                    <string>median</string>
+                    <string>average</string>
                    </property>
                    <item>
                     <property name="text">
@@ -933,6 +1023,12 @@
                  </item>
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_3">
+                   <property name="toolTip">
+                    <string>Type of combining  operation  performed  on  the  final  set  of
+pixels   (after   rejection).   The  choices  are  &quot;average&quot;  or 
+&quot;median&quot;.  The median  uses  the  average  of  the  two  central
+values when the number of pixels is even.</string>
+                   </property>
                    <property name="text">
                     <string>combine</string>
                    </property>
@@ -940,6 +1036,20 @@
                  </item>
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_4">
+                   <property name="toolTip">
+                    <string>Type  of  rejection  operation performed on the pixels remaining
+after offsetting, masking and thresholding.  The algorithms  are
+discussed  in  the  DESCRIPTION  section.  The rejection choices
+are:
+
+none - No rejection
+minmax - Reject the nlow and nhigh pixels
+ccdclip - Reject pixels using CCD noise parameters
+crreject - Reject only positive pixels using CCD noise parameters
+sigclip - Reject pixels using a sigma clipping algorithm
+avsigclip - Reject pixels using an averaged sigma clipping algorithm
+pclip - Reject pixels using sigma based on percentiles</string>
+                   </property>
                    <property name="text">
                     <string>reject</string>
                    </property>
@@ -960,6 +1070,20 @@
                 <layout class="QGridLayout" name="gridLayout_26">
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_8">
+                   <property name="toolTip">
+                    <string>Type  of  rejection  operation performed on the pixels remaining
+after offsetting, masking and thresholding.  The algorithms  are
+discussed  in  the  DESCRIPTION  section.  The rejection choices
+are:
+
+none - No rejection
+minmax - Reject the nlow and nhigh pixels
+ccdclip - Reject pixels using CCD noise parameters
+crreject - Reject only positive pixels using CCD noise parameters
+sigclip - Reject pixels using a sigma clipping algorithm
+avsigclip - Reject pixels using an averaged sigma clipping algorithm
+pclip - Reject pixels using sigma based on percentiles</string>
+                   </property>
                    <property name="text">
                     <string>reject</string>
                    </property>
@@ -967,6 +1091,12 @@
                  </item>
                  <item row="2" column="0">
                   <widget class="QLabel" name="label_9">
+                   <property name="toolTip">
+                    <string>Multiplicative  image  scaling  to  be applied.  The choices are
+none, scale by the  mode,  median,  or  mean  of  the  specified
+statistics  section,  or scale by the exposure time given in the
+image header.</string>
+                   </property>
                    <property name="text">
                     <string>scale</string>
                    </property>
@@ -975,7 +1105,7 @@
                  <item row="0" column="1">
                   <widget class="QComboBox" name="dark_combine">
                    <property name="currentText">
-                    <string>median</string>
+                    <string>average</string>
                    </property>
                    <item>
                     <property name="text">
@@ -992,7 +1122,7 @@
                  <item row="2" column="1">
                   <widget class="QComboBox" name="dark_scale">
                    <property name="currentText">
-                    <string>exposure</string>
+                    <string>none</string>
                    </property>
                    <item>
                     <property name="text">
@@ -1023,6 +1153,12 @@
                  </item>
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_7">
+                   <property name="toolTip">
+                    <string>Type of combining  operation  performed  on  the  final  set  of
+pixels   (after   rejection).   The  choices  are  &quot;average&quot;  or 
+&quot;median&quot;.  The median  uses  the  average  of  the  two  central
+values when the number of pixels is even.</string>
+                   </property>
                    <property name="text">
                     <string>combine</string>
                    </property>
@@ -1031,7 +1167,7 @@
                  <item row="1" column="1">
                   <widget class="QComboBox" name="dark_reject">
                    <property name="currentText">
-                    <string>minmax</string>
+                    <string>none</string>
                    </property>
                    <item>
                     <property name="text">
@@ -1083,24 +1219,10 @@
               <layout class="QGridLayout" name="gridLayout_32">
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_31">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_10">
-                   <property name="text">
-                    <string>combine</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_11">
-                   <property name="text">
-                    <string>reject</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="1" column="1">
                   <widget class="QComboBox" name="flat_reject">
                    <property name="currentText">
-                    <string>minmax</string>
+                    <string>none</string>
                    </property>
                    <item>
                     <property name="text">
@@ -1139,10 +1261,23 @@
                    </item>
                   </widget>
                  </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_10">
+                   <property name="toolTip">
+                    <string>Type of combining  operation  performed  on  the  final  set  of
+pixels   (after   rejection).   The  choices  are  &quot;average&quot;  or 
+&quot;median&quot;.  The median  uses  the  average  of  the  two  central
+values when the number of pixels is even.</string>
+                   </property>
+                   <property name="text">
+                    <string>combine</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="1">
                   <widget class="QComboBox" name="flat_combine">
                    <property name="currentText">
-                    <string>median</string>
+                    <string>average</string>
                    </property>
                    <item>
                     <property name="text">
@@ -1156,25 +1291,25 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_14">
-                   <property name="text">
-                    <string>subset</string>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_11">
+                   <property name="toolTip">
+                    <string>Type  of  rejection  operation performed on the pixels remaining
+after offsetting, masking and thresholding.  The algorithms  are
+discussed  in  the  DESCRIPTION  section.  The rejection choices
+are:
+
+none - No rejection
+minmax - Reject the nlow and nhigh pixels
+ccdclip - Reject pixels using CCD noise parameters
+crreject - Reject only positive pixels using CCD noise parameters
+sigclip - Reject pixels using a sigma clipping algorithm
+avsigclip - Reject pixels using an averaged sigma clipping algorithm
+pclip - Reject pixels using sigma based on percentiles</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="flat_subset">
-                   <item>
-                    <property name="text">
-                     <string>yes</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>no</string>
-                    </property>
-                   </item>
+                   <property name="text">
+                    <string>reject</string>
+                   </property>
                   </widget>
                  </item>
                 </layout>
@@ -1197,15 +1332,350 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_25">
-           <attribute name="title">
-            <string>Align</string>
-           </attribute>
-          </widget>
           <widget class="QWidget" name="tab_26">
            <attribute name="title">
             <string>Photometry</string>
            </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_30">
+           <attribute name="title">
+            <string>Cosmic Cleaner</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_38">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout_36">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="toolTip">
+                 <string>Laplacian-to-noise limit for cosmic ray detection.
+Lower values will flag more pixels as cosmic rays.
+Default: 4.5.</string>
+                </property>
+                <property name="text">
+                 <string>sigclip</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_sigclip">
+                <property name="value">
+                 <double>4.500000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="toolTip">
+                 <string>Fractional detection limit for neighboring pixels.
+For cosmic ray neighbor pixels, a Laplacian-to-noise detection limit of sigfrac * sigclip will be used.
+Default: 0.3.</string>
+                </property>
+                <property name="text">
+                 <string>sigfrac</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_sigfrac">
+                <property name="value">
+                 <double>0.300000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_12">
+                <property name="toolTip">
+                 <string>Minimum contrast between Laplacian image and the fine structure image.
+Increase this value if cores of bright stars are flagged as cosmic rays.
+Default: 5.0.</string>
+                </property>
+                <property name="text">
+                 <string>objlim</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_objlim">
+                <property name="value">
+                 <double>5.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_13">
+                <property name="toolTip">
+                 <string>Gain of the image (electrons / ADU).
+We always need to work in electrons for cosmic ray detection.
+Default: 1.0</string>
+                </property>
+                <property name="text">
+                 <string>gain</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_gain">
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_14">
+                <property name="toolTip">
+                 <string>Read noise of the image (electrons).
+Used to generate the noise model of the image.
+Default: 6.5.</string>
+                </property>
+                <property name="text">
+                 <string>readnoise</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_readnoise">
+                <property name="value">
+                 <double>6.500000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_15">
+                <property name="toolTip">
+                 <string>Saturation level of the image (electrons).
+This value is used to detect saturated stars and pixels at or above this level are added to the mask.
+Default: 65535.0.</string>
+                </property>
+                <property name="text">
+                 <string>satlevel</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_satlevel">
+                <property name="maximum">
+                 <double>4294836225.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>65535.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_16">
+                <property name="toolTip">
+                 <string>Previously subtracted sky level in ADU.
+We always need to work in electrons for cosmic ray detection, so we need
+to know the sky level that has been subtracted so we can add it back in.
+Default: 0.0.</string>
+                </property>
+                <property name="text">
+                 <string>pssl</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_pssl"/>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="0">
+             <layout class="QGridLayout" name="gridLayout_37">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_17">
+                <property name="toolTip">
+                 <string>Number of iterations of the LA Cosmic algorithm to perform.
+Default: 4.</string>
+                </property>
+                <property name="text">
+                 <string>iteration</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="ccleaner_iteration">
+                <property name="value">
+                 <number>4</number>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" colspan="2">
+               <widget class="QCheckBox" name="ccleaner_sepmed">
+                <property name="toolTip">
+                 <string>Use the separable median filter instead of the full median filter.
+The separable median is not identical to the full median filter, but they are approximately the same,
+the separable median filter is significantly faster, and still detects cosmic rays well. Note, this is a
+performance feature, and not part of the original L.A. Cosmic.
+Default: True</string>
+                </property>
+                <property name="text">
+                 <string>sepmed</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_19">
+                <property name="toolTip">
+                 <string>Set which clean algorithm is used:
+&quot;median&quot;: An unmasked 5x5 median filter.
+&quot;medmask&quot;: A masked 5x5 median filter.
+&quot;meanmask&quot;: A masked 5x5 mean filter.
+&quot;idw&quot;: A masked 5x5 inverse distance weighted interpolation.
+Default: &quot;meanmask&quot;.
+</string>
+                </property>
+                <property name="text">
+                 <string>cleantype</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QComboBox" name="ccleaner_cleantype">
+                <item>
+                 <property name="text">
+                  <string>meanmask</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>median</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>medmask</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>idw</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_20">
+                <property name="toolTip">
+                 <string>Method to build the fine structure image:
+&quot;median&quot;: Use the median filter in the standard LA Cosmic algorithm.
+&quot;convolve&quot;: Convolve the image with the psf kernel to calculate the fine structure image.
+Default: &quot;median&quot;.
+</string>
+                </property>
+                <property name="text">
+                 <string>fsmode</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QComboBox" name="ccleaner_fsmode">
+                <item>
+                 <property name="text">
+                  <string>median</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>convolve</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_21">
+                <property name="toolTip">
+                 <string>Model to use to generate the psf kernel if fsmode == ‘convolve’ and psfk is None. The current choices are Gaussian and Moffat profiles:
+&quot;gauss&quot; and &quot;moffat&quot; produce circular PSF kernels.
+The &quot;gaussx&quot; and &quot;gaussy&quot; produce Gaussian kernels in the x and y directions respectively.
+Default: &quot;gauss&quot;.
+</string>
+                </property>
+                <property name="text">
+                 <string>psfmodel</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QComboBox" name="ccleaner_psfmodel">
+                <item>
+                 <property name="text">
+                  <string>gauss</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>moffat</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>gaussx</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>gaussy</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_22">
+                <property name="toolTip">
+                 <string>    Full Width Half Maximum of the PSF to use to generate the kernel. Default: 2.5.
+</string>
+                </property>
+                <property name="text">
+                 <string>psffwhm</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="ccleaner_psffwhm">
+                <property name="value">
+                 <double>2.500000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_23">
+                <property name="toolTip">
+                 <string>Size of the kernel to calculate.
+Returned kernel will have size psfsize x psfsize. psfsize should be odd.
+Default: 7.
+</string>
+                </property>
+                <property name="text">
+                 <string>psfsize</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QSpinBox" name="ccleaner_psfsize">
+                <property name="value">
+                 <number>7</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>160</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </widget>
           <widget class="QWidget" name="tab_27">
            <attribute name="title">
@@ -1697,63 +2167,6 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The hypothetical commands `show w' and `show c' should show the appropriate parts of the General Public License. Of course, your program's commands might be different; for a GUI interface, you would use an “about box”. &lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;You should also get your employer (if you work as a programmer) or school, if any, to sign a “copyright disclaimer” for the program, if necessary. For more information on this, and how to apply and follow the GNU GPL, see &amp;lt;&lt;a href=&quot;https://www.gnu.org/licenses/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://www.gnu.org/licenses/&lt;/span&gt;&lt;/a&gt;&amp;gt;. &lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The GNU General Public License does not permit incorporating your program into proprietary programs. If your program is a subroutine library, you may consider it more useful to permit linking proprietary applications with the library. If this is what you want to do, use the GNU Lesser General Public License instead of this License. But first, please read &amp;lt;&lt;a href=&quot;https://www.gnu.org/licenses/why-not-lgpl.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://www.gnu.org/licenses/why-not-lgpl.html&lt;/span&gt;&lt;/a&gt;&amp;gt;. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_23">
-           <attribute name="title">
-            <string>Log</string>
-           </attribute>
-           <layout class="QGridLayout" name="gridLayout_28">
-            <item row="0" column="0" colspan="2">
-             <widget class="QTableWidget" name="log_list">
-              <column>
-               <property name="text">
-                <string>Time</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Type</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Info</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Massage</string>
-               </property>
-              </column>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="log_info">
-              <property name="text">
-               <string>TextLabel</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="log_save">
-              <property name="minimumSize">
-               <size>
-                <width>80</width>
-                <height>25</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>80</width>
-                <height>25</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Export</string>
               </property>
              </widget>
             </item>

@@ -8,7 +8,7 @@ try:
 
     import argparse
 
-    from logging import getLogger, basicConfig, DEBUG
+    from logging import getLogger, basicConfig
 
     from PyQt5 import QtWidgets
     from PyQt5 import QtCore
@@ -26,7 +26,7 @@ except Exception as e:
 
 
 class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
-    def __init__(self, parent=None, logger_level=50):
+    def __init__(self, parent=None, logger_level=50, log_file=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.flags = QtCore.Qt.Window
@@ -41,7 +41,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             logger_level = 50
 
         LOG_FORMAT = "[%(asctime)s, %(levelname)s], [%(filename)s, %(funcName)s, %(lineno)s]: %(message)s"
-        basicConfig(filename=None, level=logger_level, format=LOG_FORMAT)
+        basicConfig(filename=log_file, level=logger_level, format=LOG_FORMAT)
         self.logger = getLogger()
 
         self.gui_dev = function.Devices(self, self.logger)
@@ -57,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.calib_image_remove.clicked.connect(lambda: (self.rm_files(self.calib_image_list)))
 
         self.calib_bias_add.clicked.connect(lambda: (self.add_files(self.calib_bias_list)))
-        self.calib_bias_remove.clicked.connect(lambda: (self.rm_files(self.calib_image_list)))
+        self.calib_bias_remove.clicked.connect(lambda: (self.rm_files(self.calib_bias_list)))
         self.calib_bias_combine.clicked.connect(lambda: (self.export_bias()))
 
         self.calib_dark_add.clicked.connect(lambda: (self.add_files(self.calib_dark_list)))
@@ -69,6 +69,12 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.calib_flat_combine.clicked.connect(lambda: (self.export_flat()))
 
         self.calibration_go.clicked.connect(lambda: (self.calibration()))
+
+        self.cclean_add.clicked.connect(lambda: (self.add_files(self.cclean_list)))
+        self.cclean_remove.clicked.connect(lambda: (self.rm_files(self.cclean_list)))
+        self.cclean_go.clicked.connect(lambda: (self.cosmin_clean()))
+
+        # cosmin_clean
 
         self.hedit_isvaluefromheader.clicked.connect(lambda: (self.toggle_header()))
 
@@ -94,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.align_list.installEventFilter(self)
         self.phot_list.installEventFilter(self)
         self.hedit_list.installEventFilter(self)
+        self.cclean_list.installEventFilter(self)
         self.phot_coor_list.installEventFilter(self)
 
         self.display_align.canvas.fig.canvas.mpl_connect('motion_notify_event', self.align_onpick)
@@ -102,6 +109,52 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         header = self.tableWidget.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+
+    def cosmin_clean(self):
+        files = self.gui_dev.get_from_tree(self.cclean_list)
+        if len(files) > 0:
+            sigclip = self.ccleaner_sigclip.value()
+            sigfrac = self.ccleaner_sigfrac.value()
+            objlim = self.ccleaner_objlim.value()
+            gain = self.ccleaner_gain.value()
+            readnoise = self.ccleaner_readnoise.value()
+            satlevel = self.ccleaner_satlevel.value()
+            pssl = self.ccleaner_pssl.value()
+            iteration = self.ccleaner_iteration.value()
+            sepmed = self.ccleaner_sepmed.isChecked()
+            cleantype = self.ccleaner_cleantype.currentText()
+            fsmode = self.ccleaner_fsmode.currentText()
+            psfmodel = self.ccleaner_psfmodel.currentText()
+            psffwhm = self.ccleaner_psffwhm.value()
+            psfsize = self.ccleaner_psfsize.value()
+
+            out_folder = self.gui_file.save_directory()
+            if out_folder:
+                progress = QtWidgets.QProgressDialog("Calibrating files...", "Abort", 0, len(files), self)
+                progress.setWindowModality(QtCore.Qt.WindowModal)
+                progress.setWindowTitle('MYRaf: Please Wait')
+                progress.setAutoClose(True)
+                for it, file in enumerate(files, start=1):
+                    _, fn = self.fop.get_base_name(file)
+                    progress.setLabelText("Calibrating {}".format(file))
+
+                    if progress.wasCanceled():
+                        progress.setLabelText("ABORT!")
+                        break
+
+                    output = "{}/{}".format(out_folder, fn)
+                    self.fts.cosmic_cleaner(file, output, sigclip=sigclip, sigfrac=sigfrac, objlim=objlim, gain=gain,
+                                            readnoise=readnoise, satlevel=satlevel, pssl=pssl, iteration=iteration,
+                                            sepmed=sepmed, cleantype=cleantype, fsmode=fsmode, psfmodel=psfmodel,
+                                            psffwhm=psffwhm, psfsize=psfsize)
+
+                    self.fts.update_header(output, "MYCClean", "Cosmic Clean done by MYRaf V3")
+
+                    progress.setValue(it)
+
+        else:
+            self.logger.warning("No data file was given. Nothing to do.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
 
     def calibration(self):
         data_files = self.gui_dev.get_from_tree(self.calib_image_list)
@@ -141,11 +194,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             if len(flat_files) > 0:
                 flat_combine = self.flat_combine.currentText()
                 flat_reject = self.flat_reject.currentText()
-                flat_subset = self.flat_subset.currentText()
                 flat_file = "{}/myraf_flat.fits".format(self.fop.tmp_dir)
                 try:
-                    self.iraf.flatcombine(flat_files, flat_file, method=flat_combine,
-                                          rejection=flat_reject, subset=flat_subset)
+                    self.iraf.flatcombine(flat_files, flat_file, method=flat_combine, rejection=flat_reject)
                 except:
                     self.logger.warning("Flatcombine failed. Flatcorrection will be skipped.")
                     flat_file = None
@@ -155,6 +206,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
             if flat_file is None and dark_file is None and zero_file is None:
                 self.logger.warning("No operation available")
+                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No operation available. Nothing to do.")
             else:
                 out_folder = self.gui_file.save_directory()
                 if out_folder:
@@ -188,8 +240,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             if out_file:
                 flat_combine = self.flat_combine.currentText()
                 flat_reject = self.flat_reject.currentText()
-                flat_subset = self.flat_subset.currentText()
-                self.iraf.flatcombine(files, out_file, method=flat_combine, rejection=flat_reject, subset=flat_subset)
+                self.iraf.flatcombine(files, out_file, method=flat_combine, rejection=flat_reject)
                 self.fts.update_header(out_file, "MYFlat", "Flatcombine done by MYRaf V3")
             else:
                 self.logger.warning("Darkcombine canceled by user.")
@@ -418,12 +469,25 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.exec_(event.globalPos())
             return True
 
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.cclean_list:
+            menu = QtWidgets.QMenu()
+            menu.addAction('Add', lambda: (self.add_files(self.cclean_list)))
+            menu.addAction('Remove', lambda: (self.rm_files(self.cclean_list)))
+            menu.addSeparator()
+            menu.addAction('Expand All', lambda: (self.cclean_list.expandAll()))
+            menu.addAction('Collapse All', lambda: (self.cclean_list.collapseAll()))
+            menu.exec_(event.globalPos())
+            return True
+
         if event.type() == QtCore.QEvent.ContextMenu and source is self.phot_coor_list:
             menu = QtWidgets.QMenu()
             menu.addAction('Remove', lambda: (self.gui_dev.rm(self.phot_coor_list)))
             menu.addSeparator()
-            menu.addAction('Show All', lambda: ())
-            menu.addAction('Show Selected', lambda: ())
+            show_all = menu.addAction('Show All', lambda: ())
+            show_selected = menu.addAction('Show Selected', lambda: ())
+            show_all.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
+            show_selected.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
+
             menu.exec_(event.globalPos())
             return True
 
@@ -469,11 +533,14 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
 def main():
     parser = argparse.ArgumentParser(description='MYRaf V3 Beta')
-    parser.add_argument("--logger", "-ll", help="Logger Level", default=50)
+    parser.add_argument("--logger", "-ll", default=50, type=int,
+                        help="Logger level: CRITICAL=50, ERROR=40, WARNING=30, INFO=20, DEBUG=10, NOTSET=0")
+    # help="An integer of Logger level: CRITICAL=50, ERROR=40, WARNING=30, INFO=20, DEBUG=10, NOTSET=0"
+    parser.add_argument("--logfile", "-lf", default=None, type=str, help="Path to log file")
     args = parser.parse_args()
 
     app = QtWidgets.QApplication(argv)
-    window = MainWindow(logger_level=args.logger)
+    window = MainWindow(logger_level=args.logger, log_file=args.logfile)
     window.show()
     app.exec()
 

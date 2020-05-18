@@ -6,6 +6,12 @@ Created on Fri May  3 14:35:56 2019
 """
 
 try:
+    from subprocess import PIPE
+except Exception as e:
+    print("{}: Can't import subprocess".format(e))
+    exit(0)
+
+try:
     from sep import Background
     from sep import sum_circle
 except Exception as e:
@@ -226,31 +232,26 @@ class Astronomy:
                 iraf.imred.unlearn()
                 ccdred.instrument = "ccddb$kpno/camera.dat"
 
+                yes_no = {True: "no", False: "yes"}
+
                 if output is None:
                     output = ""
 
-                if zero is None:
-                    zeroCor = "no"
-                else:
-                    zeroCor = "yes"
+                zeroCor = yes_no[zero is None]
+                darkCor = yes_no[dark is None]
+                flatCor = yes_no[flat is None]
 
-                if dark is None:
-                    darkCor = "no"
-                else:
-                    darkCor = "yes"
-
-                if flat is None:
-                    flatCor = "no"
-                else:
-                    if self.fts.header(flat, "subset") is None:
+                if flat is not None:
+                    if subset == "no":
                         self.fts.update_header(flat, "subset", "")
-                    flatCor = "yes"
 
                 iraf.ccdred.unlearn()
                 iraf.ccdred.ccdproc.unlearn()
                 iraf.ccdred.flatcombine.subset = subset
-                if self.fts.header(file, "subset") is None:
+
+                if subset == "no":
                     self.fts.update_header(file, "subset", "")
+
                 iraf.ccdproc(images=file, output=output, ccdtype='',
                              fixpix='no', oversca="no", trim="no",
                              zerocor=zeroCor, darkcor=darkCor,
@@ -391,56 +392,49 @@ class Astronomy:
         def __init__(self, logger):
             self.logger = logger
 
-        def cosmic_cleaner(self, file, output, sigclip=12, sigfrac=0.3,
-                           objlim=5.0, gain=1.0, readnoise=6.5,
-                           satlevel=65535.0, pssl=0.0, iteration=4,
-                           sepmed=True, cleantype='meanmask', fsmode='median',
-                           psfmodel='gauss', psffwhm=2.5, psfsize=7, psfk=None,
-                           psfbeta=4.765, verbose=False):
+        def cosmic_cleaner(self, file, output, sigclip=12, sigfrac=0.3, objlim=5.0, gain=1.0, readnoise=6.5,
+                           satlevel=65535.0, pssl=0.0, iteration=4, sepmed=True, cleantype='meanmask', fsmode='median',
+                           psfmodel='gauss', psffwhm=2.5, psfsize=7, psfk=None, psfbeta=4.765):
             """Cleaning cosmic rays from given file"""
             try:
                 data = self.data(file)
 
-                new_data, cos = cosla(data, sigclip=sigclip, sigfrac=sigfrac,
-                                      objlim=objlim, gain=gain,
-                                      readnoise=readnoise, satlevel=satlevel,
-                                      pssl=pssl, niter=iteration,
-                                      sepmed=sepmed, cleantype=cleantype,
-                                      fsmode=fsmode, psfmodel=psfmodel,
-                                      psffwhm=psffwhm, psfsize=psfsize,
-                                      psfk=psfk, psfbeta=psfbeta,
-                                      verbose=verbose)
-                self.write(output, new_data, header=self.header(file,
-                                                                field="?"))
+                new_data, cos = cosla(data, sigclip=sigclip, sigfrac=sigfrac, objlim=objlim, gain=gain,
+                                      readnoise=readnoise, satlevel=satlevel, pssl=pssl, niter=iteration,
+                                      sepmed=sepmed, cleantype=cleantype, fsmode=fsmode, psfmodel=psfmodel,
+                                      psffwhm=psffwhm, psfsize=psfsize, psfk=psfk, psfbeta=psfbeta)
+
+                self.write(output, new_data, header=self.header(file, field="?"))
+
             except Exception as e:
                 self.logger.error(e)
 
-        def align(self, image, ref, output):
-            """Aligning an image with respect of given referance"""
-            identifications = alipy.ident.run(ref, [image], visu=False,
-                                              sexkeepcat=False, verbose=False)
-            outputshape = alipy.align.shape(ref)
-            for the_id in identifications:
-                if the_id.ok == True:
-                    the_id.ukn.name, the_id.trans, the_id.medfluxratio
-                    alipy.align.affineremap(the_id.ukn.filepath, the_id.trans,
-                                            shape=outputshape, outdir=output)
-
-        def star_finder(self, image, max_star=500):
-            """returns x, y and fwhm of objects on a given fits image"""
-            self.logger.info("Star finder started for {}".format(image))
-            try:
-                img = imgcat.ImgCat(image)
-                img.makecat(rerun=True, keepcat=False, verbose=False)
-                img.makestarlist(skipsaturated=False, n=max_star,
-                                 verbose=False)
-                ret = []
-                for star in img.starlist:
-                    ret.append([star.x, star.y, star.fwhm])
-
-                return ar(ret)
-            except Exception as e:
-                self.logger.error(e)
+        # def align(self, image, ref, output):
+        #     """Aligning an image with respect of given referance"""
+        #     identifications = alipy.ident.run(ref, [image], visu=False,
+        #                                       sexkeepcat=False, verbose=False)
+        #     outputshape = alipy.align.shape(ref)
+        #     for the_id in identifications:
+        #         if the_id.ok == True:
+        #             the_id.ukn.name, the_id.trans, the_id.medfluxratio
+        #             alipy.align.affineremap(the_id.ukn.filepath, the_id.trans,
+        #                                     shape=outputshape, outdir=output)
+        #
+        # def star_finder(self, image, max_star=500):
+        #     """returns x, y and fwhm of objects on a given fits image"""
+        #     self.logger.info("Star finder started for {}".format(image))
+        #     try:
+        #         img = imgcat.ImgCat(image)
+        #         img.makecat(rerun=True, keepcat=False, verbose=False)
+        #         img.makestarlist(skipsaturated=False, n=max_star,
+        #                          verbose=False)
+        #         ret = []
+        #         for star in img.starlist:
+        #             ret.append([star.x, star.y, star.fwhm])
+        #
+        #         return ar(ret)
+        #     except Exception as e:
+        #         self.logger.error(e)
 
         def subtract(self, img1, img2):
             """Subtacts two image array"""
