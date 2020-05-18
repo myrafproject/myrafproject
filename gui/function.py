@@ -7,6 +7,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from myraflib import env
 
+
 class Files:
     def __init__(self, frame, logger):
         self.frame = frame
@@ -19,10 +20,9 @@ class Files:
         else:
             ftype = "fits, fit, fts (*.fits *.fit *.fts)"
 
-        files = QtWidgets.QFileDialog.getOpenFileNames(
-            self.frame, "Images...", "",
-            (ftype))[0]
-        return files
+        files = QtWidgets.QFileDialog.getOpenFileNames(self.frame, "Images...", '', (ftype),
+                                                       None, QtWidgets.QFileDialog.DontUseNativeDialog)
+        return files[0]
 
     def get_file(self, file_type=None):
 
@@ -31,10 +31,9 @@ class Files:
         else:
             ftype = "fits, fit, fts (*.fits *.fit *.fts)"
 
-        files = QtWidgets.QFileDialog.getOpenFileName(
-            self.frame, "File...", "",
-            (ftype))[0]
-        return files
+        file = QtWidgets.QFileDialog.getOpenFileName(self.frame, "File...", "", (ftype),
+                                                     None, QtWidgets.QFileDialog.DontUseNativeDialog)
+        return file[0]
 
     def save_file(self, file_type=None, name=None):
         if file_type is None:
@@ -47,13 +46,13 @@ class Files:
         else:
             nm = file_type
 
-        files = QtWidgets.QFileDialog.getSaveFileName(
-            self.frame, "Output file", nm, (tp))[0]
-        return files
+        file = QtWidgets.QFileDialog.getSaveFileName(self.frame, "Output file", nm, (tp),
+                                                     None, QtWidgets.QFileDialog.DontUseNativeDialog)
+        return file[0]
 
     def save_directory(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(
-            self.frame, 'Select directory')
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self.frame, 'Select directory',
+                                                               None, QtWidgets.QFileDialog.DontUseNativeDialog)
         return directory
 
 
@@ -89,6 +88,21 @@ class Devices:
             flist.addItem(item)
             item = flist.item(it)
             item.setText(QtWidgets.QApplication.translate("Form", x, None))
+
+    def clear_table(self, device):
+        for i in reversed(range(device.rowCount())):
+            device.removeRow(i)
+
+    def add_table(self, device, list):
+        for line in list:
+            rowPosition = device.rowCount()
+            device.insertRow(rowPosition)
+            device.setItem(rowPosition, 0, QtWidgets.QTableWidgetItem(str(line[0])))
+            device.setItem(rowPosition, 1, QtWidgets.QTableWidgetItem(str(line[1])))
+
+    def replace_table(self, device, list):
+        self.clear_table(device)
+        self.add_table(device, list)
 
     def c_add(self, fcomb, the_list):
         for i in the_list:
@@ -146,11 +160,11 @@ class Devices:
             ret = []
             getSelected = container.selectedItems()
             for element in getSelected:
-                ret.append(element.text(0))
+                ret.append(element.toolTip(0))
         else:
             iterator = QtWidgets.QTreeWidgetItemIterator(container, QtWidgets.QTreeWidgetItemIterator.HasChildren)
             while iterator.value():
-                ret.append(iterator.value().text(0))
+                ret.append(iterator.value().toolTip(0))
                 iterator += 1
 
         return ret
