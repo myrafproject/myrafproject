@@ -179,13 +179,14 @@ class File():
         except Exception as e:
             self.logger.error(e)
 
-    def write_list(self, dest, the_list):
+    def write_list(self, dest, the_list, dm=","):
         """Writes a list of a file"""
-        f = open(dest, "w")
-        for i in the_list:
-            f.write("{}\n".format(i))
-
-        f.close()
+        with open(dest, "w") as f:
+            for i in the_list:
+                if type(i) == list:
+                    f.write("{}\n".format(dm.join(i)))
+                else:
+                    f.write("{}\n".format(i))
 
     def write_json(self, file, dic):
         """Writes a dictionary ro a json file"""

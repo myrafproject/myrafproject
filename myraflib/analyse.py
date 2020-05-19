@@ -267,51 +267,51 @@ class Astronomy:
             Does IRAF photometry
             IRAF phot
             """
-            try:
-                coord_file = "{}/myraf_coord.coo".format(self.logger.tmp_dir)
-                with open(coord_file, "w") as f:
-                    for coord in coords:
-                        f.write("{} {}\n".format(coord[0], coord[1]))
+            # try:
+            coord_file = "{}/myraf_coord.coo".format(self.fop.tmp_dir)
+            with open(coord_file, "w") as f:
+                for coord in coords:
+                    f.write("{}\n".format(coord.replace("," ," ")))
 
-                apertures = list(map(str, apertures))
+            apertures = list(map(str, apertures))
 
-                iraf.photpars.weighting = "constant"
-                iraf.photpars.aperture = ",".join(apertures)
-                iraf.photpars.zmag = zmag
-                iraf.photpars.mkapert = "no"
+            iraf.photpars.weighting = "constant"
+            iraf.photpars.aperture = ",".join(apertures)
+            iraf.photpars.zmag = zmag
+            iraf.photpars.mkapert = "no"
 
-                iraf.daophot.phot.interactive = "no"
-                iraf.daophot.phot.verify = "no"
-                iraf.daophot.phot.verbose = "no"
+            iraf.daophot.phot.interactive = "no"
+            iraf.daophot.phot.verify = "no"
+            iraf.daophot.phot.verbose = "no"
 
-                iraf.fitskypars.salgo = "centroid"
-                iraf.fitskypars.annu = annulus
-                iraf.fitskypars.dannu = dannulus
-                iraf.fitskypars.skyval = 0
-                iraf.fitskypars.smaxi = 10
-                iraf.fitskypars.sloc = 0
-                iraf.fitskypars.shic = 0
-                iraf.fitskypars.snrej = 50
-                iraf.fitskypars.slorej = 3.
-                iraf.fitskypars.shirej = 3.
-                iraf.fitskypars.khist = 3
-                iraf.fitskypars.binsi = 0.1
+            iraf.fitskypars.salgo = "centroid"
+            iraf.fitskypars.annu = annulus
+            iraf.fitskypars.dannu = dannulus
+            iraf.fitskypars.skyval = 0
+            iraf.fitskypars.smaxi = 10
+            iraf.fitskypars.sloc = 0
+            iraf.fitskypars.shic = 0
+            iraf.fitskypars.snrej = 50
+            iraf.fitskypars.slorej = 3.
+            iraf.fitskypars.shirej = 3.
+            iraf.fitskypars.khist = 3
+            iraf.fitskypars.binsi = 0.1
 
-                if self.fop.is_file(output):
-                    self.fop.rm(output)
+            if self.fop.is_file(output):
+                self.fop.rm(output)
 
-                iraf.phot.coords = coord_file
-                iraf.phot.output = output
-                iraf.daophot.phot.verify = "no"
-                iraf.daophot.phot.interactive = "no"
-                iraf.daophot.phot.radplots = "no"
+            iraf.phot.coords = coord_file
+            iraf.phot.output = output
+            iraf.daophot.phot.verify = "no"
+            iraf.daophot.phot.interactive = "no"
+            iraf.daophot.phot.radplots = "no"
 
-                iraf.daophot.phot(file, output=output, coords=coord_file,
-                                  verbose="no", verify="no", interactive="no")
-                return True
-            except Exception as e:
-                self.logger.error(e)
-                return False
+            iraf.daophot.phot(file, output=output, coords=coord_file,
+                              verbose="no", verify="no", interactive="no")
+            #     return True
+            # except Exception as e:
+            #     self.logger.error(e)
+            #     return False
 
         def textdump(self, file, fields=["id", "mag", "merr"]):
             """

@@ -82,16 +82,31 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.hedit_remove.clicked.connect(lambda: (self.rm_files(self.hedit_list)))
 
         self.align_add.clicked.connect(lambda: (self.add_files(self.align_list)))
+        self.align_remove.clicked.connect(lambda: (self.rm_files(self.align_list)))
+
         self.phot_add.clicked.connect(lambda: (self.add_files(self.phot_list)))
+        self.phot_remove.clicked.connect(lambda: (self.rm_files(self.phot_list)))
         self.display_phot.canvas.fig.canvas.mpl_connect('button_press_event', self.get_coordinate_phot)
+
+        # self.phot_add.clicked.connect(lambda: (self.add_files(self.update_list_of_headers)))
 
         self.hedit_remove_field.clicked.connect(lambda: (self.rm_header()))
         self.hedit_add_field.clicked.connect(lambda: (self.add_header()))
 
         self.align_list.clicked.connect(lambda: (self.display(self.align_list, self.align_display)))
         self.phot_list.clicked.connect(lambda: (self.display(self.phot_list, self.phot_display)))
+        self.phot_list.clicked.connect(lambda: (self.update_list_of_headers()))
+
         self.hedit_list.clicked.connect(lambda: (self.show_headers()))
-        self.tableWidget.clicked.connect(lambda: (self.header_selected()))
+        self.hedit_header_table.clicked.connect(lambda: (self.header_selected()))
+
+        self.phot_go.clicked.connect(lambda: (self.photometry()))
+
+        self.phot_add_par.clicked.connect(lambda: (self.add_phot_par()))
+        self.phot_rm_par.clicked.connect(lambda: (self.rm_photo_par()))
+        # self.phot_update_header_list.clicked.connect(lambda: (self.update_list_of_headers()))
+
+        self.phot_add_to_header_to_extract.clicked.connect(lambda: (self.use_wanted_headers()))
 
         self.calib_image_list.installEventFilter(self)
         self.calib_bias_list.installEventFilter(self)
@@ -106,9 +121,125 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.display_align.canvas.fig.canvas.mpl_connect('motion_notify_event', self.align_onpick)
         self.display_phot.canvas.fig.canvas.mpl_connect('motion_notify_event', self.phot_onpick)
 
-        header = self.tableWidget.horizontalHeader()
+        header = self.hedit_header_table.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+
+        header = self.phot_par_list.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
+
+    def use_wanted_headers(self):
+        available_headers = self.gui_dev.list_of_selected(self.phot_header_list)
+        wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
+        if len(available_headers) > 0:
+            for available_header in available_headers:
+                if available_header not in wanted_headers:
+                    self.gui_dev.add(self.phot_header_to_exract, [available_header])
+        else:
+            self.logger.warning("No header(s) file was. Nothing to do.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
+                                          "No header(s) was selected. Please select at least one header")
+
+    def update_list_of_headers(self):
+        the_file = self.phot_list.currentItem()
+        if the_file is not None:
+            if the_file.child(0) is not None:
+                headers = self.fts.header(the_file.toolTip(0), field="*")
+                self.gui_dev.replace_list_con(self.phot_header_list, [str(i[0]) for i in headers])
+        else:
+            self.logger.warning("No data file was selected. Nothing to do.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
+                                          "No data file was selected. Please select a file in Photometry tab.")
+
+    def rm_photo_par(self):
+        self.gui_dev.remove_from_table(self.phot_par_list)
+
+    def photometry(self):
+        files = self.gui_dev.get_from_tree(self.phot_list)
+        if len(files) > 0:
+            coordinates = self.gui_dev.list_of_list(self.phot_coor_list)
+            if len(coordinates) > 0:
+                phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
+                if phot_pars is not None:
+                    if len(phot_pars) > 0:
+                        res_data = self.gui_file.save_file(file_type="my (*.my)", name="res")
+                        if res_data is not None:
+                            progress = QtWidgets.QProgressDialog("Photometry...", "Abort", 0, len(files), self)
+                            progress.setWindowModality(QtCore.Qt.WindowModal)
+                            progress.setWindowTitle('MYRaf: Please Wait')
+                            progress.setAutoClose(True)
+                            data = []
+                            for it, file in enumerate(files, start=1):
+                                progress.setLabelText("Photometry of {}".format(file))
+                                if progress.wasCanceled():
+                                    progress.setLabelText("ABORT!")
+                                    break
+                                for coordinate in coordinates:
+                                    for phot_par in phot_pars:
+                                        header_line = ["File_name", "Coordinate", "Aperture",
+                                                       "Annulus", "Dannulus", "ZMag", "MAG", "MERR"]
+                                        data_line = []
+
+                                        pn, fn = self.fop.get_base_name(file)
+                                        mag_file = "{}/{}.mag".format(self.fop.tmp_dir, fn)
+
+                                        if self.fop.is_file(mag_file):
+                                            self.fop.rm(mag_file)
+
+                                        data_line.append(file)
+                                        data_line.append(coordinate)
+                                        for pp in phot_par:
+                                            data_line.append(pp)
+
+                                        self.iraf.phot(file, mag_file, [coordinate],
+                                                       phot_par[0], annulus=phot_par[1],
+                                                       dannulus=phot_par[2], zmag=phot_par[3])
+                                        phot_res = self.iraf.textdump(mag_file)[0]
+                                        data_line.append(phot_res[1])
+                                        data_line.append(phot_res[2])
+                                        wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
+                                        if len(wanted_headers) > 0:
+                                            for wanted_header in wanted_headers:
+                                                use_header = self.fts.header(file, wanted_header)
+                                                header_line.append(wanted_header)
+                                                data_line.append(str(use_header))
+
+                                        data.append(data_line)
+
+                                        if self.fop.is_file(mag_file):
+                                            self.fop.rm(mag_file)
+
+                                    progress.setValue(it)
+
+                            data.insert(0, header_line)
+                            print(data)
+                            self.fop.write_list(res_data, data, dm="|")
+                        else:
+                            self.logger.warning("phot canceled by user.")
+
+                else:
+                    self.logger.warning("No photpars was given. Nothing to do.")
+                    QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No photpars was given. Nothing to do.")
+            else:
+                self.logger.warning("No coordinate file was given. Nothing to do.")
+                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No coordinate was given. Nothing to do.")
+        else:
+            self.logger.warning("No data file was given. Nothing to do.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+
+    def add_phot_par(self):
+        aperture = self.phot_aperture.value()
+        annulus = self.phot_annulus.value()
+        if aperture < annulus:
+            dannulus = self.phot_dannulus.value()
+            zmag = self.phot_zmag.value()
+            self.gui_dev.add_table(self.phot_par_list, [[aperture, annulus, dannulus, zmag]])
+        else:
+            self.logger.warning("Annulus must be bigger than Aperture.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Annulus must be bigger than Aperture.")
 
     def cosmin_clean(self):
         files = self.gui_dev.get_from_tree(self.cclean_list)
@@ -353,15 +484,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.hedit_valuefromheader.setEnabled(self.hedit_isvaluefromheader.isChecked())
 
     def header_selected(self):
-        self.hedit_field.setText(self.tableWidget.item(self.tableWidget.currentItem().row(), 0).text())
-        self.hedit_value.setText(self.tableWidget.item(self.tableWidget.currentItem().row(), 1).text())
+        self.hedit_field.setText(self.hedit_header_table.item(self.hedit_header_table.currentItem().row(), 0).text())
+        self.hedit_value.setText(self.hedit_header_table.item(self.hedit_header_table.currentItem().row(), 1).text())
 
     def show_headers(self):
         the_file = self.hedit_list.currentItem()
         if the_file is not None:
             if the_file.child(0) is not None:
                 headers = self.fts.header(the_file.toolTip(0))
-                self.gui_dev.replace_table(self.tableWidget, headers)
+                self.gui_dev.replace_table(self.hedit_header_table, headers)
                 self.gui_dev.c_replace_list_con(self.hedit_valuefromheader,
                                                 ["{}->{}".format(i[0], i[1]) for i in headers])
 

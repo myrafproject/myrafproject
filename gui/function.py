@@ -44,7 +44,7 @@ class Files:
         if name is None:
             nm = ""
         else:
-            nm = file_type
+            nm = name
 
         file = QtWidgets.QFileDialog.getSaveFileName(self.frame, "Output file", nm, (tp),
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
@@ -97,8 +97,31 @@ class Devices:
         for line in list:
             rowPosition = device.rowCount()
             device.insertRow(rowPosition)
-            device.setItem(rowPosition, 0, QtWidgets.QTableWidgetItem(str(line[0])))
-            device.setItem(rowPosition, 1, QtWidgets.QTableWidgetItem(str(line[1])))
+            for it, value in enumerate(line):
+                device.setItem(rowPosition, it, QtWidgets.QTableWidgetItem(str(value)))
+                # device.setItem(rowPosition, 1, QtWidgets.QTableWidgetItem(str(line[1])))
+
+    def list_of_table(self, device):
+        number_of_rows = device.rowCount()
+        number_of_columns = device.columnCount()
+        ret = []
+        if number_of_rows > 0 and number_of_columns > 0:
+            for i in range(number_of_rows):
+                row = []
+                for j in range(number_of_columns):
+                    row.append(device.item(i, j).text())
+
+                ret.append(row)
+
+            return ret
+
+    def remove_from_table(self, device):
+        unwanted_rows = []
+        for row in device.selectionModel().selectedRows():
+            unwanted_rows.append(row.row())
+
+        for unwanted_row in sorted(unwanted_rows, reverse=True):
+            device.removeRow(unwanted_row)
 
     def replace_table(self, device, list):
         self.clear_table(device)
