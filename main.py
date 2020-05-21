@@ -10,6 +10,8 @@ try:
 
     from logging import getLogger, basicConfig
 
+    from matplotlib.patches import Circle
+
     from PyQt5 import QtWidgets
     from PyQt5 import QtCore
 
@@ -43,6 +45,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         LOG_FORMAT = "[%(asctime)s, %(levelname)s], [%(filename)s, %(funcName)s, %(lineno)s]: %(message)s"
         basicConfig(filename=log_file, level=logger_level, format=LOG_FORMAT)
         self.logger = getLogger()
+        getLogger('matplotlib.font_manager').disabled = True
 
         self.gui_dev = function.Devices(self, self.logger)
         self.gui_file = function.Files(self, self.logger)
@@ -77,7 +80,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         # cosmin_clean
 
         self.hedit_isvaluefromheader.clicked.connect(lambda: (self.toggle_header()))
-
         self.hedit_add.clicked.connect(lambda: (self.add_files(self.hedit_list)))
         self.hedit_remove.clicked.connect(lambda: (self.rm_files(self.hedit_list)))
 
@@ -108,6 +110,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
         self.phot_add_to_header_to_extract.clicked.connect(lambda: (self.use_wanted_headers()))
 
+        self.hext_add.clicked.connect(lambda: (self.add_files(self.hext_list)))
+        self.hext_remove.clicked.connect(lambda: (self.rm_files(self.hext_list)))
+        self.hext_list.clicked.connect(lambda: (self.show_headers_extractor()))
+        self.hext_go.clicked.connect(lambda: (self.export_header()))
+
+        self.hcalc_add.clicked.connect(lambda: (self.add_files(self.hcalc_list)))
+        self.hcalc_remove.clicked.connect(lambda: (self.rm_files(self.hcalc_list)))
+        self.hcalc_list.clicked.connect(lambda: (self.show_headers_calculator()))
+
         self.calib_image_list.installEventFilter(self)
         self.calib_bias_list.installEventFilter(self)
         self.calib_dark_list.installEventFilter(self)
@@ -115,6 +126,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.align_list.installEventFilter(self)
         self.phot_list.installEventFilter(self)
         self.hedit_list.installEventFilter(self)
+        self.hcalc_list.installEventFilter(self)
+        self.hext_list.installEventFilter(self)
         self.cclean_list.installEventFilter(self)
         self.phot_coor_list.installEventFilter(self)
 
@@ -125,11 +138,90 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
 
+        header = self.hext_header_table.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+
         header = self.phot_par_list.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
+
+
+    def export_header(self):
+        list_of_header_indices = self.gui_dev.list_of_selected_table(self.hext_header_table)
+        if list_of_header_indices is not None:
+            if len(list_of_header_indices) > 0:
+                files = self.gui_dev.get_from_tree(self.hext_list)
+                if files is not None:
+                    if len(files) > 0:
+                        out_file = self.gui_file.save_file(".dat", "headers.dat")
+                        if out_file:
+                            progress = QtWidgets.QProgressDialog("Extracting header from files...", "Abort", 0, len(files), self)
+                            progress.setWindowModality(QtCore.Qt.WindowModal)
+                            progress.setWindowTitle('MYRaf: Please Wait')
+                            progress.setAutoClose(True)
+                            ret = []
+                            for it, file in enumerate(files, start=1):
+                                progress.setLabelText("Extracting header from {}".format(file))
+                                file_header = ["#File"]
+                                line = [file]
+                                for header_index in list_of_header_indices:
+
+                                    if progress.wasCanceled():
+                                        progress.setLabelText("ABORT!")
+                                        break
+
+                                    wanted_header_field = self.hext_header_table.item(header_index, 0).text()
+                                    wanted_header = self.fts.header(file, wanted_header_field)
+                                    line.append(str(wanted_header))
+                                    file_header.append(str(wanted_header_field))
+
+                                ret.append(line)
+                                progress.setValue(it)
+
+                            ret.insert(0, file_header)
+                            self.fop.write_list(out_file, ret, dm="|")
+
+
+    def show_headers_calculator(self):
+        the_file = self.hcalc_list.currentItem()
+        if the_file is not None:
+            if the_file.child(0) is not None:
+                headers = self.fts.header(the_file.toolTip(0))
+                self.gui_dev.c_replace_list_con(self.hcalc_jd_time, [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_airmass_time, [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_airmass_ra, [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_airmass_dec, [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_time_time, [str("{}->{}".format(i[0], i[1])) for i in headers])
+
+    def show_headers_extractor(self):
+        the_file = self.hext_list.currentItem()
+        if the_file is not None:
+            if the_file.child(0) is not None:
+                headers = self.fts.header(the_file.toolTip(0))
+                self.gui_dev.replace_table(self.hext_header_table, headers)
+
+    def plot_coordinates(self, selected=True):
+        if selected:
+            coords = self.gui_dev.list_of_selected(self.phot_coor_list)
+        else:
+            coords = self.gui_dev.list_of_list(self.phot_coor_list)
+
+        if not coords == []:
+            for it, coord in enumerate(coords):
+                the_coord = tuple(map(float, coord.split(",")))
+                circ = Circle(the_coord, radius=30, edgecolor="#00FFFF", facecolor="#00FFFF")
+                self.display_phot.canvas.fig.gca().add_artist(circ)
+                self.display_phot.canvas.fig.gca().annotate("s{}".format(str(it)),
+                                                            xy=the_coord, color="#00FFFF", fontsize=10)
+            self.display_phot.canvas.draw()
+        else:
+            self.logger.warning("No coordinates to plot")
+            QtWidgets.QMessageBox.critical(self, "MYRaf Error", "Please add coordinate(s)")
+
+        self.reload_log()
 
     def use_wanted_headers(self):
         available_headers = self.gui_dev.list_of_selected(self.phot_header_list)
@@ -179,7 +271,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     break
                                 for coordinate in coordinates:
                                     for phot_par in phot_pars:
-                                        header_line = ["File_name", "Coordinate", "Aperture",
+                                        header_line = ["#File_name", "Coordinate", "Aperture",
                                                        "Annulus", "Dannulus", "ZMag", "MAG", "MERR"]
                                         data_line = []
 
@@ -206,8 +298,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                                 use_header = self.fts.header(file, wanted_header)
                                                 header_line.append(wanted_header)
                                                 data_line.append(str(use_header))
-
-                                        data.append(data_line)
+                                        if not (phot_res[0] == "INDEF" or  phot_res[1] == "INDEF"):
+                                            data.append(data_line)
 
                                         if self.fop.is_file(mag_file):
                                             self.fop.rm(mag_file)
@@ -215,7 +307,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     progress.setValue(it)
 
                             data.insert(0, header_line)
-                            print(data)
                             self.fop.write_list(res_data, data, dm="|")
                         else:
                             self.logger.warning("phot canceled by user.")
@@ -590,6 +681,26 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu.exec_(event.globalPos())
             return True
 
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.hext_list:
+            menu = QtWidgets.QMenu()
+            menu.addAction('Add', lambda: (self.add_files(self.hext_list)))
+            menu.addAction('Remove', lambda: (self.rm_files(self.hext_list)))
+            menu.addSeparator()
+            menu.addAction('Expand All', lambda: (self.hext_list.expandAll()))
+            menu.addAction('Collapse All', lambda: (self.hext_list.collapseAll()))
+            menu.exec_(event.globalPos())
+            return True
+
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.hcalc_list:
+            menu = QtWidgets.QMenu()
+            menu.addAction('Add', lambda: (self.add_files(self.hcalc_list)))
+            menu.addAction('Remove', lambda: (self.rm_files(self.hcalc_list)))
+            menu.addSeparator()
+            menu.addAction('Expand All', lambda: (self.hcalc_list.expandAll()))
+            menu.addAction('Collapse All', lambda: (self.hcalc_list.collapseAll()))
+            menu.exec_(event.globalPos())
+            return True
+
         if event.type() == QtCore.QEvent.ContextMenu and source is self.hedit_list:
             menu = QtWidgets.QMenu()
             menu.addAction('Add', lambda: (self.add_files(self.hedit_list)))
@@ -614,8 +725,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             menu = QtWidgets.QMenu()
             menu.addAction('Remove', lambda: (self.gui_dev.rm(self.phot_coor_list)))
             menu.addSeparator()
-            show_all = menu.addAction('Show All', lambda: ())
-            show_selected = menu.addAction('Show Selected', lambda: ())
+            show_all = menu.addAction('Show All', lambda: (self.plot_coordinates(selected=False)))
+            show_selected = menu.addAction('Show Selected', lambda: (self.plot_coordinates(selected=True)))
             show_all.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
             show_selected.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
 

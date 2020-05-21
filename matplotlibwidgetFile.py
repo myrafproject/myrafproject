@@ -1,4 +1,3 @@
-
 try:
     from PyQt5 import QtWidgets
 except Exception as e:
@@ -6,11 +5,11 @@ except Exception as e:
     exit(0)
 
 try:
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-    # from matplotlib.backends.backend_qt4 import FigureCanvasQT as FigureCanvas
-    from matplotlib.backends.backend_qt4 import NavigationToolbar2QT as NavigationToolbar
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+
     from matplotlib.figure import Figure
-    import matplotlib.gridspec as gridspec
+    from matplotlib import gridspec as gridspec
 except Exception as e:
     print("{}. Can't import matplotlib.".format(e))
     exit(0)

@@ -115,10 +115,15 @@ class Devices:
 
             return ret
 
-    def remove_from_table(self, device):
-        unwanted_rows = []
+    def list_of_selected_table(self, device):
+        rows = []
         for row in device.selectionModel().selectedRows():
-            unwanted_rows.append(row.row())
+            rows.append(row.row())
+
+        return rows
+
+    def remove_from_table(self, device):
+        unwanted_rows = self.list_of_selected_table(device)
 
         for unwanted_row in sorted(unwanted_rows, reverse=True):
             device.removeRow(unwanted_row)
