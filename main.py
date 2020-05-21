@@ -95,9 +95,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.hedit_remove_field.clicked.connect(lambda: (self.rm_header()))
         self.hedit_add_field.clicked.connect(lambda: (self.add_header()))
 
-        self.align_list.clicked.connect(lambda: (self.display(self.align_list, self.align_display)))
+        self.align_list.clicked.connect(lambda: (self.display(self.align_list, self.align_display), self.display_coords_align()))
         self.phot_list.clicked.connect(lambda: (self.display(self.phot_list, self.phot_display)))
         self.phot_list.clicked.connect(lambda: (self.update_list_of_headers()))
+        self.align_go.clicked.connect(lambda: (self.align()))
 
         self.hedit_list.clicked.connect(lambda: (self.show_headers()))
         self.hedit_header_table.clicked.connect(lambda: (self.header_selected()))
@@ -133,6 +134,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
         self.display_align.canvas.fig.canvas.mpl_connect('motion_notify_event', self.align_onpick)
         self.display_phot.canvas.fig.canvas.mpl_connect('motion_notify_event', self.phot_onpick)
+        self.display_align.canvas.fig.canvas.mpl_connect('button_press_event', self.get_coordinate_align)
+
 
         header = self.hedit_header_table.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
@@ -148,6 +151,93 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
 
+    def get_coordinate_align(self, event):
+        files = self.gui_dev.get_from_tree(self.align_list)
+        the_file = self.align_list.currentItem()
+        if the_file is not None:
+            if the_file.child(0) is not None:
+                if self.align_display.get_data() is not None:
+                    x, y = self.align_display.get_xy()
+                    self.fts.update_header(the_file.toolTip(0), "my_align", "{}, {}".format(x, y))
+                    current_index = self.align_list.currentIndex().row() + 1
+                    new_row = current_index % (len(files))
+                    self.align_list.setCurrentItem(self.align_list.topLevelItem(new_row))
+                    if new_row == 0:
+                        self.align_list.setCurrentItem(self.align_list.topLevelItem(new_row))
+                        self.logger.warning("The whole list is done. Going back to top.")
+                        QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
+                                                      "The whole list is done. Going back to top.")
+
+                    self.display(self.align_list, self.align_display)
+                    self.display_coords_align()
+
+
+    def display_coords_align(self):
+        the_file = self.align_list.currentItem()
+        if the_file is not None:
+            if the_file.child(0) is not None:
+                header = self.fts.header(the_file.toolTip(0), "my_align")
+                if header is not None:
+                    the_coord = list(map(float, header.split(",")))
+                    circ = Circle(the_coord, 10, edgecolor="#00FFFF", facecolor="none")
+                    self.display_align.canvas.fig.gca().add_artist(circ)
+                    circ.center = the_coord
+                    self.display_align.canvas.fig.gca().annotate("REF", xy = the_coord, color = "#00FFFF", fontsize = 10)
+                    self.display_align.canvas.draw()
+
+    def align(self):
+        files = self.gui_dev.get_from_tree(self.align_list)
+        if files is not None:
+            if len(files) > 0:
+                if self.align_isauto.isChecked():
+                    pass
+                else:
+                    the_file = self.align_list.currentItem()
+                    if the_file is not None:
+                        if the_file.child(0) is not None:
+                            ref_coords = self.fts.header(the_file.toolTip(0), "my_align")
+                            if ref_coords is not None:
+                                ref_x, ref_y = list(map(float, ref_coords.split(",")))
+                                out_dir = self.gui_file.save_directory()
+                                if out_dir:
+                                    progress = QtWidgets.QProgressDialog("Manual Aligning...", "Abort", 0, len(files), self)
+                                    progress.setWindowModality(QtCore.Qt.WindowModal)
+                                    progress.setWindowTitle('MYRaf: Please Wait')
+                                    for it, file in enumerate(files, start=1):
+                                        progress.setLabelText("Aligning {}".format(file))
+
+                                        if progress.wasCanceled():
+                                            progress.setLabelText("ABORT!")
+                                            break
+
+                                        coords = self.fts.header(file, "my_align")
+                                        if coords is not None:
+                                            x, y = list(map(float, coords.split(",")))
+                                            dx,  dy = ref_x - x, ref_y - y
+                                            _, fn = self.fop.get_base_name(file)
+                                            out_file = "{}/{}".format(out_dir, fn)
+                                            self.iraf.imshift(file, out_file, dx, dy)
+                                        else:
+                                            self.logger.warning("File({}) has no my_align in header. Skipping.".format(file))
+
+                                        progress.setValue(it)
+                                else:
+                                    self.logger.warning("align canceled by user.")
+                            else:
+                                self.logger.warning("Reference Image has not .")
+                                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Rerefence image has no my_align in header. Nothing to do.")
+                        else:
+                            self.logger.warning("Reference Image no found.")
+                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Rerefence image has no my_align in header. Nothing to do.")
+                    else:
+                        self.logger.warning("Reference Image no found.")
+                        QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
+            else:
+                self.logger.warning("No file was given. Nothing to do.")
+                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+        else:
+            self.logger.warning("No file was given. Nothing to do.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
 
     def export_header(self):
         list_of_header_indices = self.gui_dev.list_of_selected_table(self.hext_header_table)
@@ -216,6 +306,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.display_phot.canvas.fig.gca().add_artist(circ)
                 self.display_phot.canvas.fig.gca().annotate("s{}".format(str(it)),
                                                             xy=the_coord, color="#00FFFF", fontsize=10)
+                # self.phot_display.fitsimage.add_object(circ)
             self.display_phot.canvas.draw()
         else:
             self.logger.warning("No coordinates to plot")

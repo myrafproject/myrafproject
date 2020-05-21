@@ -94,10 +94,13 @@ class Astronomy:
             self.fts = Astronomy.Fits(self.logger)
             self.fop = env.File(self.logger)
 
-        def imshift(self, file, output, dx, dy):
+        def imshift(self, file, output, dx, dy, overwrite=True):
             """Shifts a given fits file with given dx and dy"""
             try:
                 iraf.imshift.unlearn()
+                if self.fop.is_file(output) and overwrite:
+                    self.logger.warning("Over Writing file({})".format(output))
+                    self.fop.rm(output)
                 iraf.imshift(input=file, output=output, x=dx, y=dy)
                 return True
             except Exception as e:
@@ -125,6 +128,7 @@ class Astronomy:
                 iraf.ccdred.zerocombine.unlearn()
 
                 if self.fop.is_file(output) and overwrite:
+                    self.logger.warning("Over Writing file({})".format(output))
                     self.fop.rm(output)
 
                 iraf.zerocombine(input=biases, output=output, combine=method,
@@ -163,6 +167,7 @@ class Astronomy:
                                  Stdout="/dev/null")
 
                 if self.fop.is_file(output) and overwrite:
+                    self.logger.warning("Over Writing file({})".format(output))
                     self.fop.rm(output)
 
                 iraf.darkcombine(input=darks, output=output, combine=method,
@@ -196,6 +201,7 @@ class Astronomy:
                 iraf.ccdred.flatcombine.unlearn()
 
                 if self.fop.is_file(output) and overwrite:
+                    self.logger.warning("Over Writing file({})".format(output))
                     self.fop.rm(output)
 
                 iraf.flatcombine(input=flats, output=output, combine=method,
@@ -298,6 +304,7 @@ class Astronomy:
                 iraf.fitskypars.binsi = 0.1
 
                 if self.fop.is_file(output):
+                    self.logger.warning("Over Writing file({})".format(output))
                     self.fop.rm(output)
 
                 iraf.phot.coords = coord_file
