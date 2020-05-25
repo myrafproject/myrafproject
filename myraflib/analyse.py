@@ -55,7 +55,8 @@ try:
     from astropy.time import Time as tm
     from astropy.coordinates import EarthLocation
     from astropy.coordinates import SkyCoord
-    from astropy.coordinates import AltAz
+    from astropy.coordinates import AltAz, Angle
+    from astropy import units
     import astropy.units as U
     from astropy.table import Table
     from astropy.nddata import NDData
@@ -353,9 +354,15 @@ class Astronomy:
             if date is not None:
                 try:
                     if "T" in date:
-                        frmt = '%Y-%m-%dT%H:%M:%S'
+                        if "." in date:
+                            frmt = '%Y-%m-%dT%H:%M:%S.%f'
+                        else:
+                            frmt = '%Y-%m-%dT%H:%M:%S'
                     elif " " in date:
-                        frmt = '%Y-%m-%d %H:%M:%S'
+                        if "." in date:
+                            frmt = '%Y-%m-%d %H:%M:%S.%f'
+                        else:
+                            frmt = '%Y-%m-%d %H:%M:%S'
                     else:
                         self.logger.info("Unknown date format")
                         frmt = None
@@ -402,6 +409,83 @@ class Astronomy:
             except Exception as e:
                 self.logger.error(e)
 
+    class Coordinates:
+        """Coordinate Class"""
+        def __init__(self, logger):
+            self.logger = logger
+
+        def create_angle(self, angle):
+            """Convert String to angle"""
+            try:
+                return Angle(angle)
+            except Exception as e:
+                self.logger.error(e)
+
+        def alt_az(self, alt, az):
+            try:
+                alt = self.create_angle(alt)
+                az = self.create_angle(az)
+                return SkyCoord(AltAz(az, alt))
+            except Exception as e:
+                self.logger.error(e)
+
+        def ra_dec(self, ra, dec):
+            try:
+                ra = self.create_angle(ra)
+                dec = self.create_angle(dec)
+                return SkyCoord(ra=ra, dec=dec)
+            except Exception as e:
+                self.logger.error(e)
+
+    class Site:
+        """Site Class"""
+        def __init__(self, logger, lati, long, alti, name="Obervatory"):
+            self.logger = logger
+            self._lati_ = lati
+            self._long_ = long
+            self._alti_ = alti
+            self._name_ = name
+
+        def create(self):
+            """Create site"""
+            try:
+                return EarthLocation(lat=self._lati_, lon=self._long_, height=self._alti_ * units.m)
+            except Exception as e:
+                self.logger.error(e)
+
+        def altaz(self, site, obj, utc):
+            """Return AltAz for a given object and time for this site"""
+            try:
+                frame_of_sire = AltAz(obstime=utc, location=site)
+                object_alt_az = obj.transform_to(frame_of_sire)
+                return object_alt_az
+            except Exception as e:
+                self.logger.error(e)
+
+    class Obj:
+        """Object Class"""
+        def __init__(self, logger, ra, dec):
+            self.logger = logger
+            self._ra_ = ra
+            self._dec_ = dec
+
+        def create(self):
+            """Create Object"""
+            try:
+                return SkyCoord(ra=self._ra_, dec=self._dec_)
+            except Exception as excpt:
+                self.logger.error(excpt)
+
+        def altaz(self, obj, site, utc):
+            """Return AltAz for a site object and time for this object"""
+            try:
+                frame_of_sire = AltAz(obstime=utc, location=site)
+                object_alt_az = obj.transform_to(frame_of_sire)
+                return object_alt_az
+            except Exception as excpt:
+                self.logger.error(excpt)
+
+
     class Fits:
         def __init__(self, logger):
             self.logger = logger
@@ -435,11 +519,14 @@ class Astronomy:
             except Exception as e:
                 self.logger.error(e)
 
-        def star_fild(self, image):
+        def star_find(self, image, default_later=0):
             """Finds sources on image"""
             self.logger.info("Finding sources on image({})".format(image))
             try:
                 image_data = self.data(image)
+                if len(image_data.shape) > 2:
+                    return _find_sources(image_data[default_later])
+
                 return _find_sources(image_data)
             except Exception as e:
                 self.logger.error(e)

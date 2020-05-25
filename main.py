@@ -30,11 +30,13 @@ except Exception as e:
 
 
 class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
-    def __init__(self, parent=None, logger_level=50, log_file=None):
+    def __init__(self, parent=None, logger_level="CRITICAL", log_file=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.flags = QtCore.Qt.Window
         self.setWindowFlags(self.flags)
+
+        self.logger_level={"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}
 
         try:
             logger_level = int(logger_level)
@@ -43,6 +45,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
         if not logger_level in [0, 10, 20, 30, 40, 50]:
             logger_level = 50
+
 
         LOG_FORMAT = "[%(asctime)s, %(levelname)s], [%(filename)s, %(funcName)s, %(lineno)s]: %(message)s"
         basicConfig(filename=log_file, level=logger_level, format=LOG_FORMAT)
@@ -54,6 +57,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.fop = env.File(self.logger)
         self.fts = analyse.Astronomy.Fits(self.logger)
         self.iraf = analyse.Astronomy.Iraf(self.logger)
+        self.atm = analyse.Astronomy.Time(self.logger)
+        self.coords = analyse.Astronomy.Coordinates(self.logger)
+
 
         self.align_display = FitsPlot(self.display_align.canvas, self.logger)
         self.phot_display = FitsPlot(self.display_phot.canvas, self.logger)
@@ -123,6 +129,19 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.hcalc_remove.clicked.connect(lambda: (self.rm_files(self.hcalc_list)))
         self.hcalc_list.clicked.connect(lambda: (self.show_headers_calculator()))
 
+        self.observatory_list.clicked.connect(lambda: (self.show_observat()))
+
+        self.observatory_add.clicked.connect(lambda: (self.add_observatory()))
+        self.observatory_remove.clicked.connect(lambda: (self.remove_observatory()))
+        self.observatory_reload.clicked.connect(lambda: (self.all_observatioes_list()))
+
+
+        self.hcalc_go.clicked.connect(lambda: (self.hcalc()))
+
+        # self.save_the_settings() remove_settings_profile
+        self.settings_save.clicked.connect(lambda: (self.save_the_settings()))
+        self.settings_remove.clicked.connect(lambda: (self.remove_settings_profile()))
+
         self.calib_image_list.installEventFilter(self)
         self.calib_bias_list.installEventFilter(self)
         self.calib_dark_list.installEventFilter(self)
@@ -139,7 +158,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.display_phot.canvas.fig.canvas.mpl_connect('motion_notify_event', self.phot_onpick)
         self.display_align.canvas.fig.canvas.mpl_connect('button_press_event', self.get_coordinate_align)
 
-
         header = self.hedit_header_table.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
@@ -153,6 +171,183 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
+        self.settings_profile_selector.currentTextChanged.connect(lambda: (self.setting_profile_changed()))
+
+        self.observatory_file = "observatories.obs"
+        self.settings_file = "settings.set"
+        self.all_observatioes_list()
+        self.load_list_of_settngs()
+
+
+    def hcalc(self):
+        files = self.gui_dev.get_from_tree(self.hcalc_list)
+        if files is not None:
+            if len(files) > 0:
+                if self.hcalc_jd.isChecked() or self.hcalc_airmass.isChecked() or self.hcalc_imexamine.isChecked() or self.hcalc_time.isChecked():
+                    prefix = self.hcalc_prefix.text()
+                    for file in files:
+                        if self.hcalc_jd.isChecked():
+                            header_selcted = self.hcalc_jd_time.currentText()
+                            if not header_selcted == "":
+                                wanted_header = header_selcted.split("->")[0]
+                                time_in_header = self.fts.header(file, wanted_header)
+                                if time_in_header is not None:
+                                    the_time = self.atm.str_to_time(time_in_header)
+                                    jd = self.atm.jd(the_time)
+                                    if jd is not None:
+                                        self.fts.update_header(file, "{}JD".format(prefix), str(jd))
+
+                        if self.hcalc_airmass.isChecked():
+                            all_observatories = self.fop.read_json(self.observatory_file)
+                            if all_observatories is not None:
+                                the_observatory = all_observatories[self.hcalc_airmass_observatory.currentText()]
+                                long = the_observatory["longitude"]
+                                lati = the_observatory["latitude"]
+                                alti = the_observatory["altitude"]
+                                if long is not None and lati is not None and alti is not None:
+                                    ra_inheader = self.hcalc_airmass_ra.currentText()
+                                    dec_inheader = self.hcalc_airmass_dec.currentText()
+                                    time_inheader = self.hcalc_airmass_time.currentText()
+                                    if not ra_inheader == "":
+                                        if not dec_inheader == "":
+                                            if not time_inheader == "":
+                                                wanted_ra = ra_inheader.split("->")[0]
+                                                wanted_dec = dec_inheader.split("->")[0]
+                                                wanted_time = time_inheader.split("->")[0]
+
+                                                ra = self.fts.header(file, wanted_ra)
+                                                dec = self.fts.header(file, wanted_dec)
+                                                time = self.fts.header(file, wanted_time)
+                                                if ra is not None and dec is not None and time is not None:
+                                                    use_time = self.atm.str_to_time(time)
+                                                    use_long = self.coords.create_angle("{} degree".format(long))
+                                                    use_lati = self.coords.create_angle("{} degree".format(lati))
+                                                    use_alti = float(alti)
+
+                                                    use_ra = self.coords.create_angle("{} hour".format(ra))
+                                                    use_dec = self.coords.create_angle("{} degree".format(ra))
+
+                                                    site = analyse.Astronomy.Site(self.logger,
+                                                                                  use_lati, use_long, use_alti)
+                                                    object = analyse.Astronomy.Obj(self.logger,
+                                                                                   use_ra, use_dec)
+
+                                                    use_site = site.create()
+                                                    use_object = object.create()
+                                                    if use_site is not None and use_object is not None and use_time is not None:
+                                                        alt_az = site.altaz(use_site, use_object, use_time)
+                                                        self.fts.update_header(file, "{}airmass".format(prefix),
+                                                                               str(alt_az.secz))
+
+
+                        if self.hcalc_imexamine.isChecked():
+                            stats = self.fts.stats(file)
+                            if stats is not None:
+                                if self.hcalc_imexamine_mean.isChecked():
+                                    self.fts.update_header(file, "{}mean".format(prefix), str(stats["Mean"]))
+
+                                if self.hcalc_imexamine_median.isChecked():
+                                    self.fts.update_header(file, "{}median".format(prefix), str(stats["Median"]))
+
+                                if self.hcalc_imexamine_stdv.isChecked():
+                                    self.fts.update_header(file, "{}stdv".format(prefix), str(stats["Stdev"]))
+
+                                if self.hcalc_imexamine_min.isChecked():
+                                    self.fts.update_header(file, "{}min".format(prefix), str(stats["Min"]))
+
+                                if self.hcalc_imexamine_max.isChecked():
+                                    self.fts.update_header(file, "{}max".format(prefix), str(stats["Max"]))
+
+                        if self.hcalc_time.isChecked():
+                            header_selcted = self.hcalc_time_time.currentText()
+                            if not header_selcted == "":
+                                wanted_header = header_selcted.split("->")[0]
+                                time_in_header = self.fts.header(file, wanted_header)
+                                if time_in_header is not None:
+                                    time_amount = self.hcalc_time_value.value()
+                                    time_type = self.hcalc_time_valueType.currentText()
+                                    the_time = self.atm.str_to_time(time_in_header)
+                                    new_time = self.atm.time_diff(the_time, time_offset=time_amount, offset_type=time_type)
+                                    if new_time is not None:
+                                        self.fts.update_header(file, "{}time".format(prefix), str(new_time))
+
+
+
+
+                else:
+                    self.logger.warning("No operation was selected. Nothing to do.")
+                    QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No operation was selected. Nothing to do.")
+
+            else:
+                self.logger.warning("No file was given. Nothing to do.")
+                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+        else:
+            self.logger.warning("No file was given. Nothing to do.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+
+
+    def remove_observatory(self):
+        the_observat_name = self.observatory_list.currentItem().text()
+        if the_observat_name is not None:
+            observats = self.fop.read_json(self.observatory_file)
+            if observats is not None:
+                del observats[the_observat_name]
+                self.fop.write_json(self.observatory_file, observats)
+                self.all_observatioes_list()
+            else:
+                self.logger.warning("Can't find observatory file.")
+
+
+
+    def add_observatory(self):
+        abb = self.observatory_abbreviation.text()
+        name = self.observatory_name.text()
+        longitude = self.observatory_longitude.text()
+        latitude = self.observatory_latitude.text()
+        altitude = self.observatory_altitude.text()
+        timezone = self.observatory_timezone.value()
+        commend = self.observatory_commend.toPlainText()
+        if abb != "" or name != "" or longitude != "" or latitude != "" or altitude != "":
+            the_observat = {"observatory": abb, "name": name, "longitude": longitude, "latitude": latitude,
+                            "altitude": altitude, "timezone": timezone, "commendation": commend}
+            observats = self.fop.read_json(self.observatory_file)
+            if observats is not None:
+                if abb in observats.keys():
+                    self.logger.warning("Observatory({}) already exist. Updating.".format(abb))
+
+                observats[abb] = the_observat
+                self.fop.write_json(self.observatory_file, observats)
+                self.all_observatioes_list()
+            else:
+                self.logger.warning("Can't find observatory file.")
+
+
+    def show_observat(self):
+        the_observat_name = self.observatory_list.currentItem().text()
+        if the_observat_name is not None:
+            observats = self.fop.read_json(self.observatory_file)
+            if observats is not None:
+                try:
+                    the_observat = observats[the_observat_name]
+                    self.observatory_abbreviation.setText(the_observat["observatory"])
+                    self.observatory_name.setText(the_observat["name"])
+                    self.observatory_longitude.setText(the_observat["longitude"])
+                    self.observatory_latitude.setText(the_observat["latitude"])
+                    self.observatory_altitude.setText(the_observat["altitude"])
+                    self.observatory_timezone.setValue(float(the_observat["timezone"]))
+                    self.observatory_commend.setPlainText(the_observat["commendation"])
+                except Exception as e:
+                    self.logger.error(e)
+
+    def all_observatioes_list(self):
+        observats = self.fop.read_json(self.observatory_file)
+        if observats is not None:
+            self.gui_dev.replace_list_con(self.observatory_list, observats.keys())
+            self.gui_dev.c_replace_list_con(self.hcalc_airmass_observatory, observats.keys())
+            self.observatory_list.sortItems()
+        else:
+            self.logger.warning("Can't find observatory file.")
+
 
 
     def get_coordinate_align(self, event):
@@ -193,8 +388,25 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         the_file = self.phot_list.currentItem()
         if the_file is not None:
             if the_file.child(0) is not None:
-                sources = self.fts.star_fild(the_file.toolTip(0))
-                self.gui_dev.replace_list_con(self.phot_coor_list, ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
+                if len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0:
+                    answ = self.gui_dev.ask_calcel("Do you want to replace coordinates. Click NO for adding coordinates")
+                    if answ == "yes":
+                        sources = self.fts.star_find(the_file.toolTip(0))
+                        if sources is not None:
+                            self.gui_dev.replace_list_con(self.phot_coor_list,
+                                                          ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
+                    elif answ == "no":
+                        sources = self.fts.star_find(the_file.toolTip(0))
+                        if sources is not None:
+                            self.gui_dev.add(self.phot_coor_list,
+                                             ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
+                    else:
+                        self.logger.warning("User canceled adding coordinates")
+                else:
+                    sources = self.fts.star_find(the_file.toolTip(0))
+                    if sources is not None:
+                        self.gui_dev.replace_list_con(self.phot_coor_list,
+                                                    ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
         else:
             self.logger.warning("Reference Image no found.")
             QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
@@ -348,8 +560,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         else:
             self.logger.warning("No coordinates to plot")
             QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Please add coordinate(s)")
-
-        self.reload_log()
 
     def use_wanted_headers(self):
         available_headers = self.gui_dev.list_of_selected(self.phot_header_list)
@@ -746,8 +956,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if the_file.child(0) is not None:
             display_devide.load(the_file.toolTip(0))
 
-        self.reload_log()
-
     def eventFilter(self, source, event):
         if event.type() == QtCore.QEvent.ContextMenu and source is self.calib_image_list:
             menu = QtWidgets.QMenu()
@@ -860,9 +1068,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             show_selected.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
 
             menu.addSeparator()
-            menu.addAction('Export', lambda: (self.export_coords()))
+            exportation = menu.addAction('Export', lambda: (self.export_coords()))
             importation = menu.addAction('Import', lambda: (self.import_coords()))
             importation.setEnabled(self.phot_display.get_data() is not None)
+            exportation.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
 
             menu.exec_(event.globalPos())
             return True
@@ -902,7 +1111,6 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
     def rm_files(self, device):
         self.gui_dev.rm_from_tree(device)
-        self.reload_log()
 
     def add_files(self, device):
         self.logger.info("Getting File List")
@@ -932,10 +1140,202 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 self.gui_dev.add_to_tree(images_to_add, device)
 
             progress.close()
-        self.reload_log()
 
-    def reload_log(self):
-        pass
+    def remove_settings_profile(self):
+        profile = self.settings_profile_selector.currentText()
+        self.load_settings(profile)
+        if profile == "--Default--":
+            self.logger.warning("Cannot remove Default Profile")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Cannot remove Default profile")
+        elif profile == "--New--":
+            self.logger.warning("Cannot remove New Profile")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "This setting is used for add profile only.")
+        else:
+            all_settings = self.fop.read_json(self.settings_file)
+            del all_settings[profile]
+            self.fop.write_json(self.settings_file, all_settings)
+
+        self.load_list_of_settngs()
+
+    def load_list_of_settngs(self):
+        all_settings = self.fop.read_json(self.settings_file)
+        self.gui_dev.c_replace_list_con(self.settings_profile_selector, all_settings.keys())
+
+    def setting_profile_changed(self):
+        profile = self.settings_profile_selector.currentText()
+
+        if profile == "--Default--":
+            self.settings_new_profile.setEnabled(False)
+        elif profile == "--New--":
+            self.settings_new_profile.setEnabled(True)
+        else:
+            self.settings_new_profile.setEnabled(False)
+        try:
+            self.load_settings(profile)
+        except Exception as e:
+            self.logger.warning("{}. Probably first load".format(e))
+
+    def load_settings(self, profile_name):
+        all_settings = self.fop.read_json(self.settings_file)
+
+        the_settings = all_settings[profile_name]
+
+        calib_settings = the_settings["calib_settings"]
+        self.zero_combine.setCurrentText(calib_settings["cali_zero_combine"])
+        self.zero_reject.setCurrentText(calib_settings["cali_zero_reject"])
+
+        self.dark_combine.setCurrentText(calib_settings["cali_dark_combine"])
+        self.dark_reject.setCurrentText(calib_settings["cali_dark_reject"])
+        self.dark_scale.setCurrentText(calib_settings["cali_dark_scale"])
+
+        self.flat_combine.setCurrentText(calib_settings["cali_flat_combine"])
+        self.flat_reject.setCurrentText(calib_settings["cali_flat_reject"])
+
+        phot_settings = the_settings["phot_settings"]
+        self.gui_dev.clear_table(self.phot_par_list)
+        self.gui_dev.add_table(self.phot_par_list, phot_settings["phot_pars"])
+        self.gui_dev.replace_list_con(self.phot_header_to_exract, phot_settings["header_to_extract"])
+
+
+        cosmic_settings = the_settings["cosmic_settings"]
+        self.ccleaner_sigclip.setValue(cosmic_settings["sigclip"])
+        self.ccleaner_sigfrac.setValue(cosmic_settings["sigfrac"])
+        self.ccleaner_objlim.setValue(cosmic_settings["objlim"])
+        self.ccleaner_gain.setValue(cosmic_settings["gain"])
+        self.ccleaner_readnoise.setValue(cosmic_settings["readnoise"])
+        self.ccleaner_satlevel.setValue(cosmic_settings["satlevel"])
+        self.ccleaner_pssl.setValue(cosmic_settings["pssl"])
+        self.ccleaner_iteration.setValue(cosmic_settings["iteration"])
+        self.ccleaner_sepmed.setChecked(cosmic_settings["sepmed"])
+        self.ccleaner_cleantype.setCurrentText(cosmic_settings["cleantype"])
+        self.ccleaner_fsmode.setCurrentText(cosmic_settings["fsmode"])
+        self.ccleaner_psfmodel.setCurrentText(cosmic_settings["psfmodel"])
+        self.ccleaner_psffwhm.setValue(cosmic_settings["psffwhm"])
+        self.ccleaner_psfsize.setValue(cosmic_settings["psfsize"])
+
+
+    def save_the_settings(self):
+        all_settings = self.fop.read_json(self.settings_file)
+        profile = self.settings_profile_selector.currentText()
+        if profile == "--Default--":
+            self.settings_new_profile.setEnabled(False)
+            self.logger.warning("Cannot save default settings")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Cannot save default settings")
+        elif profile == "--New--":
+            self.settings_new_profile.setEnabled(True)
+            profile_name = self.settings_new_profile.text()
+            if not profile_name == "":
+                if not profile_name in self.gui_dev.c_list_pf_list(self.settings_profile_selector):
+                    #Calibration group
+                    cali_zero_combine = self.zero_combine.currentText()
+                    cali_zero_reject = self.zero_reject.currentText()
+
+                    cali_dark_combine = self.dark_combine.currentText()
+                    cali_dark_reject = self.dark_reject.currentText()
+                    cali_dark_scale = self.dark_scale.currentText()
+
+                    cali_flat_combine = self.flat_combine.currentText()
+                    cali_flat_reject = self.flat_reject.currentText()
+                    calib_settings = {"cali_zero_combine": cali_zero_combine, "cali_zero_reject": cali_zero_reject,
+                                      "cali_dark_combine": cali_dark_combine, "cali_dark_reject": cali_dark_reject,
+                                      "cali_dark_scale": cali_dark_scale, "cali_flat_combine": cali_flat_combine,
+                                      "cali_flat_reject": cali_flat_reject}
+
+                    #Photometry group
+                    phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
+                    if phot_pars is None:
+                        phot_pars = []
+                    header_to_extract = self.gui_dev.list_of_list(self.phot_header_to_exract)
+                    phot_settings = {"phot_pars": phot_pars, "header_to_extract": header_to_extract}
+
+                    #Cosmic cleaner group
+                    sigclip = self.ccleaner_sigclip.value()
+                    sigfrac = self.ccleaner_sigfrac.value()
+                    objlim = self.ccleaner_objlim.value()
+                    gain = self.ccleaner_gain.value()
+                    readnoise = self.ccleaner_readnoise.value()
+                    satlevel = self.ccleaner_satlevel.value()
+                    pssl = self.ccleaner_pssl.value()
+                    iteration = self.ccleaner_iteration.value()
+                    sepmed = self.ccleaner_sepmed.isChecked()
+                    cleantype = self.ccleaner_cleantype.currentText()
+                    fsmode = self.ccleaner_fsmode.currentText()
+                    psfmodel = self.ccleaner_psfmodel.currentText()
+                    psffwhm = self.ccleaner_psffwhm.value()
+                    psfsize = self.ccleaner_psfsize.value()
+                    cosmic_settings = {"sigclip": sigclip, "sigfrac": sigfrac, "objlim": objlim, "gain": gain,
+                                       "readnoise": readnoise, "satlevel": satlevel, "pssl": pssl, "iteration": iteration,
+                                       "sepmed": sepmed, "cleantype": cleantype, "fsmode": fsmode, "psfmodel": psfmodel,
+                                       "psffwhm": psffwhm, "psfsize": psfsize}
+
+
+                    all_settings[profile_name] = {"calib_settings": calib_settings,
+                                                         "phot_settings": phot_settings,
+                                                         "cosmic_settings": cosmic_settings}
+
+                    self.settings_new_profile.setText("")
+
+                    self.fop.write_json(self.settings_file, all_settings)
+                else:
+                    self.logger.warning("Name already exist")
+                    QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Name already exist")
+
+            else:
+                self.logger.warning("No new profile name was given. Nothing to do.")
+                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No new profile name was given. Nothing to do.")
+
+        else:
+            self.settings_new_profile.setEnabled(False)
+            profile_name = self.settings_profile_selector.currentText()
+            cali_zero_combine = self.zero_combine.currentText()
+            cali_zero_reject = self.zero_reject.currentText()
+
+            cali_dark_combine = self.dark_combine.currentText()
+            cali_dark_reject = self.dark_reject.currentText()
+            cali_dark_scale = self.dark_scale.currentText()
+
+            cali_flat_combine = self.flat_combine.currentText()
+            cali_flat_reject = self.flat_reject.currentText()
+            calib_settings = {"cali_zero_combine": cali_zero_combine, "cali_zero_reject": cali_zero_reject,
+                              "cali_dark_combine": cali_dark_combine, "cali_dark_reject": cali_dark_reject,
+                              "cali_dark_scale": cali_dark_scale, "cali_flat_combine": cali_flat_combine,
+                              "cali_flat_reject": cali_flat_reject}
+
+            #Photometry group
+            phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
+            if phot_pars is None:
+                phot_pars = []
+            header_to_extract = self.gui_dev.list_of_list(self.phot_header_to_exract)
+            phot_settings = {"phot_pars": phot_pars, "header_to_extract": header_to_extract}
+
+            #Cosmic cleaner group
+            sigclip = self.ccleaner_sigclip.value()
+            sigfrac = self.ccleaner_sigfrac.value()
+            objlim = self.ccleaner_objlim.value()
+            gain = self.ccleaner_gain.value()
+            readnoise = self.ccleaner_readnoise.value()
+            satlevel = self.ccleaner_satlevel.value()
+            pssl = self.ccleaner_pssl.value()
+            iteration = self.ccleaner_iteration.value()
+            sepmed = self.ccleaner_sepmed.isChecked()
+            cleantype = self.ccleaner_cleantype.currentText()
+            fsmode = self.ccleaner_fsmode.currentText()
+            psfmodel = self.ccleaner_psfmodel.currentText()
+            psffwhm = self.ccleaner_psffwhm.value()
+            psfsize = self.ccleaner_psfsize.value()
+            cosmic_settings = {"sigclip": sigclip, "sigfrac": sigfrac, "objlim": objlim, "gain": gain,
+                               "readnoise": readnoise, "satlevel": satlevel, "pssl": pssl, "iteration": iteration,
+                               "sepmed": sepmed, "cleantype": cleantype, "fsmode": fsmode, "psfmodel": psfmodel,
+                               "psffwhm": psffwhm, "psfsize": psfsize}
+
+
+            all_settings[profile_name] = {"calib_settings": calib_settings,
+                                                 "phot_settings": phot_settings,
+                                                 "cosmic_settings": cosmic_settings}
+
+            self.fop.write_json(self.settings_file, all_settings)
+        self.load_list_of_settngs()
+
 
 
 def main():
