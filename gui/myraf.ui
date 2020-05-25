@@ -540,9 +540,9 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_19">
            <item row="0" column="0" colspan="2">
-            <widget class="QPushButton" name="phot_coor_sex">
+            <widget class="QPushButton" name="phot_coor_find_sources">
              <property name="text">
-              <string>Run SEX!</string>
+              <string>aa._find_sources</string>
              </property>
             </widget>
            </item>

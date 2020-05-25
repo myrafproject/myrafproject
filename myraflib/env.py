@@ -179,6 +179,17 @@ class File():
         except Exception as e:
             self.logger.error(e)
 
+    def read_lis(self, src):
+        try:
+            ret = []
+            with open(src, "r") as the_file:
+                for the_line in the_file:
+                    ret.append(the_line.strip())
+
+            return ret
+        except Exception as e:
+            self.logger.error(e)
+
     def write_list(self, dest, the_list, dm=","):
         """Writes a list of a file"""
         with open(dest, "w") as f:

@@ -5,3 +5,5 @@ logfile
 /.idea/
 /gui/myraf_old.ui
 /deneme.log
+/deneme.py
+/align.py

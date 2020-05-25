@@ -71,6 +71,13 @@ except Exception as e:
     exit(0)
 
 try:
+    from astroalign import register
+    from astroalign import  _find_sources
+except Exception as e:
+    print("{}: Can't import astroalign.".format(e))
+    exit(0)
+
+try:
     from pyraf import iraf
     from iraf import imred
     from iraf import ccdred
@@ -416,32 +423,27 @@ class Astronomy:
             except Exception as e:
                 self.logger.error(e)
 
-        # def align(self, image, ref, output):
-        #     """Aligning an image with respect of given referance"""
-        #     identifications = alipy.ident.run(ref, [image], visu=False,
-        #                                       sexkeepcat=False, verbose=False)
-        #     outputshape = alipy.align.shape(ref)
-        #     for the_id in identifications:
-        #         if the_id.ok == True:
-        #             the_id.ukn.name, the_id.trans, the_id.medfluxratio
-        #             alipy.align.affineremap(the_id.ukn.filepath, the_id.trans,
-        #                                     shape=outputshape, outdir=output)
-        #
-        # def star_finder(self, image, max_star=500):
-        #     """returns x, y and fwhm of objects on a given fits image"""
-        #     self.logger.info("Star finder started for {}".format(image))
-        #     try:
-        #         img = imgcat.ImgCat(image)
-        #         img.makecat(rerun=True, keepcat=False, verbose=False)
-        #         img.makestarlist(skipsaturated=False, n=max_star,
-        #                          verbose=False)
-        #         ret = []
-        #         for star in img.starlist:
-        #             ret.append([star.x, star.y, star.fwhm])
-        #
-        #         return ar(ret)
-        #     except Exception as e:
-        #         self.logger.error(e)
+        def align(self, image, ref, output, overwrite=True):
+            """Aligning an image with respect of given referance"""
+            self.logger.info("Aligning image({}) with reference({})".format(image, ref))
+            try:
+                image_data = self.data(image)
+                image_header = self.header(image, field="?")
+                ref_data = self.data(ref)
+                img_aligned, _ = register(image_data, ref_data)
+                self.write(output, img_aligned, header=image_header, overwrite=overwrite)
+            except Exception as e:
+                self.logger.error(e)
+
+        def star_fild(self, image):
+            """Finds sources on image"""
+            self.logger.info("Finding sources on image({})".format(image))
+            try:
+                image_data = self.data(image)
+                return _find_sources(image_data)
+            except Exception as e:
+                self.logger.error(e)
+
 
         def subtract(self, img1, img2):
             """Subtacts two image array"""
@@ -603,13 +605,14 @@ class Astronomy:
             except Exception as e:
                 self.logger.error(e)
 
-        def write(self, dest, data, header=None, ow=True):
+        def write(self, dest, data, header=None, overwrite=True):
             """Writes data to a fits file"""
             self.logger.info("Writeing data to file({})".format(dest))
             try:
-                fts.writeto(dest, data, header=header, overwrite=ow)
+                fts.writeto(dest, data, header=header, overwrite=overwrite)
             except Exception as e:
                 self.logger.error(e)
+
 
         def photometry(self, file, x_coor, y_coor, zmag=25.0,
                        aper_radius=15.0, gain=1.21):

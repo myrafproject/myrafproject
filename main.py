@@ -4,6 +4,8 @@
 """
 
 try:
+    from ginga.util import ap_region
+    from regions import PixCoord, CirclePixelRegion
     from sys import argv
 
     import argparse
@@ -98,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.align_list.clicked.connect(lambda: (self.display(self.align_list, self.align_display), self.display_coords_align()))
         self.phot_list.clicked.connect(lambda: (self.display(self.phot_list, self.phot_display)))
         self.phot_list.clicked.connect(lambda: (self.update_list_of_headers()))
+        self.phot_coor_find_sources.clicked.connect(lambda: (self.source_detect()))
         self.align_go.clicked.connect(lambda: (self.align()))
 
         self.hedit_list.clicked.connect(lambda: (self.show_headers()))
@@ -151,6 +154,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
 
+
     def get_coordinate_align(self, event):
         files = self.gui_dev.get_from_tree(self.align_list)
         the_file = self.align_list.currentItem()
@@ -185,12 +189,45 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     self.display_align.canvas.fig.gca().annotate("REF", xy = the_coord, color = "#00FFFF", fontsize = 10)
                     self.display_align.canvas.draw()
 
+    def source_detect(self):
+        the_file = self.phot_list.currentItem()
+        if the_file is not None:
+            if the_file.child(0) is not None:
+                sources = self.fts.star_fild(the_file.toolTip(0))
+                self.gui_dev.replace_list_con(self.phot_coor_list, ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
+        else:
+            self.logger.warning("Reference Image no found.")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
+
+
     def align(self):
         files = self.gui_dev.get_from_tree(self.align_list)
         if files is not None:
             if len(files) > 0:
                 if self.align_isauto.isChecked():
-                    pass
+                    the_file = self.align_list.currentItem()
+                    if the_file is not None:
+                        if the_file.child(0) is not None:
+                            out_dir = self.gui_file.save_directory()
+                            if out_dir:
+                                progress = QtWidgets.QProgressDialog("Auto Aligning...", "Abort", 0, len(files), self)
+                                progress.setWindowModality(QtCore.Qt.WindowModal)
+                                progress.setWindowTitle('MYRaf: Please Wait')
+                                for it, file in enumerate(files, start=1):
+                                    progress.setLabelText("Aligning {}".format(file))
+
+                                    if progress.wasCanceled():
+                                        progress.setLabelText("ABORT!")
+                                        break
+
+                                    _, fn = self.fop.get_base_name(file)
+                                    output = "{}/{}".format(out_dir, fn)
+                                    self.fts.align(file, the_file.toolTip(0), output)
+                                    self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3")
+                                    progress.setValue(it)
+                    else:
+                        self.logger.warning("Reference Image no found.")
+                        QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
                 else:
                     the_file = self.align_list.currentItem()
                     if the_file is not None:
@@ -302,15 +339,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if not coords == []:
             for it, coord in enumerate(coords):
                 the_coord = tuple(map(float, coord.split(",")))
-                circ = Circle(the_coord, radius=30, edgecolor="#00FFFF", facecolor="#00FFFF")
-                self.display_phot.canvas.fig.gca().add_artist(circ)
-                self.display_phot.canvas.fig.gca().annotate("s{}".format(str(it)),
-                                                            xy=the_coord, color="#00FFFF", fontsize=10)
-                # self.phot_display.fitsimage.add_object(circ)
-            self.display_phot.canvas.draw()
+                # obj = ap_region.add_region(CirclePixelRegion(center=PixCoord(x=the_coord[0], y=the_coord[1]), radius=50, meta=None, visual=None), 35)
+                # self.phot_display.fitsimage.canvas.add(obj)
+                self.phot_display.fitsimage.canvas.set_drawtype("circle", fill=False)
+
+            # self.phot_display.fitsimage.
+            print("Bitti")
         else:
             self.logger.warning("No coordinates to plot")
-            QtWidgets.QMessageBox.critical(self, "MYRaf Error", "Please add coordinate(s)")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Please add coordinate(s)")
 
         self.reload_log()
 
@@ -815,16 +852,53 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if event.type() == QtCore.QEvent.ContextMenu and source is self.phot_coor_list:
             menu = QtWidgets.QMenu()
             menu.addAction('Remove', lambda: (self.gui_dev.rm(self.phot_coor_list)))
+
             menu.addSeparator()
             show_all = menu.addAction('Show All', lambda: (self.plot_coordinates(selected=False)))
             show_selected = menu.addAction('Show Selected', lambda: (self.plot_coordinates(selected=True)))
             show_all.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
             show_selected.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
 
+            menu.addSeparator()
+            menu.addAction('Export', lambda: (self.export_coords()))
+            importation = menu.addAction('Import', lambda: (self.import_coords()))
+            importation.setEnabled(self.phot_display.get_data() is not None)
+
             menu.exec_(event.globalPos())
             return True
 
         return super(MainWindow, self).eventFilter(source, event)
+
+    def export_coords(self):
+        data = self.gui_dev.list_of_list(self.phot_coor_list)
+        if len(data) > 0:
+            out_file = self.gui_file.save_file(file_type="Coordinates File (*.coo)", name="coordinates.coo")
+            if out_file:
+                self.fop.write_list(out_file, data)
+            else:
+                self.logger.warning("saving canceled by user.")
+        else:
+            self.logger.warning("No coordinates were found to save")
+            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Please add coordinate(s)")
+
+
+    def import_coords(self):
+        file = self.gui_file.get_file(file_type="Coordinates File (*.coo)")
+        if file:
+            data = self.fop.read_lis(file)
+            if len(data) > 0:
+                if len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0:
+                    answ = self.gui_dev.ask_calcel("Do you want to replace coordinates. Click NO for adding coordinates")
+                    if answ == "yes":
+                        self.gui_dev.replace_list_con(self.phot_coor_list, data)
+                    elif answ == "no":
+                        self.gui_dev.add(self.phot_coor_list, data)
+                    else:
+                        self.logger.warning("User canceled adding coordinates")
+                else:
+                    self.gui_dev.add(self.phot_coor_list, data)
+        else:
+            self.logger.warning("User canceled adding coordinates")
 
     def rm_files(self, device):
         self.gui_dev.rm_from_tree(device)
