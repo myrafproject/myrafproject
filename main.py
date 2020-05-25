@@ -647,7 +647,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     self.iraf.phot(file, mag_file, coordinates,
                                                    phot_par[0], annulus=phot_par[1],
                                                    dannulus=phot_par[2], zmag=phot_par[3])
+                                    all_header_res = []
+                                    if len(wanted_headers) > 0:
+                                        for wanted_header in wanted_headers:
+                                            use_header = self.fts.header(file, wanted_header)
+                                            all_header_res.append(str(use_header))
+
+
                                     phot_ress = self.iraf.textdump(mag_file)
+
                                     for phot_res in phot_ress:
                                         data_line = []
                                         data_line.append(file)
@@ -656,16 +664,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                         data_line.append(coordinates[int(phot_res[0]) - 1])
                                         data_line.append(phot_res[1])
                                         data_line.append(phot_res[2])
+                                        for header_res in all_header_res:
+                                            data_line.append(header_res)
 
-
-                                        if len(wanted_headers) > 0:
-                                            for wanted_header in wanted_headers:
-                                                use_header = self.fts.header(file, wanted_header)
-                                                data_line.append(str(use_header))
-
-                                        if self.fop.is_file(mag_file):
-                                            self.fop.rm(mag_file)
                                         data.append(data_line)
+
+                                    if self.fop.is_file(mag_file):
+                                        self.fop.rm(mag_file)
+
+
 
                                 progress.setValue(it)
 
