@@ -96,6 +96,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
         self.phot_add.clicked.connect(lambda: (self.add_files(self.phot_list)))
         self.phot_remove.clicked.connect(lambda: (self.rm_files(self.phot_list)))
+        self.phot_coor_remove.clicked.connect(lambda: (self.gui_dev.rm(self.phot_coor_list)))
         self.display_phot.canvas.fig.canvas.mpl_connect('button_press_event', self.get_coordinate_phot)
 
         # self.phot_add.clicked.connect(lambda: (self.add_files(self.update_list_of_headers)))
@@ -107,6 +108,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.phot_list.clicked.connect(lambda: (self.display(self.phot_list, self.phot_display)))
         self.phot_list.clicked.connect(lambda: (self.update_list_of_headers()))
         self.phot_coor_find_sources.clicked.connect(lambda: (self.source_detect()))
+
         self.align_go.clicked.connect(lambda: (self.align()))
 
         self.hedit_list.clicked.connect(lambda: (self.show_headers()))
@@ -119,6 +121,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         # self.phot_update_header_list.clicked.connect(lambda: (self.update_list_of_headers()))
 
         self.phot_add_to_header_to_extract.clicked.connect(lambda: (self.use_wanted_headers()))
+        self.phot_remobe_from_header_to_extract.clicked.connect(lambda: (self.gui_dev.rm(self.phot_header_to_exract)))
 
         self.hext_add.clicked.connect(lambda: (self.add_files(self.hext_list)))
         self.hext_remove.clicked.connect(lambda: (self.rm_files(self.hext_list)))
@@ -185,8 +188,19 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             if len(files) > 0:
                 if self.hcalc_jd.isChecked() or self.hcalc_airmass.isChecked() or self.hcalc_imexamine.isChecked() or self.hcalc_time.isChecked():
                     prefix = self.hcalc_prefix.text()
-                    for file in files:
+                    progress = QtWidgets.QProgressDialog("Header Calculator...", "Abort", 0, len(files), self)
+                    progress.setWindowModality(QtCore.Qt.WindowModal)
+                    progress.setWindowTitle('MYRaf: Please Wait')
+
+                    for it, file in enumerate(files, start=1):
+
+                        if progress.wasCanceled():
+                            progress.setLabelText("ABORT!")
+                            break
+
+
                         if self.hcalc_jd.isChecked():
+                            progress.setLabelText("Calculating jd for file{}".format(file))
                             header_selcted = self.hcalc_jd_time.currentText()
                             if not header_selcted == "":
                                 wanted_header = header_selcted.split("->")[0]
@@ -198,6 +212,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                         self.fts.update_header(file, "{}JD".format(prefix), str(jd))
 
                         if self.hcalc_airmass.isChecked():
+                            progress.setLabelText("Calculating airmass for file{}".format(file))
                             all_observatories = self.fop.read_json(self.observatory_file)
                             if all_observatories is not None:
                                 the_observatory = all_observatories[self.hcalc_airmass_observatory.currentText()]
@@ -236,11 +251,12 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                                     use_object = object.create()
                                                     if use_site is not None and use_object is not None and use_time is not None:
                                                         alt_az = site.altaz(use_site, use_object, use_time)
-                                                        self.fts.update_header(file, "{}airmass".format(prefix),
+                                                        self.fts.update_header(file, "{}secz".format(prefix),
                                                                                str(alt_az.secz))
 
 
                         if self.hcalc_imexamine.isChecked():
+                            progress.setLabelText("Calculating imexamine for file{}".format(file))
                             stats = self.fts.stats(file)
                             if stats is not None:
                                 if self.hcalc_imexamine_mean.isChecked():
@@ -259,6 +275,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     self.fts.update_header(file, "{}max".format(prefix), str(stats["Max"]))
 
                         if self.hcalc_time.isChecked():
+                            progress.setLabelText("Calculating timediff for file{}".format(file))
                             header_selcted = self.hcalc_time_time.currentText()
                             if not header_selcted == "":
                                 wanted_header = header_selcted.split("->")[0]
@@ -270,6 +287,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     new_time = self.atm.time_diff(the_time, time_offset=time_amount, offset_type=time_type)
                                     if new_time is not None:
                                         self.fts.update_header(file, "{}time".format(prefix), str(new_time))
+
+                        progress.setValue(it)
 
 
 
@@ -437,6 +456,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     self.fts.align(file, the_file.toolTip(0), output)
                                     self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3")
                                     progress.setValue(it)
+                        else:
+                            self.logger.warning("Reference Image no found.")
+                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
                     else:
                         self.logger.warning("Reference Image no found.")
                         QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
@@ -595,7 +617,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
                 if phot_pars is not None:
                     if len(phot_pars) > 0:
-                        res_data = self.gui_file.save_file(file_type="my (*.my)", name="res")
+                        res_data = self.gui_file.save_file(file_type="my (*.my)", name="res.my")
                         if res_data is not None:
                             progress = QtWidgets.QProgressDialog("Photometry...", "Abort", 0, len(files), self)
                             progress.setWindowModality(QtCore.Qt.WindowModal)
@@ -607,42 +629,45 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                 if progress.wasCanceled():
                                     progress.setLabelText("ABORT!")
                                     break
-                                for coordinate in coordinates:
-                                    for phot_par in phot_pars:
-                                        header_line = ["#File_name", "Coordinate", "Aperture",
-                                                       "Annulus", "Dannulus", "ZMag", "MAG", "MERR"]
+                                # for coordinate in coordinates:
+                                header_line = ["#File_name", "Aperture",
+                                                   "Annulus", "Dannulus", "ZMag", "Coordinate", "MAG", "MERR"]
+                                wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
+                                if len(wanted_headers) > 0:
+                                    for wanted_header in wanted_headers:
+                                        header_line.append(wanted_header)
+
+                                for phot_par in phot_pars:
+                                    pn, fn = self.fop.get_base_name(file)
+                                    mag_file = "{}/{}.mag".format(self.fop.tmp_dir, fn)
+
+                                    if self.fop.is_file(mag_file):
+                                        self.fop.rm(mag_file)
+
+                                    self.iraf.phot(file, mag_file, coordinates,
+                                                   phot_par[0], annulus=phot_par[1],
+                                                   dannulus=phot_par[2], zmag=phot_par[3])
+                                    phot_ress = self.iraf.textdump(mag_file)
+                                    for phot_res in phot_ress:
                                         data_line = []
-
-                                        pn, fn = self.fop.get_base_name(file)
-                                        mag_file = "{}/{}.mag".format(self.fop.tmp_dir, fn)
-
-                                        if self.fop.is_file(mag_file):
-                                            self.fop.rm(mag_file)
-
                                         data_line.append(file)
-                                        data_line.append(coordinate)
                                         for pp in phot_par:
                                             data_line.append(pp)
-
-                                        self.iraf.phot(file, mag_file, [coordinate],
-                                                       phot_par[0], annulus=phot_par[1],
-                                                       dannulus=phot_par[2], zmag=phot_par[3])
-                                        phot_res = self.iraf.textdump(mag_file)[0]
+                                        data_line.append(coordinates[int(phot_res[0]) - 1])
                                         data_line.append(phot_res[1])
                                         data_line.append(phot_res[2])
-                                        wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
+
+
                                         if len(wanted_headers) > 0:
                                             for wanted_header in wanted_headers:
                                                 use_header = self.fts.header(file, wanted_header)
-                                                header_line.append(wanted_header)
                                                 data_line.append(str(use_header))
-                                        if not (phot_res[0] == "INDEF" or  phot_res[1] == "INDEF"):
-                                            data.append(data_line)
 
                                         if self.fop.is_file(mag_file):
                                             self.fop.rm(mag_file)
+                                        data.append(data_line)
 
-                                    progress.setValue(it)
+                                progress.setValue(it)
 
                             data.insert(0, header_line)
                             self.fop.write_list(res_data, data, dm="|")

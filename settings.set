@@ -110,5 +110,46 @@
    "psffwhm": 2.5,
    "psfsize": 7
   }
+ },
+ "TUG_T60": {
+  "calib_settings": {
+   "cali_zero_combine": "median",
+   "cali_zero_reject": "minmax",
+   "cali_dark_combine": "median",
+   "cali_dark_reject": "minmax",
+   "cali_dark_scale": "exposure",
+   "cali_flat_combine": "median",
+   "cali_flat_reject": "minmax"
+  },
+  "phot_settings": {
+   "phot_pars": [
+    [
+     "10.0",
+     "15.0",
+     "5.0",
+     "25.0"
+    ]
+   ],
+   "header_to_extract": [
+    "JD",
+    "DATE-OBS"
+   ]
+  },
+  "cosmic_settings": {
+   "sigclip": 4.5,
+   "sigfrac": 0.3,
+   "objlim": 5.0,
+   "gain": 1.0,
+   "readnoise": 6.5,
+   "satlevel": 65535.0,
+   "pssl": 0.0,
+   "iteration": 4,
+   "sepmed": false,
+   "cleantype": "meanmask",
+   "fsmode": "median",
+   "psfmodel": "gauss",
+   "psffwhm": 2.5,
+   "psfsize": 7
+  }
  }
 }

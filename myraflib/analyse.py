@@ -72,8 +72,10 @@ except Exception as e:
     exit(0)
 
 try:
-    from astroalign import register
-    from astroalign import  _find_sources
+    import astroalign as aa
+    # from astroalign import register
+    # from astroalign import  _find_sources
+    # from astroalign import MaxIterError
 except Exception as e:
     print("{}: Can't import astroalign.".format(e))
     exit(0)
@@ -489,6 +491,7 @@ class Astronomy:
     class Fits:
         def __init__(self, logger):
             self.logger = logger
+            self.fop = env.File(logger)
 
         def cosmic_cleaner(self, file, output, sigclip=12, sigfrac=0.3, objlim=5.0, gain=1.0, readnoise=6.5,
                            satlevel=65535.0, pssl=0.0, iteration=4, sepmed=True, cleantype='meanmask', fsmode='median',
@@ -507,15 +510,17 @@ class Astronomy:
             except Exception as e:
                 self.logger.error(e)
 
-        def align(self, image, ref, output, overwrite=True):
+        def align(self, image, ref, output, overwrite=True, max_itter=100):
             """Aligning an image with respect of given referance"""
             self.logger.info("Aligning image({}) with reference({})".format(image, ref))
             try:
                 image_data = self.data(image)
                 image_header = self.header(image, field="?")
                 ref_data = self.data(ref)
-                img_aligned, _ = register(image_data, ref_data)
+                img_aligned, _ = aa.register(image_data, ref_data)
                 self.write(output, img_aligned, header=image_header, overwrite=overwrite)
+            except aa.MaxIterError:
+                self.fop.cp(image, output)
             except Exception as e:
                 self.logger.error(e)
 
@@ -525,9 +530,9 @@ class Astronomy:
             try:
                 image_data = self.data(image)
                 if len(image_data.shape) > 2:
-                    return _find_sources(image_data[default_later])
+                    return aa._find_sources(image_data[default_later])
 
-                return _find_sources(image_data)
+                return aa._find_sources(image_data)
             except Exception as e:
                 self.logger.error(e)
 
@@ -662,7 +667,7 @@ class Astronomy:
                                                                   key, value))
             try:
                 hdu = fts.open(src, mode='update')
-                hdu[0].header[key] = value
+                hdu[0].header[key[0:8]] = value
                 return hdu.close()
             except Exception as e:
                 self.logger.error(e)
@@ -673,7 +678,7 @@ class Astronomy:
             try:
                 hdu = fts.open(src, mode='update')
                 for key_val in key_values:
-                    hdu[0].header[key_val[0]] = key_val[1]
+                    hdu[0].header[key_val[0][0:8]] = key_val[1]
                 return hdu.close()
             except Exception as e:
                 self.logger.error(e)
