@@ -147,6 +147,10 @@ class Devices:
 
         return ret
 
+    def c_list_pf_list(self, fcomb):
+        return [fcomb.itemText(i) for i in range(fcomb.count())]
+
+
     def add_to_tree(self, images_to_add, container):
         try:
             for file in images_to_add:
