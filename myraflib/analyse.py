@@ -118,6 +118,12 @@ class Astronomy:
             """IRAF zerocombine"""
             self.logger.info("Zerocombine Started")
             try:
+                iraf.imred.unlearn()
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+                iraf.ccdred.combine.unlearn()
+                iraf.ccdred.zerocombine.unlearn()
+
                 biases = ",".join(files)
                 iraf.ccdred.zerocombine.unlearn()
                 ccdred.instrument = "ccddb$kpno/camera.dat"
@@ -127,12 +133,6 @@ class Astronomy:
                         f2w.write("{}\n".format(i))
 
                 biases = "@{}".format(out_file)
-
-                iraf.imred.unlearn()
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                iraf.ccdred.combine.unlearn()
-                iraf.ccdred.zerocombine.unlearn()
 
                 if self.fop.is_file(output) and overwrite:
                     self.logger.warning("Over Writing file({})".format(output))
@@ -151,8 +151,14 @@ class Astronomy:
             """IRAF darkcombine"""
             self.logger.info("Darkcombine Started")
             try:
-                darks = ",".join(files)
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+                iraf.ccdred.combine.unlearn()
+                iraf.ccdred.darkcombine.unlearn()
                 iraf.imred.unlearn()
+
+                darks = ",".join(files)
+
                 ccdred.instrument = "ccddb$kpno/camera.dat"
 
                 out_file = "{}/myraf_darks.flist".format(self.fop.tmp_dir)
@@ -161,11 +167,6 @@ class Astronomy:
                         f2w.write("{}\n".format(i))
 
                 darks = "@{}".format(out_file)
-
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                iraf.ccdred.combine.unlearn()
-                iraf.ccdred.darkcombine.unlearn()
 
                 if zero is not None:
                     iraf.ccdproc(images=darks, ccdtype='', fixpix='no',
@@ -192,7 +193,13 @@ class Astronomy:
             self.logger.info("Flatcombine Started")
             try:
                 flats = ",".join(files)
+
                 iraf.imred.unlearn()
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+                iraf.ccdred.combine.unlearn()
+                iraf.ccdred.flatcombine.unlearn()
+
                 ccdred.instrument = "ccddb$kpno/camera.dat"
 
                 out_file = "{}/myraf_flats.flist".format(self.fop.tmp_dir)
@@ -201,11 +208,6 @@ class Astronomy:
                         f2w.write("{}\n".format(i))
 
                 flats = "@{}".format(out_file)
-
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
-                iraf.ccdred.combine.unlearn()
-                iraf.ccdred.flatcombine.unlearn()
 
                 if self.fop.is_file(output) and overwrite:
                     self.logger.warning("Over Writing file({})".format(output))
@@ -243,6 +245,9 @@ class Astronomy:
             self.logger.info("Ccdproc Started")
             try:
                 iraf.imred.unlearn()
+                iraf.ccdred.unlearn()
+                iraf.ccdred.ccdproc.unlearn()
+
                 ccdred.instrument = "ccddb$kpno/camera.dat"
 
                 yes_no = {True: "no", False: "yes"}
@@ -258,8 +263,6 @@ class Astronomy:
                     if subset == "no":
                         self.fts.update_header(flat, "subset", "")
 
-                iraf.ccdred.unlearn()
-                iraf.ccdred.ccdproc.unlearn()
                 iraf.ccdred.flatcombine.subset = subset
 
                 if subset == "no":
