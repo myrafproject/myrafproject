@@ -510,7 +510,7 @@ class Astronomy:
             except Exception as e:
                 self.logger.error(e)
 
-        def align(self, image, ref, output, overwrite=True, max_itter=100):
+        def align(self, image, ref, output, overwrite=True):
             """Aligning an image with respect of given referance"""
             self.logger.info("Aligning image({}) with reference({})".format(image, ref))
             try:

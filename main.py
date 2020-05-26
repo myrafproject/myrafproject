@@ -454,7 +454,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     _, fn = self.fop.get_base_name(file)
                                     output = "{}/{}".format(out_dir, fn)
                                     self.fts.align(file, the_file.toolTip(0), output)
-                                    self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3")
+                                    self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3 (astroalign)")
                                     progress.setValue(it)
                         else:
                             self.logger.warning("Reference Image no found.")
