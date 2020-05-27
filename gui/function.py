@@ -12,6 +12,7 @@ class Files:
     def __init__(self, frame, logger):
         self.frame = frame
         self.logger = logger
+        self.fop = env.File(self.logger)
 
     def get_files(self, file_type=None):
 
@@ -33,6 +34,7 @@ class Files:
 
         file = QtWidgets.QFileDialog.getOpenFileName(self.frame, "File...", "", (ftype),
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
+
         return file[0]
 
     def save_file(self, file_type=None, name=None):
@@ -48,7 +50,11 @@ class Files:
 
         file = QtWidgets.QFileDialog.getSaveFileName(self.frame, "Output file", nm, (tp),
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
-        return file[0]
+
+
+        extensions = tp.split("(")[1].split(")")[0].replace("*.", "").split()
+        pn, fn, _ = self.fop.split_file_name(file[0])
+        return "{}/{}.{}".format(pn, fn, extensions[0])
 
     def save_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self.frame, 'Select directory',

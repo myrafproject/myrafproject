@@ -516,8 +516,11 @@ class Astronomy:
             try:
                 image_data = self.data(image)
                 image_header = self.header(image, field="?")
+
                 ref_data = self.data(ref)
+
                 img_aligned, _ = aa.register(image_data, ref_data)
+
                 self.write(output, img_aligned, header=image_header, overwrite=overwrite)
             except Exception as e:
                 self.logger.error(e)
