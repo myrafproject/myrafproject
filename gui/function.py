@@ -39,7 +39,7 @@ class Files:
 
     def save_file(self, file_type=None, name=None):
         if file_type is None:
-            tp = "fits, fit, fts (*.fits *.fit *.fts)"
+            tp = "fits (*.fits)"
         else:
             tp = file_type
 
@@ -52,9 +52,8 @@ class Files:
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
 
 
-        extensions = tp.split("(")[1].split(")")[0].replace("*.", "").split()
         pn, fn, _ = self.fop.split_file_name(file[0])
-        return "{}/{}.{}".format(pn, fn, extensions[0])
+        return "{}/{}.fits".format(pn, fn)
 
     def save_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self.frame, 'Select directory',
