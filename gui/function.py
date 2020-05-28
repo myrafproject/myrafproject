@@ -52,8 +52,11 @@ class Files:
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
 
 
+        # pn, fn, _ = self.fop.split_file_name(file[0])
+        # return "{}/{}.fits".format(pn, fn)
+        extensions = tp.split("(")[1].split(")")[0].replace("*.", "").split()
         pn, fn, _ = self.fop.split_file_name(file[0])
-        return "{}/{}.fits".format(pn, fn)
+        return "{}/{}.{}".format(pn, fn, extensions[0])
 
     def save_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self.frame, 'Select directory',
