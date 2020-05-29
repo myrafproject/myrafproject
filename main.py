@@ -284,7 +284,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     time_amount = self.hcalc_time_value.value()
                                     time_type = self.hcalc_time_valueType.currentText()
                                     the_time = self.atm.str_to_time(time_in_header)
-                                    new_time = self.atm.time_diff(the_time, time_offset=time_amount, offset_type=time_type)
+                                    new_time = self.atm.time_diff(the_time, time_offset=time_amount,
+                                                                  offset_type=time_type)
                                     if new_time is not None:
                                         self.fts.update_header(file, "{}time".format(prefix), str(new_time))
 
@@ -400,7 +401,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     circ = Circle(the_coord, 10, edgecolor="#00FFFF", facecolor="none")
                     self.display_align.canvas.fig.gca().add_artist(circ)
                     circ.center = the_coord
-                    self.display_align.canvas.fig.gca().annotate("REF", xy = the_coord, color = "#00FFFF", fontsize = 10)
+                    self.display_align.canvas.fig.gca().annotate("REF", xy=the_coord, color="#00FFFF", fontsize=10)
                     self.display_align.canvas.draw()
 
     def source_detect(self):
@@ -408,7 +409,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if the_file is not None:
             if the_file.child(0) is not None:
                 if len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0:
-                    answ = self.gui_dev.ask_calcel("Do you want to replace coordinates. Click NO for adding coordinates")
+                    answ = self.gui_dev.ask_calcel(
+                        "Do you want to replace coordinates. Click NO for adding coordinates")
                     if answ == "yes":
                         sources = self.fts.star_find(the_file.toolTip(0))
                         if sources is not None:
@@ -458,7 +460,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     progress.setValue(it)
                         else:
                             self.logger.warning("Reference Image no found.")
-                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
+                            QtWidgets.QMessageBox.warning(self,
+                                                          "MYRaf Warning", "Reference Image no found. Nothing to do.")
                     else:
                         self.logger.warning("Reference Image no found.")
                         QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
@@ -471,7 +474,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                 ref_x, ref_y = list(map(float, ref_coords.split(",")))
                                 out_dir = self.gui_file.save_directory()
                                 if out_dir:
-                                    progress = QtWidgets.QProgressDialog("Manual Aligning...", "Abort", 0, len(files), self)
+                                    progress = QtWidgets.QProgressDialog("Manual Aligning...", "Abort",
+                                                                         0, len(files), self)
                                     progress.setWindowModality(QtCore.Qt.WindowModal)
                                     progress.setWindowTitle('MYRaf: Please Wait')
                                     for it, file in enumerate(files, start=1):
@@ -489,17 +493,21 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                             out_file = "{}/{}".format(out_dir, fn)
                                             self.iraf.imshift(file, out_file, dx, dy)
                                         else:
-                                            self.logger.warning("File({}) has no my_align in header. Skipping.".format(file))
+                                            self.logger.warning(
+                                                "File({}) has no my_align in header. Skipping.".format(file))
 
                                         progress.setValue(it)
                                 else:
                                     self.logger.warning("align canceled by user.")
                             else:
                                 self.logger.warning("Reference Image has not .")
-                                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Rerefence image has no my_align in header. Nothing to do.")
+                                QtWidgets.QMessageBox.warning(
+                                    self, "MYRaf Warning",
+                                    "Rerefence image has no my_align in header. Nothing to do.")
                         else:
                             self.logger.warning("Reference Image no found.")
-                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Rerefence image has no my_align in header. Nothing to do.")
+                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
+                                                          "Rerefence image has no my_align in header. Nothing to do.")
                     else:
                         self.logger.warning("Reference Image no found.")
                         QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
@@ -519,7 +527,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     if len(files) > 0:
                         out_file = self.gui_file.save_file(".dat", "headers.dat")
                         if out_file:
-                            progress = QtWidgets.QProgressDialog("Extracting header from files...", "Abort", 0, len(files), self)
+                            progress = QtWidgets.QProgressDialog("Extracting header from files...",
+                                                                 "Abort", 0, len(files), self)
                             progress.setWindowModality(QtCore.Qt.WindowModal)
                             progress.setWindowTitle('MYRaf: Please Wait')
                             progress.setAutoClose(True)
@@ -551,11 +560,16 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         if the_file is not None:
             if the_file.child(0) is not None:
                 headers = self.fts.header(the_file.toolTip(0))
-                self.gui_dev.c_replace_list_con(self.hcalc_jd_time, [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_airmass_time, [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_airmass_ra, [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_airmass_dec, [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_time_time, [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_jd_time,
+                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_airmass_time,
+                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_airmass_ra,
+                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_airmass_dec,
+                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+                self.gui_dev.c_replace_list_con(self.hcalc_time_time,
+                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
 
     def show_headers_extractor(self):
         the_file = self.hext_list.currentItem()
@@ -1190,6 +1204,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         self.load_list_of_settngs()
 
     def load_list_of_settngs(self):
+        global current_profile
         all_settings = self.fop.read_json(self.settings_file)
         try:
             current_profile = all_settings["--Current--"]
@@ -1308,9 +1323,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                     psffwhm = self.ccleaner_psffwhm.value()
                     psfsize = self.ccleaner_psfsize.value()
                     cosmic_settings = {"sigclip": sigclip, "sigfrac": sigfrac, "objlim": objlim, "gain": gain,
-                                       "readnoise": readnoise, "satlevel": satlevel, "pssl": pssl, "iteration": iteration,
-                                       "sepmed": sepmed, "cleantype": cleantype, "fsmode": fsmode, "psfmodel": psfmodel,
-                                       "psffwhm": psffwhm, "psfsize": psfsize}
+                                       "readnoise": readnoise, "satlevel": satlevel, "pssl": pssl,
+                                       "iteration": iteration, "sepmed": sepmed, "cleantype": cleantype,
+                                       "fsmode": fsmode, "psfmodel": psfmodel, "psffwhm": psffwhm, "psfsize": psfsize}
 
 
                     all_settings[profile_name] = {"calib_settings": calib_settings,
@@ -1375,8 +1390,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
 
             all_settings[profile_name] = {"calib_settings": calib_settings,
-                                                 "phot_settings": phot_settings,
-                                                 "cosmic_settings": cosmic_settings}
+                                          "phot_settings": phot_settings,
+                                          "cosmic_settings": cosmic_settings}
 
             all_settings["--Current--"] = profile
 
