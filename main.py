@@ -1191,7 +1191,17 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
     def load_list_of_settngs(self):
         all_settings = self.fop.read_json(self.settings_file)
+        try:
+            current_profile = all_settings["--Current--"]
+            del all_settings["--Current--"]
+        except:
+            self.logger.warning("No current profile available")
+
         self.gui_dev.c_replace_list_con(self.settings_profile_selector, all_settings.keys())
+        try:
+            self.settings_profile_selector.setCurrentText(current_profile)
+        except:
+            self.logger.warning("No current profile available")
 
     def setting_profile_changed(self):
         profile = self.settings_profile_selector.currentText()
@@ -1249,7 +1259,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
     def save_the_settings(self):
         all_settings = self.fop.read_json(self.settings_file)
         profile = self.settings_profile_selector.currentText()
-        if profile == "--Default--":
+        if profile == "--Current--":
+            pass
+        elif profile == "--Default--":
             self.settings_new_profile.setEnabled(False)
             self.logger.warning("Cannot save default settings")
             QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Cannot save default settings")
@@ -1305,6 +1317,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                                          "phot_settings": phot_settings,
                                                          "cosmic_settings": cosmic_settings}
 
+                    all_settings["--Current--"] = profile
                     self.settings_new_profile.setText("")
 
                     self.fop.write_json(self.settings_file, all_settings)
@@ -1364,6 +1377,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             all_settings[profile_name] = {"calib_settings": calib_settings,
                                                  "phot_settings": phot_settings,
                                                  "cosmic_settings": cosmic_settings}
+
+            all_settings["--Current--"] = profile
 
             self.fop.write_json(self.settings_file, all_settings)
         self.load_list_of_settngs()

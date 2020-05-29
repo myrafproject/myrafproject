@@ -51,12 +51,13 @@ class Files:
         file = QtWidgets.QFileDialog.getSaveFileName(self.frame, "Output file", nm, (tp),
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
 
+        pn, fn, the_ext = self.fop.split_file_name(file[0])
+        if the_ext.strip() is "":
+            extensions = tp.split("(")[1].split(")")[0].replace("*.", "").strip().split()
+            return "{}/{}.{}".format(pn, fn, extensions[0].strip())
 
-        # pn, fn, _ = self.fop.split_file_name(file[0])
-        # return "{}/{}.fits".format(pn, fn)
-        extensions = tp.split("(")[1].split(")")[0].replace("*.", "").split()
-        pn, fn, _ = self.fop.split_file_name(file[0])
-        return "{}/{}.{}".format(pn, fn, extensions[0])
+        return file[0]
+
 
     def save_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self.frame, 'Select directory',
