@@ -5,6 +5,8 @@ Created on Fri May  3 14:35:56 2019
 @author: msh, yk
 """
 
+import os
+
 try:
     from subprocess import PIPE
 except Exception as e:
@@ -81,6 +83,12 @@ except Exception as e:
     exit(0)
 
 try:
+    import alipy
+except Exception as e:
+    print("{}: Can't import alipy.".format(e))
+    exit(0)
+
+try:
     from pyraf import iraf
     from iraf import imred
     from iraf import ccdred
@@ -126,10 +134,11 @@ class Astronomy:
                 iraf.ccdred.ccdproc.unlearn()
                 iraf.ccdred.combine.unlearn()
                 iraf.ccdred.zerocombine.unlearn()
-
-                biases = ",".join(files)
                 iraf.ccdred.zerocombine.unlearn()
                 ccdred.instrument = "ccddb$kpno/camera.dat"
+
+                biases = ",".join(files)
+
                 out_file = "{}/myraf_biases.flist".format(self.fop.tmp_dir)
                 with open(out_file, "w") as f2w:
                     for i in files:
@@ -160,9 +169,9 @@ class Astronomy:
                 iraf.ccdred.darkcombine.unlearn()
                 iraf.imred.unlearn()
 
-                darks = ",".join(files)
-
                 ccdred.instrument = "ccddb$kpno/camera.dat"
+
+                darks = ",".join(files)
 
                 out_file = "{}/myraf_darks.flist".format(self.fop.tmp_dir)
                 with open(out_file, "w") as f2w:
@@ -290,7 +299,7 @@ class Astronomy:
                 coord_file = "{}/myraf_coord.coo".format(self.fop.tmp_dir)
                 with open(coord_file, "w") as f:
                     for coord in coords:
-                        f.write("{}\n".format(coord.replace("," ," ")))
+                        f.write("{}\n".format(coord.replace(",", " ")))
 
                 apertures = list(map(str, apertures))
 
@@ -522,8 +531,40 @@ class Astronomy:
                 ref_data = self.data(ref)
                 img_aligned, _ = aa.register(image_data, ref_data)
                 self.write(output, img_aligned, header=image_header, overwrite=overwrite)
+                return True
             except Exception as e:
                 self.logger.error(e)
+                return False
+
+        def alipy_align(self, image, reference, output):
+            '''
+            Aligns the given FITS images using alipy.
+            '''
+            self.logger.info("Aligning image({}) with reference({})".format(image, reference))
+            try:
+                images = []
+                images.append(image)
+
+                identifications = alipy.ident.run(reference, images, visu=False,
+                                                  sexkeepcat=False, verbose=False)
+
+                outshape = alipy.align.shape(reference, verbose=False)
+
+                for idn in identifications:
+
+                    if idn.ok:
+                        alipy.align.affineremap(idn.ukn.filepath, idn.trans,
+                                                shape=outshape, alifilepath=output,
+                                                makepng=False, verbose=False)
+
+                if os.path.isfile(output) and os.access(output, os.R_OK):
+                    return True
+                else:
+                    self.logger.warning("Alipy is failed!")
+                    return False
+            except Exception as e:
+                self.logger.error(e)
+                return False
 
         def star_find(self, image, default_later=0):
             """Finds sources on image"""

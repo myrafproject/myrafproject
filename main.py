@@ -453,8 +453,15 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
                                     _, fn = self.fop.get_base_name(file)
                                     output = "{}/{}".format(out_dir, fn)
-                                    self.fts.align(file, the_file.toolTip(0), output)
-                                    self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3 (astroalign)")
+                                    alipy_align_info = self.fts.alipy_align(file, the_file.toolTip(0), output)
+                                    if alipy_align_info is True:
+                                        self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3 (alipy)")
+                                    elif alipy_align_info is False:
+                                        align_info = self.fts.align(file, the_file.toolTip(0), output)
+                                        if align_info is True:
+                                            self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3 (astroalign)")
+                                        else:
+                                            self.logger.error("Alignment is failed!")
                                     progress.setValue(it)
                         else:
                             self.logger.warning("Reference Image no found.")
