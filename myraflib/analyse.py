@@ -678,19 +678,20 @@ class Astronomy:
             self.logger.info("Getting Header from {}".format(file))
             ret = []
             try:
-                hdu = fts.open(file, mode='readonly')
-                header = hdu[0].header
-                hdu.close()
-                for i in header:
-                    if not i == "":
-                        ret.append([i, header[i]])
+                with fts.open(file, ignore_missing_end=True, output_verify='ignore') as hdu:
+                    hdu.verify('fix')
+                    head = hdu[0].header
 
-                if field == "*":
-                    return ret
-                elif field == "?":
-                    return header
-                else:
-                    return header[field]
+                    for i in head:
+                        if not i == "":
+                            ret.append([i, head[i]])
+
+                    if field == "*":
+                        return ret
+                    elif field == "?":
+                        return head
+                    else:
+                        return head[field]
             except Exception as e:
                 self.logger.error(e)
 

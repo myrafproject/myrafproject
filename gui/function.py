@@ -52,7 +52,7 @@ class Files:
                                                      None, QtWidgets.QFileDialog.DontUseNativeDialog)
 
         pn, fn, the_ext = self.fop.split_file_name(file[0])
-        if the_ext.strip() is "":
+        if the_ext.strip() == "":
             extensions = tp.split("(")[1].split(")")[0].replace("*.", "").strip().split()
             return "{}/{}.{}".format(pn, fn, extensions[0].strip())
 
