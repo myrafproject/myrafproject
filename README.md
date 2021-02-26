@@ -42,9 +42,7 @@ The MYRaf is a practicable astronomical image reduction and photometry software 
   $ python3 main.py
   ```
 
-
-
-If you have any problems during installation or usage, please contact us or create an [issue](https://github.com/myrafproject/myrafproject/issues/new). Before reporting an issue, please do not forget to run MYRaf v3 with DEBUG mode and share the outputs with us like;
+If you have any problems during installation or usage, please contact us or create an [issue](https://github.com/myrafproject/myrafproject/issues/new). Before reporting an issue, please do not forget to run MYRaf v3 with DEBUG mode and share the outputs with us with the command below;
 
 ```bash
 $ python3 main.py -ll 10
