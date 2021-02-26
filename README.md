@@ -2,8 +2,6 @@
 
 The MYRaf is a practicable astronomical image reduction and photometry software and interfaces for IRAF. For this purpose, MYRaf uses IRAF, PyRAF, and many other python packages with a Qt framework. Also, MYRaf is free software and distributed with a GPLv3 license. You can use it without restrictive licenses, make copies for your friends, school, or institution.
 
-
-
 # Installation
 
 - Clone MYRaf v3.0.0 from git.
@@ -45,7 +43,7 @@ The MYRaf is a practicable astronomical image reduction and photometry software 
 If you have any problems during installation or usage, please contact us or create an [issue](https://github.com/myrafproject/myrafproject/issues/new). Before reporting an issue, please do not forget to run MYRaf v3 with DEBUG mode and share the outputs with us with the command below;
 
 ```bash
-$ python3 main.py -ll 10
+$ python3 main.py -ll 10 -lf issue.log
 ```
 
 Clear skies!
