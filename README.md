@@ -60,10 +60,16 @@ ______
 
 For academic use, please cite the paper:
 
+> Shameoni Niaei, M.; Kilic, Y.; Özeren, F. F.,
+> 2015, *MYRaf: An Easy Aperture Photometry GUI for IRAF*, **Astronomical Society of the Pacific Conference Serieserencias)**, 496, 299 (2015).
+
+[Bibtex@ADS]([MYRaf: An Easy Aperture Photometry GUI for IRAF - NASA/ADS](https://ui.adsabs.harvard.edu/abs/2015ASPC..496..299N/exportcitation)) | [ASP](http://articles.adsabs.harvard.edu/pdf/2015ASPC..496..299N)
+
+------------
+
 > Kilic, Y.; Shameoni Niaei, M.; Özeren, F. F.; Yesilyaprak, C.,
 > 2016,
 > *MYRaf: A new Approach with IRAF for Astronomical Photometric Reduction*,
 > **RevMexAA (Serie de Conferencias)**, 48, 38–39 (2016).
 
-[Bibtex@ADS](http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=2016RMxAC..48...38K&data_type=BIBTEX&db_key=AST&nocookieset=1)
-| [RevMexAA](http://www.astroscu.unam.mx/rmaa/RMxAC..48/PDF/RMxAC..48_part-2.2.pdf)
+[Bibtex@ADS](http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=2016RMxAC..48...38K&data_type=BIBTEX&db_key=AST&nocookieset=1) | [RevMexAA](http://www.astroscu.unam.mx/rmaa/RMxAC..48/PDF/RMxAC..48_part-2.2.pdf)
