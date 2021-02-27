@@ -17,7 +17,7 @@ The MYRaf is a practicable astronomical image reduction and photometry software 
   ```bash
   $ sudo apt install iraf
   $ sudo apt install python3-dev libx11-dev x11proto-dev libxcb-xinerama0
-  $ pip install pyqt5 matplotlib ginga sep ccdproc regions astroalign pyraf mplcursors imexam  
+  $ pip install pyqt5 astropy matplotlib ginga sep photutils ccdproc regions astroalign pyraf mplcursors imexam  
   ```
 
 - If you are using the **bash** terminal;
