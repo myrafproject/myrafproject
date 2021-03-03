@@ -108,6 +108,7 @@ class Astronomy:
             self.logger = logger
             self.fts = Astronomy.Fits(self.logger)
             self.fop = env.File(self.logger)
+            self.instrument_path = ""
 
         def imshift(self, file, output, dx, dy, overwrite=True):
             """Shifts a given fits file with given dx and dy"""
@@ -132,7 +133,7 @@ class Astronomy:
                 iraf.ccdred.combine.unlearn()
                 iraf.ccdred.zerocombine.unlearn()
                 iraf.ccdred.zerocombine.unlearn()
-                ccdred.instrument = "ccddb$kpno/camera.dat"
+                ccdred.instrument = self.instrument_path
 
                 biases = ",".join(files)
 
@@ -166,7 +167,7 @@ class Astronomy:
                 iraf.ccdred.darkcombine.unlearn()
                 iraf.imred.unlearn()
 
-                ccdred.instrument = "ccddb$kpno/camera.dat"
+                ccdred.instrument = self.instrument_path
 
                 darks = ",".join(files)
 
@@ -209,7 +210,7 @@ class Astronomy:
                 iraf.ccdred.combine.unlearn()
                 iraf.ccdred.flatcombine.unlearn()
 
-                ccdred.instrument = "ccddb$kpno/camera.dat"
+                ccdred.instrument = self.instrument_path
 
                 out_file = "{}/myraf_flats.flist".format(self.fop.tmp_dir)
                 with open(out_file, "w") as f2w:
@@ -257,7 +258,7 @@ class Astronomy:
                 iraf.ccdred.unlearn()
                 iraf.ccdred.ccdproc.unlearn()
 
-                ccdred.instrument = "ccddb$kpno/camera.dat"
+                ccdred.instrument = self.instrument_path
 
                 yes_no = {True: "no", False: "yes"}
 
@@ -299,6 +300,8 @@ class Astronomy:
                         f.write("{}\n".format(coord.replace(",", " ")))
 
                 apertures = list(map(str, apertures))
+
+                ccdred.instrument = self.instrument_path
 
                 iraf.photpars.weighting = "constant"
                 iraf.photpars.aperture = ",".join(apertures)

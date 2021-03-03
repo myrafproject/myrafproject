@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Unset variable that are used by IRAF
+unset iraf
+unset IRAFARCH
+
+export iraf="/usr/lib/iraf/"
+export IRAFARCH="linux"
+
+python3 main.py
