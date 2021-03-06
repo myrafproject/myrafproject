@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Unset variable that are used by IRAF
+unset iraf
+unset IRAFARCH
+
+if [[ -z "${__fish_bin_dir}" ]]; 
+then
+    export iraf="/usr/lib/iraf/"
+    export IRAFARCH="linux"
+else
+    setenv iraf /usr/lib/iraf/
+    setenv IRAFARCH linux
+fi
+
+python3 main.py
