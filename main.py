@@ -1603,7 +1603,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         def on_add(sel):
             otime = sel.target[0]
             sel.annotation.set(text=f'Point: \nX: {sel.target[0]: .6f} \nY: {sel.target[1]: .3f}',
-                   ha="left", va="center")
+                               ha="left", va="center")
             sel.annotation.set_ha('left')
             sel.annotation.set_weight('bold')
 

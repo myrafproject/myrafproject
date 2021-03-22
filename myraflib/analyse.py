@@ -368,6 +368,7 @@ class Astronomy:
             if date is not None:
                 try:
                     if "T" in date:
+                        date = date.replace(" ", "")
                         if "." in date:
                             frmt = '%Y-%m-%dT%H:%M:%S.%f'
                         else:
@@ -407,6 +408,7 @@ class Astronomy:
         def jd2bjd(self, jd, ra, dec):
             obj = SkyCoord(ra, dec, unit=(U.hourangle, U.deg), frame='icrs')
             greenwich = EarthLocation.of_site('greenwich')
+            self.logger.warning("JD: {}".format(jd))
             jd = tm(jd, format="jd", location=greenwich)
             ltt_bary = jd.light_travel_time(obj)
 
@@ -729,6 +731,8 @@ class Astronomy:
                                                                   key, value))
             try:
                 hdu = fts.open(src, mode='update')
+                if str(value).count(":") == 3:
+                    value = str(value).rfind(':').replace(":", ".")
                 hdu[0].header[key[0:8]] = value
                 return hdu.close()
             except Exception as e:
