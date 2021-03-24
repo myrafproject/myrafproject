@@ -1431,7 +1431,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
     def load_phot_result(self):
         file = self.gui_file.get_file("*.my")
         if file:
-            data = ascii.read(file)
+            data = ascii.read(file, delimiter='|')
 
             coordinates = np.unique(data['Coordinate'])
             self.graph_variabl_index.clear()
