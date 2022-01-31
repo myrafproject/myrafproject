@@ -667,7 +667,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                 phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
                 if phot_pars is not None:
                     if len(phot_pars) > 0:
-                        res_data = self.gui_file.save_file(file_type="my (*.my)", name="res.my")
+                        res_data = self.gui_file.save_file(file_type="MYRaf result file (*.my, *.csv, *.txt)", name="res.my")
                         if res_data is not None:
                             progress = QtWidgets.QProgressDialog("Photometry...", "Abort", 0, len(files), self)
                             progress.setWindowModality(QtCore.Qt.WindowModal)
@@ -1016,12 +1016,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
             self.logger.error(e)
 
     def align_onpick(self, event):
-        try:
-            x, y = self.align_display.get_xy()
-            val = self.align_display.get_data()
-            self.info_align.setText("X: {:0.2f}, Y: {:0.2f}, Val: {:0.2f}".format(x, y, val))
-        except Exception as e:
-            self.logger.error(e)
+        x, y = self.align_display.get_xy()
+        val = self.align_display.get_data()
+        self.info_align.setText("X: {:0.2f}, Y: {:0.2f}, Val: {:0.2f}".format(x, y, val))
 
     def phot_onpick(self, event):
         try:
@@ -1449,7 +1446,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
             filters = None
             for colname in data.colnames:
-                if "filter" in colname or "subset" in colname:
+                if "filter" in str(colname).lower() or "subset" in colname.lower():
                     filter_col = colname
                     filters = np.unique(data[filter_col])
 
@@ -1479,7 +1476,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
     def plot_phot_result(self):
         result_file = self.graph_path.text()
-        data = ascii.read(result_file)
+        data = ascii.read(result_file, delimiter="|")
         data = data[(data["MAG"] != "INDEF") & (data["MERR"] != "INDEF") &
                     (data["JD"] != "INDEF") & (data["DATE-OBS"] != "INDEF")]
 
@@ -1491,9 +1488,9 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         filter = self.graph_filter.currentText()
 
         if filter != "Unknown":
-            phot_data_target = data[(data["Filter"] == filter) & (data["Coordinate"] == target_coord)].group_by(x_axis_name)
-            phot_data_comp1 = data[(data["Filter"] == filter) & (data["Coordinate"] == comp1_coord)].group_by(x_axis_name)
-            phot_data_comp2 = data[(data["Filter"] == filter) & (data["Coordinate"] == comp2_coord)].group_by(x_axis_name)
+            phot_data_target = data[(data["FILTER"] == filter) & (data["Coordinate"] == target_coord)].group_by(x_axis_name)
+            phot_data_comp1 = data[(data["FILTER"] == filter) & (data["Coordinate"] == comp1_coord)].group_by(x_axis_name)
+            phot_data_comp2 = data[(data["FILTER"] == filter) & (data["Coordinate"] == comp2_coord)].group_by(x_axis_name)
         else:
             phot_data_target = data[data["Coordinate"] == target_coord].group_by(x_axis_name)
             phot_data_comp1 = data[data["Coordinate"] == comp1_coord].group_by(x_axis_name)

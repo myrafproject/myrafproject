@@ -8,7 +8,7 @@
 # This is open-source software licensed under a GPLv3 license.
     
 try:
-    from ginga.qtw.ImageViewCanvasQt import ImageViewCanvas
+    from ginga.mplw.ImageViewCanvasMpl import ImageViewCanvas
     from ginga.mplw.FigureCanvasQt import setup_Qt
     from ginga.AstroImage import AstroImage
     from ginga.misc import log

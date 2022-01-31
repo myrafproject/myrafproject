@@ -25,7 +25,7 @@ class MplCanvas(FigureCanvas):
         rcParams['lines.linestyle'] = ""
         gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
         self.axlc1 = self.fig.add_subplot(gs[0])
-        self.axlc2 = self.fig.add_subplot(gs[1])
+        self.axlc2 = self.fig.add_subplot(gs[1], sharex=self.axlc1)
         self.axlc1.get_xaxis().get_major_formatter().set_scientific(False)
         self.axlc2.get_xaxis().get_major_formatter().set_scientific(False)
         self.xtitle = "Time"
