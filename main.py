@@ -266,7 +266,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                                     use_alti = float(alti)
 
                                                     use_ra = self.coords.create_angle("{} hour".format(ra))
-                                                    use_dec = self.coords.create_angle("{} degree".format(ra))
+                                                    use_dec = self.coords.create_angle("{} degree".format(dec))
 
                                                     site = analyse.Astronomy.Site(self.logger,
                                                                                   use_lati, use_long, use_alti)

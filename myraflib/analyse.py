@@ -473,25 +473,28 @@ class Astronomy:
     class Site:
         """Site Class"""
 
-        def __init__(self, logger, lati, long, alti, name="Obervatory"):
+        def __init__(self, logger, lati, long, alti, name="Observatory"):
             self.logger = logger
             self._lati_ = lati
             self._long_ = long
             self._alti_ = alti
             self._name_ = name
 
-        def create(self):
+        def create(self, name=None):
             """Create site"""
             try:
-                return EarthLocation(lat=self._lati_, lon=self._long_, height=self._alti_ * units.m)
+                if name is None:
+                    return EarthLocation(lat=self._lati_, lon=self._long_, height=self._alti_ * units.m)
+                else:
+                    return EarthLocation.of_site(name)
             except Exception as e:
                 self.logger.error(e)
 
         def altaz(self, site, obj, utc):
             """Return AltAz for a given object and time for this site"""
             try:
-                frame_of_sire = AltAz(obstime=utc, location=site)
-                object_alt_az = obj.transform_to(frame_of_sire)
+                frame_of_site = AltAz(obstime=tm(utc), location=site)
+                object_alt_az = obj.transform_to(frame_of_site)
                 return object_alt_az
             except Exception as e:
                 self.logger.error(e)
