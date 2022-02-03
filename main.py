@@ -187,6 +187,8 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         # Graph section
         self.graph_get_file.clicked.connect(lambda: (self.load_phot_result()))
         self.graph_plot.clicked.connect(lambda: (self.plot_phot_result()))
+        self.graph_color_picker.clicked.connect(lambda: (self.color_picker()))
+        self.clear_plot_btn.clicked.connect(lambda: (self.clear_plot()))
         self.display_phot.canvas.fig.canvas.mpl_connect('key_press_event', self.plot_imexam)
 
         self.observatory_file = "observatories.obs"
@@ -1473,6 +1475,17 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         # graph_t_0
         # graph_period
 
+    def color_picker(self):
+        color = QtWidgets.QColorDialog.getColor()
+        self.graph_color_picker.setStyleSheet(f'background-color: {color.name()}')
+        self.graph_color_picker.setText(color.name())
+
+    def clear_plot(self):
+        try:
+            graph_object.axlc1.cla()
+            graph_object.axlc2.cla()
+        except:
+            pass
 
     def plot_phot_result(self):
         result_file = self.graph_path.text()
@@ -1543,27 +1556,22 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
 
         graph_object = self.graph_chart.canvas
 
-        graph_object.axlc1.cla()
+        # graph_object.axlc1.cla()
 
-        if filter == "U":
-            point_color = "cyan"
-        elif filter == "B":
+        point_color = self.graph_color_picker.text()
+
+        if point_color == "Pick color":
             point_color = "blue"
-        elif filter == "V":
-            point_color = "green"
-        elif filter == "R":
-            point_color = "red"
-        elif filter == "I":
-            point_color = "brown"
-        else:
-            point_color = "blue"
-        graph_object.axlc1.cla()
-        graph_object.axlc2.cla()
+
+        point_shape = self.graph_shape.currentText()
+
+        # graph_object.axlc1.cla()
+        # graph_object.axlc2.cla()
         graph_object.axlc1.errorbar(time_xs, target_comp1_diff, yerr=target_comp1_diff_err,
-                                    color=point_color, marker=".", ecolor='k', capsize=2, capthick=2,
+                                    color=point_color, marker=point_shape, ecolor='k', capsize=2, capthick=2,
                                     label='{}'.format(filter))
         graph_object.axlc2.errorbar(time_xs, comp1_comp2_diff, yerr=comp1_comp2_diff_err,
-                                    color=point_color, marker=".", ecolor='k', capsize=2, capthick=2,
+                                    color=point_color, marker=point_shape, ecolor='k', capsize=2, capthick=2,
                                     label="{} ($\sigma$: {:.3f}$^m$)".format(filter, phot_stdev))
         graph_object.axlc2.axhline(y=phot_stdev, color='k', linestyle='-', linewidth=0.5)
 
@@ -1582,8 +1590,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         graph_object.axlc2.legend(handles, labels, loc='best')
 
         # plt.grid(True)
-        graph_object.axlc1.invert_yaxis()
-        graph_object.axlc2.invert_yaxis()
+        # graph_object.axlc1.invert_yaxis()
+        graph_object.axlc1.set_ylim(sorted(graph_object.axlc1.get_ylim(), reverse=True))
+        # graph_object.axlc2.invert_yaxis()
+        graph_object.axlc2.set_ylim(sorted(graph_object.axlc2.get_ylim(), reverse=True))
         graph_object.axlc1.set_title("MYRaf Project (v3.0.0) Photometry Result, {}".format(
             time.strftime("%d %B %Y %I:%M:%S %p")))
         graph_object.axlc2.set_xlabel(time_axis_label.upper(), fontsize = 9)

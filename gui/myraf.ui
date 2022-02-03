@@ -652,34 +652,167 @@
            <string>Settings</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_58">
-           <item row="0" column="0" colspan="2">
-            <widget class="QLineEdit" name="graph_path">
+           <item row="4" column="0" colspan="3">
+            <widget class="QGroupBox" name="graph_do_phase">
              <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="title">
+              <string>Phase Calculator</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
               <bool>false</bool>
              </property>
+             <layout class="QGridLayout" name="gridLayout_62">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_40">
+                <property name="minimumSize">
+                 <size>
+                  <width>25</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>25</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>T0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="graph_t_0">
+                <property name="decimals">
+                 <number>6</number>
+                </property>
+                <property name="minimum">
+                 <double>-100000000000000005366162204393472.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>9999999999999999635896294965248.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_41">
+                <property name="minimumSize">
+                 <size>
+                  <width>25</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>25</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>P</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="graph_period">
+                <property name="decimals">
+                 <number>6</number>
+                </property>
+                <property name="minimum">
+                 <double>0.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>9999999999999999635896294965248.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
-           <item row="1" column="0">
-            <spacer name="horizontalSpacer_18">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+           <item row="3" column="0" colspan="3">
+            <widget class="QGroupBox" name="groupBox_24">
+             <property name="title">
+              <string>Customize graph</string>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>141</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="graph_get_file">
-             <property name="text">
-              <string>Add</string>
-             </property>
+             <layout class="QGridLayout" name="gridLayout_61">
+              <item row="0" column="0">
+               <widget class="QComboBox" name="graph_x_values"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QComboBox" name="graph_shape">
+                <item>
+                 <property name="text">
+                  <string>o</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>,</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>.</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>x</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>+</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>v</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>^</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>&lt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>&gt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>s</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>d</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="graph_color_picker">
+                <property name="text">
+                 <string>Pick color</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
-           <item row="2" column="0" colspan="2">
+           <item row="2" column="0" colspan="3">
             <widget class="QGroupBox" name="groupBox_23">
              <property name="title">
               <string>Ys</string>
@@ -786,101 +919,34 @@
              </layout>
             </widget>
            </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QGroupBox" name="groupBox_24">
-             <property name="title">
-              <string>Xs</string>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="graph_get_file">
+             <property name="text">
+              <string>Add</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_61">
-              <item row="0" column="0">
-               <widget class="QComboBox" name="graph_x_values"/>
-              </item>
-             </layout>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QGroupBox" name="graph_do_phase">
+           <item row="1" column="0">
+            <spacer name="horizontalSpacer_18">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>141</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="0" colspan="3">
+            <widget class="QLineEdit" name="graph_path">
              <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="title">
-              <string>Phase Calculator</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
               <bool>false</bool>
              </property>
-             <layout class="QGridLayout" name="gridLayout_62">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_40">
-                <property name="minimumSize">
-                 <size>
-                  <width>25</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>25</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>T0</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QDoubleSpinBox" name="graph_t_0">
-                <property name="decimals">
-                 <number>6</number>
-                </property>
-                <property name="minimum">
-                 <double>-100000000000000005366162204393472.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>9999999999999999635896294965248.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_41">
-                <property name="minimumSize">
-                 <size>
-                  <width>25</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>25</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>P</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QDoubleSpinBox" name="graph_period">
-                <property name="decimals">
-                 <number>6</number>
-                </property>
-                <property name="minimum">
-                 <double>0.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>9999999999999999635896294965248.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-             </layout>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="6" column="0">
             <spacer name="verticalSpacer_5">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -893,7 +959,7 @@
              </property>
             </spacer>
            </item>
-           <item row="6" column="0">
+           <item row="8" column="0">
             <spacer name="horizontalSpacer_19">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -906,10 +972,17 @@
              </property>
             </spacer>
            </item>
-           <item row="6" column="1">
+           <item row="8" column="2">
             <widget class="QPushButton" name="graph_plot">
              <property name="text">
               <string>Plot</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QPushButton" name="clear_plot_btn">
+             <property name="text">
+              <string>Clear plot</string>
              </property>
             </widget>
            </item>
