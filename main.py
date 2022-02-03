@@ -1511,14 +1511,14 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
         time_xs = Time(phot_data_target[x_axis_name], format=format).jd
 
         if self.graph_do_phase.isChecked():
-            if self.graph_t_0.Value() and self.graph_period.Value():
-                t0 = float(self.graph_t_0.Value())
-                period = float(self.graph_period.Value())
-                time_axis_value = ((time_xs - t0) / period) - ((time_xs - t0) / period).astype(int)
+            if self.graph_t_0.value() and self.graph_period.value():
+                t0 = float(self.graph_t_0.value())
+                period = float(self.graph_period.value())
+                time_xs = ((time_xs - t0) / period) - ((time_xs - t0) / period).astype(int)
                 time_axis_label = "PHASE"
             else:
                 time_axis_label = "TIME [JD]"
-                time_axis_value = phot_data_target[x_axis_name]
+                time_xs = phot_data_target[x_axis_name]
         else:
             time_axis_label = "TIME [JD]"
             time_axis_value = phot_data_target[x_axis_name]
