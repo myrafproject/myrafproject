@@ -311,6 +311,8 @@ class Astronomy:
                 iraf.daophot.phot.interactive = "no"
                 iraf.daophot.phot.verify = "no"
                 iraf.daophot.phot.verbose = "no"
+                iraf.daophot.phot.gain = 5
+                iraf.daophot.phot.readnoi = 4.11
 
                 iraf.fitskypars.salgo = "centroid"
                 iraf.fitskypars.annu = annulus
@@ -342,7 +344,7 @@ class Astronomy:
                 self.logger.error(e)
             #     return False
 
-        def textdump(self, file, fields=["id", "mag", "merr"]):
+        def textdump(self, file, fields=["id", "mag", "merr", "flux", "area", "stdev", "nsky"]):
             """
             Returns an array from IRAF mag file
             IRAF txdump

@@ -683,7 +683,7 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                     break
                                 # for coordinate in coordinates:
                                 header_line = ["#File_name", "Aperture",
-                                               "Annulus", "Dannulus", "ZMag", "Coordinate", "MAG", "MERR"]
+                                               "Annulus", "Dannulus", "ZMag", "Coordinate", "MAG", "MERR", "FLUX", "AREA", "STDEV", "NSKY"]
                                 wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
                                 if len(wanted_headers) > 0:
                                     for wanted_header in wanted_headers:
@@ -715,6 +715,10 @@ class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
                                         data_line.append(coordinates[int(phot_res[0]) - 1])
                                         data_line.append(phot_res[1])
                                         data_line.append(phot_res[2])
+                                        data_line.append(phot_res[3])
+                                        data_line.append(phot_res[4])
+                                        data_line.append(phot_res[5])
+                                        data_line.append(phot_res[6])
                                         for header_res in all_header_res:
                                             data_line.append(header_res)
 
