@@ -1,50 +1,18 @@
 # What is MYRaf?
 
-The MYRaf is a practicable astronomical image reduction and photometry software and interfaces for IRAF. For this purpose, MYRaf uses IRAF, PyRAF, and many other python packages with a Qt framework. Also, MYRaf is free software and distributed with a GPLv3 license. You can use it without restrictive licenses, make copies for your friends, school, or institution.
+The MYRaf WAS a practicable astronomical image reduction and photometry software and interfaces for IRAF.
 
-# Installation
+Nowadays MYRaf uses astropy and other python's libraries to achieve its purpose. For this, MYRaf uses IRAF, PyRAF, and many other python packages with a Qt framework. Also, MYRaf is free software and distributed with a GPLv3 license. You can use it without restrictive licenses, make copies for your friends, school, or institution.
 
-- Clone MYRaf v3.0.0 from git.
-  
-  ```bash
-  $ sudo apt install git
-  $ git clone https://github.com/myrafproject/myrafproject.git
-  $ cd myrafproject
-  ```
+MYRaf is no longer Operating System depended and can be installed on all Operating Systems.
 
-- Install IRAF and the required packages with the following series of commands.
-  
-  ```bash
-  $ sudo apt install iraf
-  $ sudo apt install python3-dev libx11-dev x11proto-dev libxcb-xinerama0
-  $ pip install pyqt5 numpy astropy matplotlib ginga sep photutils ccdproc regions astroalign pyraf mplcursors imexam  
-  ```
+## Installation
 
-- If you are using the **bash** terminal;
-  
-  ```bash
-  $ export iraf=/usr/lib/iraf/
-  $ export IRAFARCH=linux
-  ```
-
-- If you are using **fish** terminal;
-  
-  ```bash
-  $ setenv iraf /usr/lib/iraf/
-  $ setenv IRAFARCH linux
-  ```
-
-- Finally, run MYRaf v3,
-  
-  ```bash
-  $ python3 main.py
+```bash
+pip install myraf
   ```
 
 If you have any problems during installation or usage, please contact us or create an [issue](https://github.com/myrafproject/myrafproject/issues/new). Before reporting an issue, please do not forget to run MYRaf v3 with DEBUG mode and share the outputs with us with the command below;
-
-```bash
-$ python3 main.py -ll 10 -lf issue.log
-```
 
 Clear skies!
 
@@ -71,3 +39,9 @@ For academic use, please cite the paper:
 > **RevMexAA (Serie de Conferencias)**, 48, 38–39 (2016).
 
 [Bibtex@ADS](http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=2016RMxAC..48...38K&data_type=BIBTEX&db_key=AST&nocookieset=1) | [RevMexAA](http://www.astroscu.unam.mx/rmaa/RMxAC..48/PDF/RMxAC..48_part-2.2.pdf)
+
+## MYRaf as a library
+MYRaf has two base objects. `Fits` and `FitsArray`.
+Both has almost the same features. Let's explore:
+
+see: [myraf as a library](myraf_fits.md)

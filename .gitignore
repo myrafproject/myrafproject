@@ -1,3 +1,5 @@
 data/
 .idea
 tst.py
+__pycache__/
+*.pyc
