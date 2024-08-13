@@ -2,1648 +2,3452 @@
 """
 @author: msh, yk
 """
+import argparse
+import json
+import math
+import platform
+import statistics
+import tempfile
+from logging import getLogger, basicConfig
+from pathlib import Path
+from sys import argv
 
-try:
-    from matplotlib.backend_bases import MouseButton
-    # from ginga.util import ap_region
-    from regions import PixCoord, CirclePixelRegion, CircleAnnulusPixelRegion
-    from sys import argv
+import pandas as pd
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+from PyQt5.QtGui import QPixmap, QIcon
 
-    import argparse
+from astropy.coordinates import EarthLocation, SkyCoord, AltAz
 
-    from logging import getLogger, basicConfig
+import qdarktheme
+from PyQt5.QtCore import QEvent, Qt, QSize
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem
+from astropy.table import vstack
+from astropy.time import Time
+from dateutil.relativedelta import relativedelta
+from ginga.AstroImage import AstroImage
+from ginga.canvas.types.basic import Circle, Rectangle
+from ginga.qtw.ImageViewQt import CanvasView
 
-    from matplotlib.patches import Circle
+from myraflib import FitsArray, Fits
+from myraflib.error import Unsolvable
+from myraflib.gui import Ui_MainWindow, Ui_FormDisplay, Ui_FormArithmetic, Ui_FormCombine, Ui_FormCosmicCleaner, \
+    Ui_FormAlign, Ui_FormShift, Ui_FormRotate, Ui_FormHedit, Ui_FormBin, Ui_FormCrop, Ui_FormHeader, Ui_FormHSelect, \
+    Ui_FormStatics, Ui_FormObservatory, Ui_FormHeaderCalculator, Ui_FormAbout, Ui_FormLog, Ui_FormCCDPROC, \
+    Ui_FormPhotometry, Ui_FormSettings
 
-    from PyQt5 import QtWidgets
-    from PyQt5 import QtCore
+from myraflib.gui.functions import SCHEMA, GUIFunctions, CustomQTreeWidgetItem
 
-    from gui import myraf
-    from gui import function
+DEFAULT_OBSERVATORIES = {
+    "NEW": {
+        "lat": 0,
+        "lon": 0,
+        "height": 0
+    }
+}
 
-    from myraflib import analyse
-    from myraflib import env
+DEFAULT_SETTINGS = {
+    "ZMag": 25,
+    "display": {
+        "interval": 100,
+    },
+    "operations": {
+        "arithmetic": {
+            "operation": 0,
+            "default_value": 0,
+        },
+        "combine": {
+            "combine": {
+                "method": 0,
+                "clipping": 0,
+                "weight": "None",
+            },
+            "zerocombine": {
+                "method": 2,
+                "clipping": 2,
+                "weight": "None",
+            },
+            "darkcombine": {
+                "method": 2,
+                "clipping": 2,
+                "weight": "EXPTIME",
+            },
+            "flatcombine": {
+                "method": 2,
+                "clipping": 2,
+                "weight": "None",
+            },
+        },
+        "transform": {
+            "align": {
+                "maximum_control_point": 50,
+                "detection_sigma": 5.0,
+                "minimum_area": 50,
+            },
+        },
+        "ccdproc": {
+            "exposure": "None",
+            "force": False,
+        },
+        "photometry": {
+            "kind": 0,
+            "exposure": "None",
+            "apertures": [],
+            "headers_to_extract": [],
+            "sextractor": {
+                "extract": {
+                    "sigma": 5.0,
+                    "maximum_area": 5.0,
+                },
+                "daofind": {
+                    "sigma": 3.0,
+                    "fwhm": 3.0,
+                    "threshold": 5.0,
+                },
+            },
+        },
+    },
+    "edit": {
+        "cosmic_clean": {
+            "sigclip": 4.5,
+            "sigfrac": 3.5,
+            "objlim": 5.0,
+            "gain": 1.0,
+            "readnoise": 6.5,
+            "satlevel": 65535.0,
+            "pssl": 0.0,
+            "niter": 4,
+            "sepmed": True,
+            "cleantype": 0,
+            "fsmode": 0,
+            "psfmodel": 0,
+            "psffwhm": 2.5,
+            "psfsize": 7,
+            "psfbeta": 4.76,
+            "gain_apply": True
+        }
+    }
+}
 
-    from fPlot import FitsPlot
 
-    # from sklearn import linear_model
-    import mplcursors
-    from imexam.imexamine import Imexamine
-    from astropy.io import ascii
-    import numpy as np
-    from astropy.time import Time, TimeDelta
-    import time
+def database_dir():
+    home_dir = Path.home()
+    if platform.system() == "Windows":
+        settings_dir = home_dir / "AppData" / "Local" / "MYRaf"
+    elif platform.system() == "Darwin":
+        settings_dir = home_dir / "Library" / "Application Support" / "MYRaf"
+    else:
+        settings_dir = home_dir / ".config" / "MYRaf"
 
-except Exception as e:
-    print(e)
-    exit(0)
+    if not settings_dir.exists():
+        settings_dir.mkdir()
+
+    return settings_dir
 
 
-class MainWindow(QtWidgets.QMainWindow, myraf.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, logger_level="DEBUG", log_file=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
-        self.flags = QtCore.Qt.Window
-        self.setWindowFlags(self.flags)
 
-        self.logger_level = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}
+        self.setWindowIcon(QIcon('myraf.png'))
 
-        try:
-            logger_level = int(logger_level)
-        except:
-            logger_level = 50
+        self.log_file = log_file
 
-        if not logger_level in [0, 10, 20, 30, 40, 50]:
-            logger_level = 50
-
-        LOG_FORMAT = "[%(asctime)s, %(levelname)s], [%(filename)s, %(funcName)s, %(lineno)s]: %(message)s"
-        basicConfig(filename=log_file, level=logger_level, format=LOG_FORMAT)
-        self.logger = getLogger()
-        getLogger('matplotlib.font_manager').disabled = True
-
-        self.gui_dev = function.Devices(self, self.logger)
-        self.gui_file = function.Files(self, self.logger)
-        self.fop = env.File(self.logger)
-        self.fts = analyse.Astronomy.Fits(self.logger)
-        self.iraf = analyse.Astronomy.Iraf(self.logger)
-        self.atm = analyse.Astronomy.Time(self.logger)
-        self.coords = analyse.Astronomy.Coordinates(self.logger)
-
-        self.align_display = FitsPlot(self.display_align.canvas, self.logger)
-        self.phot_display = FitsPlot(self.display_phot.canvas, self.logger)
-
-        self.calib_image_add.clicked.connect(lambda: (self.add_files(self.calib_image_list)))
-        self.calib_image_remove.clicked.connect(lambda: (self.rm_files(self.calib_image_list)))
-
-        self.calib_bias_add.clicked.connect(lambda: (self.add_files(self.calib_bias_list)))
-        self.calib_bias_remove.clicked.connect(lambda: (self.rm_files(self.calib_bias_list)))
-        self.calib_bias_combine.clicked.connect(lambda: (self.export_bias()))
-
-        self.calib_dark_add.clicked.connect(lambda: (self.add_files(self.calib_dark_list)))
-        self.calib_dark_remove.clicked.connect(lambda: (self.rm_files(self.calib_dark_list)))
-        self.calib_dark_combine.clicked.connect(lambda: (self.export_dark()))
-
-        self.calib_flat_add.clicked.connect(lambda: (self.add_files(self.calib_flat_list)))
-        self.calib_flat_remove.clicked.connect(lambda: (self.rm_files(self.calib_flat_list)))
-        self.calib_flat_combine.clicked.connect(lambda: (self.export_flat()))
-
-        self.calibration_go.clicked.connect(lambda: (self.calibration()))
-
-        self.cclean_add.clicked.connect(lambda: (self.add_files(self.cclean_list)))
-        self.cclean_remove.clicked.connect(lambda: (self.rm_files(self.cclean_list)))
-        self.cclean_go.clicked.connect(lambda: (self.cosmin_clean()))
-
-        # cosmin_clean
-
-        self.hedit_isvaluefromheader.clicked.connect(lambda: (self.toggle_header()))
-        self.hedit_add.clicked.connect(lambda: (self.add_files(self.hedit_list)))
-        self.hedit_remove.clicked.connect(lambda: (self.rm_files(self.hedit_list)))
-
-        self.align_add.clicked.connect(lambda: (self.add_files(self.align_list)))
-        self.align_remove.clicked.connect(lambda: (self.rm_files(self.align_list)))
-
-        self.phot_add.clicked.connect(lambda: (self.add_files(self.phot_list)))
-        self.phot_remove.clicked.connect(lambda: (self.rm_files(self.phot_list)))
-        self.phot_coor_remove.clicked.connect(lambda: (self.gui_dev.rm(self.phot_coor_list)))
-        self.display_phot.canvas.fig.canvas.mpl_connect('button_press_event', self.get_coordinate_phot)
-
-        # self.phot_add.clicked.connect(lambda: (self.add_files(self.update_list_of_headers)))
-
-        self.hedit_remove_field.clicked.connect(lambda: (self.rm_header()))
-        self.hedit_add_field.clicked.connect(lambda: (self.add_header()))
-
-        self.align_list.clicked.connect(lambda: (self.display(self.align_list, self.align_display),
-                                                 self.display_coords_align()))
-        self.phot_list.clicked.connect(lambda: (self.display(self.phot_list, self.phot_display)))
-        self.phot_list.clicked.connect(lambda: (self.update_list_of_headers()))
-        self.phot_coor_find_sources.clicked.connect(lambda: (self.source_detect()))
-
-        self.align_go.clicked.connect(lambda: (self.align()))
-
-        self.hedit_list.clicked.connect(lambda: (self.show_headers()))
-        self.hedit_header_table.clicked.connect(lambda: (self.header_selected()))
-
-        self.phot_go.clicked.connect(lambda: (self.photometry()))
-
-        self.phot_add_par.clicked.connect(lambda: (self.add_phot_par()))
-        self.phot_rm_par.clicked.connect(lambda: (self.rm_photo_par()))
-        # self.phot_update_header_list.clicked.connect(lambda: (self.update_list_of_headers()))
-
-        self.phot_add_to_header_to_extract.clicked.connect(lambda: (self.use_wanted_headers()))
-        self.phot_remobe_from_header_to_extract.clicked.connect(lambda: (self.gui_dev.rm(self.phot_header_to_exract)))
-
-        self.hext_add.clicked.connect(lambda: (self.add_files(self.hext_list)))
-        self.hext_remove.clicked.connect(lambda: (self.rm_files(self.hext_list)))
-        self.hext_list.clicked.connect(lambda: (self.show_headers_extractor()))
-        self.hext_go.clicked.connect(lambda: (self.export_header()))
-
-        self.hcalc_add.clicked.connect(lambda: (self.add_files(self.hcalc_list)))
-        self.hcalc_remove.clicked.connect(lambda: (self.rm_files(self.hcalc_list)))
-        self.hcalc_list.clicked.connect(lambda: (self.show_headers_calculator()))
-
-        self.observatory_list.clicked.connect(lambda: (self.show_observat()))
-
-        self.observatory_add.clicked.connect(lambda: (self.add_observatory()))
-        self.observatory_remove.clicked.connect(lambda: (self.remove_observatory()))
-        self.observatory_reload.clicked.connect(lambda: (self.all_observatioes_list()))
-
-        self.hcalc_go.clicked.connect(lambda: (self.hcalc()))
-
-        # self.save_the_settings() remove_settings_profile
-        self.settings_save.clicked.connect(lambda: (self.save_the_settings()))
-        self.settings_remove.clicked.connect(lambda: (self.remove_settings_profile()))
-
-        self.calib_image_list.installEventFilter(self)
-        self.calib_bias_list.installEventFilter(self)
-        self.calib_dark_list.installEventFilter(self)
-        self.calib_flat_list.installEventFilter(self)
-        self.align_list.installEventFilter(self)
-        self.phot_list.installEventFilter(self)
-        self.hedit_list.installEventFilter(self)
-        self.hcalc_list.installEventFilter(self)
-        self.hext_list.installEventFilter(self)
-        self.cclean_list.installEventFilter(self)
-        self.phot_coor_list.installEventFilter(self)
-
-        self.display_align.canvas.fig.canvas.mpl_connect('motion_notify_event', self.align_onpick)
-        self.display_phot.canvas.fig.canvas.mpl_connect('motion_notify_event', self.phot_onpick)
-        self.display_align.canvas.fig.canvas.mpl_connect('button_press_event', self.get_coordinate_align)
-
-        header = self.hedit_header_table.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-
-        header = self.hext_header_table.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-
-        header = self.phot_par_list.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
-        self.settings_profile_selector.currentTextChanged.connect(lambda: (self.setting_profile_changed()))
-
-        # Graph section
-        self.graph_get_file.clicked.connect(lambda: (self.load_phot_result()))
-        self.graph_plot.clicked.connect(lambda: (self.plot_phot_result()))
-        self.graph_color_picker.clicked.connect(lambda: (self.color_picker()))
-        self.clear_plot_btn.clicked.connect(lambda: (self.clear_plot()))
-        self.display_phot.canvas.fig.canvas.mpl_connect('key_press_event', self.plot_imexam)
-
-        self.observatory_file = "observatories.obs"
-        self.settings_file = "settings.set"
-        self.all_observatioes_list()
-        self.load_list_of_settngs()
-
-    def hcalc(self):
-        files = self.gui_dev.get_from_tree(self.hcalc_list)
-        if files is not None:
-            if len(files) > 0:
-                if self.hcalc_jd.isChecked() or self.hcalc_airmass.isChecked() or self.hcalc_imexamine.isChecked() or \
-                        self.hcalc_time.isChecked():
-                    prefix = self.hcalc_prefix.text()
-                    progress = QtWidgets.QProgressDialog("Header Calculator...", "Abort", 0, len(files), self)
-                    progress.setWindowModality(QtCore.Qt.WindowModal)
-                    progress.setWindowTitle('MYRaf: Please Wait')
-
-                    for it, file in enumerate(files, start=1):
-
-                        if progress.wasCanceled():
-                            progress.setLabelText("ABORT!")
-                            break
-
-                        if self.hcalc_jd.isChecked():
-                            progress.setLabelText("Calculating jd for file{}".format(file))
-                            header_selcted = self.hcalc_jd_time.currentText()
-                            if not header_selcted == "":
-                                time_header = header_selcted.split("->")[0]
-                                time_in_header = self.fts.header(file, time_header)
-                                if time_in_header is not None:
-                                    the_time = self.atm.str_to_time(time_in_header)
-                                    jd = self.atm.jd(the_time)
-                                    if jd is not None:
-                                        self.fts.update_header(file, "{}JD".format(prefix), str(jd))
-
-                                    if self.hcalc_hjd.isChecked():
-                                        header_ra = self.hcalc_hjd_ra.currentText()
-                                        header_dec = self.hcalc_hjd_ra.currentText()
-                                        header_obs = self.hcalc_hjd_ra.currentText()
-                                        if not (header_ra == "" and header_dec == "" and header_obs == ""):
-                                            wanted_ra = header_ra.split("->")[0]
-                                            wanted_dec = header_dec.split("->")[0]
-                                            ra_in_header = self.fts.header(file, wanted_ra)
-                                            dec_in_header = self.fts.header(file, wanted_dec)
-                                            bjd = self.atm.jd2bjd(jd, ra_in_header, dec_in_header)
-                                            hjd = self.atm.jd2hjd(jd, ra_in_header, dec_in_header)
-                                            self.fts.update_header(file, "{}HJD".format(prefix), str(hjd))
-                                            self.fts.update_header(file, "{}BJD".format(prefix), str(bjd))
-
-                        if self.hcalc_airmass.isChecked():
-                            progress.setLabelText("Calculating airmass for file{}".format(file))
-                            all_observatories = self.fop.read_json(self.observatory_file)
-                            if all_observatories is not None:
-                                the_observatory = all_observatories[self.hcalc_airmass_observatory.currentText()]
-                                long = the_observatory["longitude"]
-                                lati = the_observatory["latitude"]
-                                alti = the_observatory["altitude"]
-                                if long is not None and lati is not None and alti is not None:
-                                    ra_inheader = self.hcalc_airmass_ra.currentText()
-                                    dec_inheader = self.hcalc_airmass_dec.currentText()
-                                    time_inheader = self.hcalc_airmass_time.currentText()
-                                    if not ra_inheader == "":
-                                        if not dec_inheader == "":
-                                            if not time_inheader == "":
-                                                wanted_ra = ra_inheader.split("->")[0]
-                                                wanted_dec = dec_inheader.split("->")[0]
-                                                wanted_time = time_inheader.split("->")[0]
-
-                                                ra = self.fts.header(file, wanted_ra)
-                                                dec = self.fts.header(file, wanted_dec)
-                                                time = self.fts.header(file, wanted_time)
-                                                if ra is not None and dec is not None and time is not None:
-                                                    use_time = self.atm.str_to_time(time)
-                                                    use_long = self.coords.create_angle("{} degree".format(long))
-                                                    use_lati = self.coords.create_angle("{} degree".format(lati))
-                                                    use_alti = float(alti)
-
-                                                    use_ra = self.coords.create_angle("{} hour".format(ra))
-                                                    use_dec = self.coords.create_angle("{} degree".format(dec))
-
-                                                    site = analyse.Astronomy.Site(self.logger,
-                                                                                  use_lati, use_long, use_alti)
-                                                    object = analyse.Astronomy.Obj(self.logger,
-                                                                                   use_ra, use_dec)
-
-                                                    use_site = site.create()
-                                                    use_object = object.create()
-                                                    if use_site is not None and use_object is not None and use_time is not None:
-                                                        alt_az = site.altaz(use_site, use_object, use_time)
-                                                        self.fts.update_header(file, "{}secz".format(prefix),
-                                                                               str(alt_az.secz))
-
-                        if self.hcalc_imexamine.isChecked():
-                            progress.setLabelText("Calculating imexamine for file{}".format(file))
-                            stats = self.fts.stats(file)
-                            if stats is not None:
-                                if self.hcalc_imexamine_mean.isChecked():
-                                    self.fts.update_header(file, "{}mean".format(prefix), str(stats["Mean"]))
-
-                                if self.hcalc_imexamine_median.isChecked():
-                                    self.fts.update_header(file, "{}median".format(prefix), str(stats["Median"]))
-
-                                if self.hcalc_imexamine_stdv.isChecked():
-                                    self.fts.update_header(file, "{}stdv".format(prefix), str(stats["Stdev"]))
-
-                                if self.hcalc_imexamine_min.isChecked():
-                                    self.fts.update_header(file, "{}min".format(prefix), str(stats["Min"]))
-
-                                if self.hcalc_imexamine_max.isChecked():
-                                    self.fts.update_header(file, "{}max".format(prefix), str(stats["Max"]))
-
-                        if self.hcalc_time.isChecked():
-                            progress.setLabelText("Calculating timediff for file{}".format(file))
-                            header_selcted = self.hcalc_time_time.currentText()
-                            if not header_selcted == "":
-                                wanted_header = header_selcted.split("->")[0]
-                                time_in_header = self.fts.header(file, wanted_header)
-                                if time_in_header is not None:
-                                    time_amount = self.hcalc_time_value.value()
-                                    time_type = self.hcalc_time_valueType.currentText()
-                                    the_time = self.atm.str_to_time(time_in_header)
-                                    new_time = self.atm.time_diff(the_time, time_offset=time_amount,
-                                                                  offset_type=time_type)
-                                    if new_time is not None:
-                                        self.fts.update_header(file, "{}time".format(prefix), str(new_time))
-
-                        progress.setValue(it)
-
-                else:
-                    self.logger.warning("No operation was selected. Nothing to do.")
-                    QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No operation was selected. Nothing to do.")
-
-            else:
-                self.logger.warning("No file was given. Nothing to do.")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+        if self.log_file is None:
+            self.logger = getLogger(__file__)
         else:
-            self.logger.warning("No file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+            logger_level = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}.get(
+                logger_level, 50)
 
-    def remove_observatory(self):
-        the_observat_name = self.observatory_list.currentItem().text()
-        if the_observat_name is not None:
-            observats = self.fop.read_json(self.observatory_file)
-            if observats is not None:
-                del observats[the_observat_name]
-                self.fop.write_json(self.observatory_file, observats)
-                self.all_observatioes_list()
+            log_format = "[%(asctime)s, %(levelname)s], [%(filename)s, %(funcName)s, %(lineno)s]: %(message)s"
+            basicConfig(filename=self.log_file, level=logger_level, format=log_format)
+            self.logger = getLogger()
+            getLogger('matplotlib.font_manager').disabled = True
+
+        self.gui_functions = GUIFunctions()
+        self.settings = Setting(self.logger)
+
+        self.actionObservatories.triggered.connect(lambda: self.show_window(ObservatoriesForm(self)))
+        self.actionAbout.triggered.connect(lambda: self.show_window(AboutForm(self)))
+        self.actionLog.triggered.connect(lambda: self.show_window(LogForm(self)))
+        self.actionSettings.triggered.connect(lambda: self.show_window(SettingsForm(self)))
+
+        self.treeWidget.installEventFilter(self)
+
+    def show_window(self, window):
+        self.playGround.addSubWindow(window)
+        window.show()
+
+    def add_files(self):
+        files = self.gui_functions.get_files(self, "Open File")
+        self.gui_functions.add_to_files(self, files, self.treeWidget)
+
+    def remove(self):
+        self.gui_functions.remove_from_files(self.treeWidget)
+
+    def merge(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        new_name, ok = self.gui_functions.get_text(self, "Group Name", "Merged Group Name", "Group")
+        if ok:
+            new_files = sorted(
+                list(set([
+                    (Path(file.child(0).text(1)) / Path(file.text(0))).absolute().__str__()
+                    for _, file_list in files.items()
+                    for file in file_list
+                ]))
+            )
+            self.gui_functions.add_to_files(self, new_files, self.treeWidget, grp=new_name)
+
+    def split(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        group_name = list(files.keys())[0].text(0)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
+        list_of_header = list(fits_array[0].header.keys())
+        item, ok = self.gui_functions.get_item(self, "Select header(s)", "Headers", list_of_header)
+        if ok:
+            groups = fits_array.group_by(item)
+            for group, files in groups.items():
+                self.gui_functions.add_to_files(self, files.files, self.treeWidget, f"{group_name}_{group}")
+
+    def rename(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        group_name = list(files.keys())[0].text(0)
+        new_name, ok = self.gui_functions.get_text(self, "Rename Group", "Provide new group name", group_name)
+        if ok:
+            list(files.keys())[0].setText(0, new_name)
+
+    def display(self):
+        selected_files = self.gui_functions.get_selected_files(self.treeWidget)
+        for group, files in selected_files.items():
+            self.show_window(DisplayForm(
+                self,
+                FitsArray([Fits(Path(file.child(0).text(1)) / Path(file.text(0))) for file in files])
+            ))
+
+    def arithmetic(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
+        self.show_window(ArithmeticForm(self, fits_array))
+
+    def combine(self, combine_type=None):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+
+        if len(fits) > 10:
+            answer = self.gui_functions.ask(self, "Warning", f"You selected {len(fits)} files. "
+                                                             "This might require too much RAM. "
+                                                             "Do you wish to continue?")
+            if not answer:
+                return
+
+        fits_array = FitsArray.from_paths(fits)
+        combine = CombineForm(self, fits_array)
+        if combine_type is not None:
+            combine.combine_type = combine_type + "combine"
+            if combine_type == "zero":
+                combine.comboBoxMethod.setCurrentText("Median")
+                combine.comboBoxClipping.setCurrentText("Minmax")
+                combine.comboBoxWeight.setCurrentText("None")
+            elif combine_type == "dark":
+                combine.comboBoxMethod.setCurrentText("Median")
+                combine.comboBoxClipping.setCurrentText("Minmax")
+
+                the_fits = fits_array[0]
+                if "EXPTIME" in the_fits.header.keys():
+                    combine.comboBoxWeight.setCurrentText("EXPTIME")
+                elif "EXPOSURE" in the_fits.header.keys():
+                    combine.comboBoxWeight.setCurrentText("EXPOSURE")
             else:
-                self.logger.warning("Can't find observatory file.")
+                combine.comboBoxMethod.setCurrentText("Median")
+                combine.comboBoxClipping.setCurrentText("Minmax")
+                combine.comboBoxWeight.setCurrentText("None")
+        self.show_window(combine)
 
-    def add_observatory(self):
-        abb = self.observatory_abbreviation.text()
-        name = self.observatory_name.text()
-        longitude = self.observatory_longitude.text()
-        latitude = self.observatory_latitude.text()
-        altitude = self.observatory_altitude.text()
-        timezone = self.observatory_timezone.value()
-        commend = self.observatory_commend.toPlainText()
-        if abb != "" or name != "" or longitude != "" or latitude != "" or altitude != "":
-            the_observat = {"observatory": abb, "name": name, "longitude": longitude, "latitude": latitude,
-                            "altitude": altitude, "timezone": timezone, "commendation": commend}
-            observats = self.fop.read_json(self.observatory_file)
-            if observats is not None:
-                if abb in observats.keys():
-                    self.logger.warning("Observatory({}) already exist. Updating.".format(abb))
+    def cosmic_clean(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                observats[abb] = the_observat
-                self.fop.write_json(self.observatory_file, observats)
-                self.all_observatioes_list()
-            else:
-                self.logger.warning("Can't find observatory file.")
-
-    def show_observat(self):
-        the_observat_name = self.observatory_list.currentItem().text()
-        if the_observat_name is not None:
-            observats = self.fop.read_json(self.observatory_file)
-            if observats is not None:
-                try:
-                    the_observat = observats[the_observat_name]
-                    self.observatory_abbreviation.setText(the_observat["observatory"])
-                    self.observatory_name.setText(the_observat["name"])
-                    self.observatory_longitude.setText(the_observat["longitude"])
-                    self.observatory_latitude.setText(the_observat["latitude"])
-                    self.observatory_altitude.setText(the_observat["altitude"])
-                    self.observatory_timezone.setValue(float(the_observat["timezone"]))
-                    self.observatory_commend.setPlainText(the_observat["commendation"])
-                except Exception as e:
-                    self.logger.error(e)
-
-    def all_observatioes_list(self):
-        observats = self.fop.read_json(self.observatory_file)
-        if observats is not None:
-            self.gui_dev.replace_list_con(self.observatory_list, observats.keys())
-            self.gui_dev.c_replace_list_con(self.hcalc_airmass_observatory, observats.keys())
-            self.observatory_list.sortItems()
-        else:
-            self.logger.warning("Can't find observatory file.")
-
-    def get_coordinate_align(self, event):
-        if event.button is MouseButton.LEFT:
-            files = self.gui_dev.get_from_tree(self.align_list)
-            the_file = self.align_list.currentItem()
-            if the_file is not None:
-                if the_file.child(0) is not None:
-                    if self.align_display.get_data() is not None:
-                        x, y = self.align_display.get_xy()
-                        self.fts.update_header(the_file.toolTip(0), "my_align", "{}, {}".format(x, y))
-                        current_index = self.align_list.currentIndex().row() + 1
-                        new_row = current_index % (len(files))
-                        self.align_list.setCurrentItem(self.align_list.topLevelItem(new_row))
-                        if new_row == 0:
-                            self.align_list.setCurrentItem(self.align_list.topLevelItem(new_row))
-                            self.logger.warning("The whole list is done. Going back to top.")
-                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
-                                                          "The whole list is done. Going back to top.")
-
-                        self.display(self.align_list, self.align_display)
-                        self.display_coords_align()
-
-    def display_coords_align(self):
-        the_file = self.align_list.currentItem()
-        if the_file is not None:
-            if the_file.child(0) is not None:
-                header = self.fts.header(the_file.toolTip(0), "my_align")
-                if header is not None:
-                    the_coord = list(map(float, header.split(",")))
-                    circ = Circle(the_coord, 10, edgecolor="#00FFFF", facecolor="none")
-                    self.display_align.canvas.fig.gca().add_artist(circ)
-                    circ.center = the_coord
-                    self.display_align.canvas.fig.gca().annotate("REF", xy=the_coord, color="#00FFFF", fontsize=10)
-                    self.display_align.canvas.draw()
-
-    def source_detect(self):
-        the_file = self.phot_list.currentItem()
-        if the_file is not None:
-            if the_file.child(0) is not None:
-                if len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0:
-                    answ = self.gui_dev.ask_calcel(
-                        "Do you want to replace coordinates. Click NO for adding coordinates")
-                    if answ == "yes":
-                        sources = self.fts.star_find(the_file.toolTip(0))
-                        if sources is not None:
-                            self.gui_dev.replace_list_con(self.phot_coor_list,
-                                                          ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
-                    elif answ == "no":
-                        sources = self.fts.star_find(the_file.toolTip(0))
-                        if sources is not None:
-                            self.gui_dev.add(self.phot_coor_list,
-                                             ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
-                    else:
-                        self.logger.warning("User canceled adding coordinates")
-                else:
-                    sources = self.fts.star_find(the_file.toolTip(0))
-                    if sources is not None:
-                        self.gui_dev.replace_list_con(self.phot_coor_list,
-                                                      ["{:0.2f},{:0.2f}".format(i[0], i[1]) for i in sources])
-        else:
-            self.logger.warning("Reference Image no found.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
+        self.show_window(CosmicCleanerForm(self, fits_array))
 
     def align(self):
-        files = self.gui_dev.get_from_tree(self.align_list)
-        if files is not None:
-            if len(files) > 0:
-                if self.align_isauto.isChecked():
-                    the_file = self.align_list.currentItem()
-                    if the_file is not None:
-                        if the_file.child(0) is not None:
-                            out_dir = self.gui_file.save_directory()
-                            if out_dir:
-                                progress = QtWidgets.QProgressDialog("Auto Aligning...", "Abort", 0, len(files), self)
-                                progress.setWindowModality(QtCore.Qt.WindowModal)
-                                progress.setWindowTitle('MYRaf: Please Wait')
-                                for it, file in enumerate(files, start=1):
-                                    progress.setLabelText("Aligning {}".format(file))
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                    if progress.wasCanceled():
-                                        progress.setLabelText("ABORT!")
-                                        break
+        self.show_window(AlignForm(self, fits_array))
 
-                                    _, fn = self.fop.get_base_name(file)
-                                    output = "{}/{}".format(out_dir, fn)
-                                    alipy_align_info = self.fts.alipy_align(file, the_file.toolTip(0), output)
-                                    if alipy_align_info is True:
-                                        self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3 (alipy)")
-                                    elif alipy_align_info is False:
-                                        align_info = self.fts.align(file, the_file.toolTip(0), output)
-                                        if align_info is True:
-                                            self.fts.update_header(file, "MYALI", "Aligned by MYRaf V3 (astroalign)")
-                                        else:
-                                            self.logger.error("Alignment is failed!")
-                                    progress.setValue(it)
-                        else:
-                            self.logger.warning("Reference Image no found.")
-                            QtWidgets.QMessageBox.warning(self,
-                                                          "MYRaf Warning", "Reference Image no found. Nothing to do.")
-                    else:
-                        self.logger.warning("Reference Image no found.")
-                        QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
-                else:
-                    the_file = self.align_list.currentItem()
-                    if the_file is not None:
-                        if the_file.child(0) is not None:
-                            ref_coords = self.fts.header(the_file.toolTip(0), "my_align")
-                            if ref_coords is not None:
-                                ref_x, ref_y = list(map(float, ref_coords.split(",")))
-                                out_dir = self.gui_file.save_directory()
-                                if out_dir:
-                                    progress = QtWidgets.QProgressDialog("Manual Aligning...", "Abort",
-                                                                         0, len(files), self)
-                                    progress.setWindowModality(QtCore.Qt.WindowModal)
-                                    progress.setWindowTitle('MYRaf: Please Wait')
-                                    for it, file in enumerate(files, start=1):
-                                        progress.setLabelText("Aligning {}".format(file))
+    def shift(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                        if progress.wasCanceled():
-                                            progress.setLabelText("ABORT!")
-                                            break
+        self.show_window(ShiftForm(self, fits_array))
 
-                                        coords = self.fts.header(file, "my_align")
-                                        if coords is not None:
-                                            x, y = list(map(float, coords.split(",")))
-                                            dx, dy = ref_x - x, ref_y - y
-                                            _, fn = self.fop.get_base_name(file)
-                                            out_file = "{}/{}".format(out_dir, fn)
-                                            self.iraf.imshift(file, out_file, dx, dy)
-                                        else:
-                                            self.logger.warning(
-                                                "File({}) has no my_align in header. Skipping.".format(file))
+    def rotate(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                        progress.setValue(it)
-                                else:
-                                    self.logger.warning("align canceled by user.")
-                            else:
-                                self.logger.warning("Reference Image has not .")
-                                QtWidgets.QMessageBox.warning(
-                                    self, "MYRaf Warning",
-                                    "Rerefence image has no my_align in header. Nothing to do.")
-                        else:
-                            self.logger.warning("Reference Image no found.")
-                            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
-                                                          "Rerefence image has no my_align in header. Nothing to do.")
-                    else:
-                        self.logger.warning("Reference Image no found.")
-                        QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Reference Image no found. Nothing to do.")
-            else:
-                self.logger.warning("No file was given. Nothing to do.")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
-        else:
-            self.logger.warning("No file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+        self.show_window(RotateForm(self, fits_array))
 
-    def export_header(self):
-        list_of_header_indices = self.gui_dev.list_of_selected_table(self.hext_header_table)
-        if list_of_header_indices is not None:
-            if len(list_of_header_indices) > 0:
-                files = self.gui_dev.get_from_tree(self.hext_list)
-                if files is not None:
-                    if len(files) > 0:
-                        out_file = self.gui_file.save_file(".dat", "headers.dat")
-                        if not out_file == "":
-                            progress = QtWidgets.QProgressDialog("Extracting header from files...",
-                                                                 "Abort", 0, len(files), self)
-                            progress.setWindowModality(QtCore.Qt.WindowModal)
-                            progress.setWindowTitle('MYRaf: Please Wait')
-                            progress.setAutoClose(True)
-                            ret = []
-                            for it, file in enumerate(files, start=1):
-                                progress.setLabelText("Extracting header from {}".format(file))
-                                file_header = ["#File"]
-                                line = [file]
-                                for header_index in list_of_header_indices:
+    def hedit(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                    if progress.wasCanceled():
-                                        progress.setLabelText("ABORT!")
-                                        break
+        self.show_window(HeditForm(self, fits_array))
 
-                                    wanted_header_field = self.hext_header_table.item(header_index, 0).text()
-                                    wanted_header = self.fts.header(file, wanted_header_field)
-                                    line.append(str(wanted_header))
-                                    file_header.append(str(wanted_header_field))
+    def binning(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                ret.append(line)
-                                progress.setValue(it)
+        self.show_window(BinForm(self, fits_array))
 
-                            ret.insert(0, file_header)
-                            self.fop.write_list(out_file, ret, dm="|")
+    def crop(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-    def show_headers_calculator(self):
-        the_file = self.hcalc_list.currentItem()
-        if the_file is not None:
-            if the_file.child(0) is not None:
-                headers = self.fts.header(the_file.toolTip(0))
-                self.gui_dev.c_replace_list_con(self.hcalc_jd_time,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_airmass_time,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_airmass_ra,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_airmass_dec,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
-                self.gui_dev.c_replace_list_con(self.hcalc_time_time,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+        self.show_window(CropForm(self, fits_array))
 
-                self.gui_dev.c_replace_list_con(self.hcalc_hjd_ra,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+    def header_show(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                self.gui_dev.c_replace_list_con(self.hcalc_hjd_dec,
-                                                [str("{}->{}".format(i[0], i[1])) for i in headers])
+        self.show_window(HeaderForm(self, fits_array))
 
-    def show_headers_extractor(self):
-        the_file = self.hext_list.currentItem()
-        if the_file is not None:
-            if the_file.child(0) is not None:
-                headers = self.fts.header(the_file.toolTip(0))
-                self.gui_dev.replace_table(self.hext_header_table, headers)
+    def hselect(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-    def plot_coordinates(self, selected=True):
-        if selected:
-            coords = self.gui_dev.list_of_selected(self.phot_coor_list)
-        else:
-            coords = self.gui_dev.list_of_list(self.phot_coor_list)
+        self.show_window(HSelectForm(self, fits_array))
 
-        if not coords == []:
-            # todo remove circles instead of reloading the whole display
-            self.display(self.phot_list, self.phot_display)
+    def statics(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        data = []
+        for key, rows in files.items():
+            for row in rows:
+                image = (Path(row.child(0).text(1)) / Path(row.text(0))).absolute().__str__()
+                size = row.child(1).text(1)
+                width = row.child(2).text(1)
+                height = row.child(3).text(1)
+                minimum = row.child(4).text(1)
+                mean = row.child(5).text(1)
+                std = row.child(6).text(1)
+                maximum = row.child(7).text(1)
 
-            for it, coord in enumerate(coords):
-                x, y = coord.split(",")
-                aperture = self.phot_aperture.value()
-                annulus = self.phot_annulus.value()
-                dannulus = self.phot_dannulus.value()
-                aperture_region = CirclePixelRegion(PixCoord(float(x), float(y)), radius=float(aperture))
-                annulus_region = CircleAnnulusPixelRegion(PixCoord(float(x), float(y)),
-                                                          inner_radius=annulus, outer_radius=annulus + dannulus)
+                data.append(
+                    [image, size, width, height, minimum, mean, std, maximum]
+                )
 
-                self.phot_display.fig.gca().add_artist(aperture_region.as_artist(lw=2))
-                self.phot_display.fig.gca().add_artist(
-                    annulus_region.as_artist(facecolor='none', edgecolor='red', lw=2))
+        self.show_window(StatisticsForm(self, data))
 
-            self.phot_display.fig.canvas.draw()
-        else:
-            self.logger.warning("No coordinates to plot")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Please add coordinate(s)")
+    def hcalc(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-    def use_wanted_headers(self):
-        available_headers = self.gui_dev.list_of_selected(self.phot_header_list)
-        wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
-        if len(available_headers) > 0:
-            for available_header in available_headers:
-                if available_header not in wanted_headers:
-                    self.gui_dev.add(self.phot_header_to_exract, [available_header])
-        else:
-            self.logger.warning("No header(s) file was. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
-                                          "No header(s) was selected. Please select at least one header")
+        self.show_window(HCalcForm(self, fits_array))
 
-    def update_list_of_headers(self):
-        the_file = self.phot_list.currentItem()
-        if the_file is not None:
-            if the_file.child(0) is not None:
-                headers = self.fts.header(the_file.toolTip(0), field="*")
-                self.gui_dev.replace_list_con(self.phot_header_list, [str(i[0]) for i in headers])
-        else:
-            self.logger.warning("No data file was selected. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning",
-                                          "No data file was selected. Please select a file in Photometry tab.")
+    def ccdproc(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-    def rm_photo_par(self):
-        self.gui_dev.remove_from_table(self.phot_par_list)
+        self.show_window(CCDProcForm(self, fits_array))
 
     def photometry(self):
-        files = self.gui_dev.get_from_tree(self.phot_list)
-        if len(files) > 0:
-            coordinates = self.gui_dev.list_of_list(self.phot_coor_list)
-            if len(coordinates) > 0:
-                phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
-                if phot_pars is not None:
-                    if len(phot_pars) > 0:
-                        res_data = self.gui_file.save_file(file_type="MYRaf result file (*.my, *.csv, *.txt)", name="res.my")
-                        if res_data is not None:
-                            progress = QtWidgets.QProgressDialog("Photometry...", "Abort", 0, len(files), self)
-                            progress.setWindowModality(QtCore.Qt.WindowModal)
-                            progress.setWindowTitle('MYRaf: Please Wait')
-                            progress.setAutoClose(True)
-                            data = []
-                            for it, file in enumerate(files, start=1):
-                                progress.setLabelText("Photometry of {}".format(file))
-                                if progress.wasCanceled():
-                                    progress.setLabelText("ABORT!")
-                                    break
-                                # for coordinate in coordinates:
-                                header_line = ["#File_name", "Aperture",
-                                               "Annulus", "Dannulus", "ZMag", "Coordinate", "MAG", "MERR", "FLUX", "AREA", "STDEV", "NSKY"]
-                                wanted_headers = self.gui_dev.list_of_list(self.phot_header_to_exract)
-                                if len(wanted_headers) > 0:
-                                    for wanted_header in wanted_headers:
-                                        header_line.append(wanted_header)
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                for phot_par in phot_pars:
-                                    pn, fn = self.fop.get_base_name(file)
-                                    mag_file = "{}/{}.mag".format(self.fop.tmp_dir, fn)
+        self.show_window(PhotometryForm(self, fits_array))
 
-                                    if self.fop.is_file(mag_file):
-                                        self.fop.rm(mag_file)
+    def save_as(self):
+        files = self.gui_functions.get_selected_files(self.treeWidget)
+        fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
+        fits_array = FitsArray.from_paths(fits)
 
-                                    self.iraf.phot(file, mag_file, coordinates,
-                                                   phot_par[0], annulus=phot_par[1],
-                                                   dannulus=phot_par[2], zmag=phot_par[3])
-                                    all_header_res = []
-                                    if len(wanted_headers) > 0:
-                                        for wanted_header in wanted_headers:
-                                            use_header = self.fts.header(file, wanted_header)
-                                            all_header_res.append(str(use_header))
+        directory = Path(self.gui_functions.get_directory(self, "Save Folder"))
 
-                                    phot_ress = self.iraf.textdump(mag_file)
+        if directory:
 
-                                    for phot_res in phot_ress:
-                                        data_line = []
-                                        data_line.append(file)
-                                        for pp in phot_par:
-                                            data_line.append(pp)
-                                        data_line.append(coordinates[int(phot_res[0]) - 1])
-                                        data_line.append(phot_res[1])
-                                        data_line.append(phot_res[2])
-                                        data_line.append(phot_res[3])
-                                        data_line.append(phot_res[4])
-                                        data_line.append(phot_res[5])
-                                        data_line.append(phot_res[6])
-                                        for header_res in all_header_res:
-                                            data_line.append(header_res)
+            progress = QtWidgets.QProgressDialog("Copying ...", "Abort", 0, len(fits_array), self)
 
-                                        data.append(data_line)
+            progress.setWindowModality(QtCore.Qt.WindowModal)
+            progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+            progress.setWindowTitle('MYRaf: Please Wait')
+            progress.setAutoClose(True)
 
-                                    if self.fop.is_file(mag_file):
-                                        self.fop.rm(mag_file)
+            group_layer = CustomQTreeWidgetItem(self.treeWidget, ["Copy"])
 
-                                progress.setValue(it)
+            for iteration, fits in enumerate(fits_array):
+                try:
+                    progress.setLabelText(f"Operating on {fits.path.name}")
 
-                            data.insert(0, header_line)
-                            self.fop.write_list(res_data, data, dm="|")
-                        else:
-                            self.logger.warning("phot canceled by user.")
-
-                else:
-                    self.logger.warning("No photpars was given. Nothing to do.")
-                    QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No photpars was given. Nothing to do.")
-            else:
-                self.logger.warning("No coordinate file was given. Nothing to do.")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No coordinate was given. Nothing to do.")
-        else:
-            self.logger.warning("No data file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
-
-    def add_phot_par(self):
-        aperture = self.phot_aperture.value()
-        annulus = self.phot_annulus.value()
-        if aperture < annulus:
-            dannulus = self.phot_dannulus.value()
-            zmag = self.phot_zmag.value()
-            self.gui_dev.add_table(self.phot_par_list, [[aperture, annulus, dannulus, zmag]])
-        else:
-            self.logger.warning("Annulus must be bigger than Aperture.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Annulus must be bigger than Aperture.")
-
-    def cosmin_clean(self):
-        files = self.gui_dev.get_from_tree(self.cclean_list)
-        if len(files) > 0:
-            sigclip = self.ccleaner_sigclip.value()
-            sigfrac = self.ccleaner_sigfrac.value()
-            objlim = self.ccleaner_objlim.value()
-            gain = self.ccleaner_gain.value()
-            readnoise = self.ccleaner_readnoise.value()
-            satlevel = self.ccleaner_satlevel.value()
-            pssl = self.ccleaner_pssl.value()
-            iteration = self.ccleaner_iteration.value()
-            sepmed = self.ccleaner_sepmed.isChecked()
-            cleantype = self.ccleaner_cleantype.currentText()
-            fsmode = self.ccleaner_fsmode.currentText()
-            psfmodel = self.ccleaner_psfmodel.currentText()
-            psffwhm = self.ccleaner_psffwhm.value()
-            psfsize = self.ccleaner_psfsize.value()
-
-            out_folder = self.gui_file.save_directory()
-            if out_folder:
-                progress = QtWidgets.QProgressDialog("Calibrating files...", "Abort", 0, len(files), self)
-                progress.setWindowModality(QtCore.Qt.WindowModal)
-                progress.setWindowTitle('MYRaf: Please Wait')
-                progress.setAutoClose(True)
-                for it, file in enumerate(files, start=1):
-                    _, fn = self.fop.get_base_name(file)
-                    progress.setLabelText("Calibrating {}".format(file))
-
+                    file_name = directory / Path(fits.path.name)
                     if progress.wasCanceled():
                         progress.setLabelText("ABORT!")
                         break
 
-                    output = "{}/{}".format(out_folder, fn)
-                    self.fts.cosmic_cleaner(file, output, sigclip=sigclip, sigfrac=sigfrac, objlim=objlim, gain=gain,
-                                            readnoise=readnoise, satlevel=satlevel, pssl=pssl, iteration=iteration,
-                                            sepmed=sepmed, cleantype=cleantype, fsmode=fsmode, psfmodel=psfmodel,
-                                            psffwhm=psffwhm, psfsize=psfsize)
+                    new_fits = fits.save(file_name)
 
-                    self.fts.update_header(output, "MYCClean", "Cosmic Clean done by MYRaf V3")
+                    group_layer.setFirstColumnSpanned(True)
+                    file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                    file_name_layer.setFirstColumnSpanned(True)
 
-                    progress.setValue(it)
+                    item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    statistics = new_fits.stats
+                    for key, value in statistics.items():
+                        item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                        item.setFlags(QtCore.Qt.ItemIsEnabled)
 
-        else:
-            self.logger.warning("No data file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
+                    progress.setValue(iteration)
 
-    def calibration(self):
-        data_files = self.gui_dev.get_from_tree(self.calib_image_list)
-        if len(data_files) > 0:
-            zero_files = self.gui_dev.get_from_tree(self.calib_bias_list)
-            if len(zero_files) > 0:
-                zero_combine = self.zero_combine.currentText()
-                zero_reject = self.zero_reject.currentText()
-                zero_file = "{}/myraf_zero.fits".format(self.fop.tmp_dir)
-                try:
-                    self.iraf.zerocombine(zero_files, zero_file, method=zero_combine, rejection=zero_reject)
-                except:
-                    self.logger.warning("Zerocombine failed. Zerocorrection will be skipped.")
-                    zero_file = None
-            else:
-                self.logger.warning("No zero file. Zerocorrection will be skipped.")
-                zero_file = None
-
-            dark_files = self.gui_dev.get_from_tree(self.calib_dark_list)
-            if len(dark_files) > 0:
-
-                dark_combine = self.dark_combine.currentText()
-                dark_reject = self.dark_reject.currentText()
-                dark_scale = self.dark_scale.currentText()
-                dark_file = "{}/myraf_dark.fits".format(self.fop.tmp_dir)
-                try:
-                    self.iraf.darkcombine(dark_files, dark_file, method=dark_combine,
-                                          rejection=dark_reject, scale=dark_scale)
-                except:
-                    self.logger.warning("Darkcombine failed. Darkcorrection will be skipped.")
-                    dark_file = None
-            else:
-                self.logger.warning("No dark file. Darkcorrection will be skipped.")
-                dark_file = None
-
-            flat_files = self.gui_dev.get_from_tree(self.calib_flat_list)
-            if len(flat_files) > 0:
-                flat_combine = self.flat_combine.currentText()
-                flat_reject = self.flat_reject.currentText()
-                flat_file = "{}/myraf_flat.fits".format(self.fop.tmp_dir)
-                try:
-                    self.iraf.flatcombine(flat_files, flat_file, method=flat_combine, rejection=flat_reject)
-                except:
-                    self.logger.warning("Flatcombine failed. Flatcorrection will be skipped.")
-                    flat_file = None
-            else:
-                self.logger.warning("No flat file. Flatcorrection will be skipped.")
-                flat_file = None
-
-            if flat_file is None and dark_file is None and zero_file is None:
-                self.logger.warning("No operation available")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No operation available. Nothing to do.")
-            else:
-                out_folder = self.gui_file.save_directory()
-                if out_folder:
-                    progress = QtWidgets.QProgressDialog("Calibrating files...", "Abort", 0, len(data_files), self)
-                    progress.setWindowModality(QtCore.Qt.WindowModal)
-                    progress.setWindowTitle('MYRaf: Please Wait')
-                    progress.setAutoClose(True)
-                    for it, data_file in enumerate(data_files, start=1):
-                        _, fn = self.fop.get_base_name(data_file)
-                        progress.setLabelText("Calibrating {}".format(data_file))
-
-                        if progress.wasCanceled():
-                            progress.setLabelText("ABORT!")
-                            break
-
-                        output = "{}/{}".format(out_folder, fn)
-                        self.iraf.ccdproc(data_file, output, zero_file, dark_file, flat_file)
-                        self.fts.update_header(output, "MYCcdp", "ccdproc done by MYRaf V3")
-
-                        progress.setValue(it)
-                else:
-                    self.logger.warning("ccdproc canceled by user.")
-        else:
-            self.logger.warning("No data file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was given. Nothing to do.")
-
-    def export_flat(self):
-        files = self.gui_dev.get_from_tree(self.calib_flat_list)
-        if len(files) > 0:
-            out_file = self.gui_file.save_file()
-            if not out_file == "":
-                flat_combine = self.flat_combine.currentText()
-                flat_reject = self.flat_reject.currentText()
-                self.iraf.flatcombine(files, out_file, method=flat_combine, rejection=flat_reject)
-                self.fts.update_header(out_file, "MYFlat", "Flatcombine done by MYRaf V3")
-            else:
-                self.logger.warning("Flatcombine canceled by user.")
-        else:
-            self.logger.warning("No file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was found. Nothing to do.")
-
-    def export_dark(self):
-        files = self.gui_dev.get_from_tree(self.calib_dark_list)
-        if len(files) > 0:
-            out_file = self.gui_file.save_file()
-            if not out_file == "":
-                dark_combine = self.dark_combine.currentText()
-                dark_reject = self.dark_reject.currentText()
-                dark_scale = self.dark_scale.currentText()
-                self.iraf.darkcombine(files, out_file, method=dark_combine, rejection=dark_reject, scale=dark_scale)
-                self.fts.update_header(out_file, "MYDark", "Darkcombine done by MYRaf V3")
-            else:
-                self.logger.warning("Darkcombine canceled by user.")
-        else:
-            self.logger.warning("No file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was found. Nothing to do.")
-
-    def export_bias(self):
-        files = self.gui_dev.get_from_tree(self.calib_bias_list)
-        if len(files) > 0:
-            out_file = self.gui_file.save_file()
-            if not out_file == "":
-                zero_combine = self.zero_combine.currentText()
-                zero_reject = self.zero_reject.currentText()
-                self.iraf.zerocombine(files, out_file, method=zero_combine, rejection=zero_reject)
-                self.fts.update_header(out_file, "MYZero", "Zerocombine done by MYRaf V3")
-            else:
-                self.logger.warning("Zerocombine canceled by user.")
-        else:
-            self.logger.warning("No file was given. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was found. Nothing to do.")
-
-    def add_header(self):
-        field_name = self.hedit_field.text()
-        files = self.gui_dev.get_from_tree(self.hedit_list)
-
-        if len(files) > 0:
-            if not field_name == "":
-                progress = QtWidgets.QProgressDialog("Adding Header...", "Abort", 0, len(files), self)
-                progress.setWindowModality(QtCore.Qt.WindowModal)
-                progress.setWindowTitle('MYRaf: Please Wait')
-                progress.setAutoClose(True)
-
-                for it, file in enumerate(files, start=1):
-                    progress.setLabelText("Adding header({}) to {}".format(field_name, file))
-
-                    if progress.wasCanceled():
-                        progress.setLabelText("ABORT!")
-                        break
-                    if self.hedit_isvaluefromheader.isChecked():
-                        seek_field = self.hedit_valuefromheader.currentText()
-                        value = self.fts.header(file, seek_field.split("->")[0])
-                        if value is not None:
-                            self.fts.update_header(file, field_name, value)
-                        else:
-                            self.logger.warning("No value was found. Skipping file {}".format(file))
-                    else:
-                        value = self.hedit_value.text()
-                        if not value == "":
-                            self.fts.update_header(file, field_name, value)
-                        else:
-                            self.logger.warning("No value was given. Skipping file {}".format(file))
-                    progress.setValue(it)
-
-                self.show_headers()
-
-            else:
-                self.logger.warning("No field was given. Nothing to do.")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No field was given. Nothing to do.")
-        else:
-            self.logger.warning("No file was found. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was found. Nothing to do.")
-
-    def rm_header(self):
-        field_name = self.hedit_field.text()
-        files = self.gui_dev.get_from_tree(self.hedit_list)
-        if len(files) > 0:
-            if not field_name == "":
-                progress = QtWidgets.QProgressDialog("Removing Header...", "Abort", 0, len(files), self)
-                progress.setWindowModality(QtCore.Qt.WindowModal)
-                progress.setWindowTitle('MYRaf: Please Wait')
-                progress.setAutoClose(True)
-
-                for it, file in enumerate(files, start=1):
-                    progress.setLabelText("Removing header({}) from {}".format(field_name, file))
-
-                    if progress.wasCanceled():
-                        progress.setLabelText("ABORT!")
-                        break
-
-                    self.fts.delete_header(file, field_name)
-                    progress.setValue(it)
-
-                self.show_headers()
-            else:
-                self.logger.warning("No field was given. Nothing to do.")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No field was given. Nothing to do.")
-        else:
-            self.logger.warning("No file was found. Nothing to do.")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No file was found. Nothing to do.")
-
-    def toggle_header(self):
-        self.hedit_value.setEnabled(not self.hedit_isvaluefromheader.isChecked())
-        self.hedit_valuefromheader.setEnabled(self.hedit_isvaluefromheader.isChecked())
-
-    def header_selected(self):
-        self.hedit_field.setText(self.hedit_header_table.item(self.hedit_header_table.currentItem().row(), 0).text())
-        self.hedit_value.setText(self.hedit_header_table.item(self.hedit_header_table.currentItem().row(), 1).text())
-
-    def show_headers(self):
-        the_file = self.hedit_list.currentItem()
-        if the_file is not None:
-            if the_file.child(0) is not None:
-                headers = self.fts.header(the_file.toolTip(0))
-                self.gui_dev.replace_table(self.hedit_header_table, headers)
-                self.gui_dev.c_replace_list_con(self.hedit_valuefromheader,
-                                                ["{}->{}".format(i[0], i[1]) for i in headers])
-
-    def get_coordinate_phot(self, event):
-        try:
-            if event.button is MouseButton.LEFT:
-                x, y = self.phot_display.get_xy()
-                if self.phot_display.get_data() is not None:
-                    self.gui_dev.add(self.phot_coor_list, ["{:0.2f},{:0.2f}".format(x, y)])
-                else:
-                    self.logger.info("Coordinate({:0.2f},{:0.2f}) out of boundary".format(x, y))
-        except Exception as e:
-            self.logger.error(e)
-
-    def align_onpick(self, event):
-        x, y = self.align_display.get_xy()
-        val = self.align_display.get_data()
-        self.info_align.setText("X: {:0.2f}, Y: {:0.2f}, Val: {:0.2f}".format(x, y, val))
-
-    def phot_onpick(self, event):
-        try:
-            x, y = self.phot_display.get_xy()
-            val = self.phot_display.get_data()
-            self.info_phot.setText("X: {:0.2f}, Y: {:0.2f}, Val: {:0.2f}".format(x, y, val))
-        except Exception as e:
-            self.logger.error(e)
-
-    def display(self, file_device, display_devide):
-        the_file = file_device.currentItem()
-        if the_file.child(0) is not None:
-            display_devide.load(the_file.toolTip(0))
+                except Exception as e:
+                    self.logger.warning(e)
+            progress.close()
+            if group_layer.childCount() == 0:
+                self.treeWidget.takeTopLevelItem(self.treeWidget.indexOfTopLevelItem(group_layer))
 
     def eventFilter(self, source, event):
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.calib_image_list:
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.treeWidget:
+
+            selected = self.gui_functions.get_selected_files(self.treeWidget)
+
+            menu_file = QtWidgets.QMenu("File")
+            menu_file.addAction('Add', lambda: (self.add_files()))
+
+            remove = menu_file.addAction('Remove', lambda: (self.remove()))
+            if len(selected) < 1:
+                remove.setEnabled(False)
+
+            rename = menu_file.addAction('Rename', lambda: (self.rename()))
+            if len(selected) != 1:
+                rename.setEnabled(False)
+
+            save_as = menu_file.addAction('Save As', lambda: (self.save_as()))
+            if len(selected) != 1:
+                save_as.setEnabled(False)
+
+            menu_file.addSeparator()
+            merge = menu_file.addAction('Merge', lambda: (self.merge()))
+            if len(selected) < 2:
+                merge.setEnabled(False)
+            split = menu_file.addAction('Split', lambda: (self.split()))
+            if len(selected) != 1:
+                split.setEnabled(False)
+
+            menu_operations = QtWidgets.QMenu("Operations")
+
+            arithmetic = menu_operations.addAction("Arithmetic...", lambda: (self.arithmetic()))
+            if len(selected) != 1:
+                arithmetic.setEnabled(False)
+
+            menu_operations_combine = QtWidgets.QMenu("Combine")
+
+            combine = menu_operations_combine.addAction("Combine...", lambda: (self.combine()))
+            if len(selected) != 1:
+                combine.setEnabled(False)
+            else:
+                if len(selected[list(selected.keys())[0]]) < 2:
+                    combine.setEnabled(False)
+
+            menu_operations_combine.addSeparator()
+            zero_combine = menu_operations_combine.addAction("Zero Combine...", lambda: (self.combine("zero")))
+            if len(selected) != 1:
+                zero_combine.setEnabled(False)
+            else:
+                if len(selected[list(selected.keys())[0]]) < 2:
+                    zero_combine.setEnabled(False)
+
+            dark_combine = menu_operations_combine.addAction("Dark Combine...", lambda: (self.combine("dark")))
+            if len(selected) != 1:
+                dark_combine.setEnabled(False)
+            else:
+                if len(selected[list(selected.keys())[0]]) < 2:
+                    dark_combine.setEnabled(False)
+
+            flat_combine = menu_operations_combine.addAction("Flat Combine...", lambda: (self.combine("flat")))
+            if len(selected) != 1:
+                flat_combine.setEnabled(False)
+            else:
+                if len(selected[list(selected.keys())[0]]) < 2:
+                    flat_combine.setEnabled(False)
+
+            menu_operations_transform = QtWidgets.QMenu("Transform")
+            align = menu_operations_transform.addAction("Align...", lambda: (self.align()))
+            if len(selected) != 1:
+                align.setEnabled(False)
+            else:
+                if len(selected[list(selected.keys())[0]]) < 2:
+                    align.setEnabled(False)
+
+            menu_operations_transform.addSeparator()
+            binning = menu_operations_transform.addAction("Bin...", lambda: (self.binning()))
+            if len(selected) != 1:
+                binning.setEnabled(False)
+
+            crop = menu_operations_transform.addAction("Crop...", lambda: (self.crop()))
+            if len(selected) != 1:
+                crop.setEnabled(False)
+
+            shift = menu_operations_transform.addAction("Shift...", lambda: (self.shift()))
+            if len(selected) != 1:
+                shift.setEnabled(False)
+
+            rotate = menu_operations_transform.addAction("Rotate...", lambda: (self.rotate()))
+            if len(selected) != 1:
+                rotate.setEnabled(False)
+
+            menu_operations_info = QtWidgets.QMenu("Information")
+            header = menu_operations_info.addAction("Header...", lambda: (self.header_show()))
+            if len(selected) != 1:
+                header.setEnabled(False)
+
+            hselect = menu_operations_info.addAction("HSelect...", lambda: (self.hselect()))
+            if len(selected) != 1:
+                hselect.setEnabled(False)
+
+            statics = menu_operations_info.addAction("Statics...", lambda: (self.statics()))
+            if len(selected) != 1:
+                statics.setEnabled(False)
+
             menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.calib_image_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.calib_image_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.calib_image_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.calib_image_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.calib_bias_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.calib_bias_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.calib_bias_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.calib_bias_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.calib_bias_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.calib_dark_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.calib_dark_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.calib_dark_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.calib_dark_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.calib_dark_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.calib_flat_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.calib_flat_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.calib_flat_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.calib_flat_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.calib_flat_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.align_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.align_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.align_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.align_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.align_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.phot_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.phot_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.phot_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.phot_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.phot_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.hext_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.hext_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.hext_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.hext_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.hext_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.hcalc_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.hcalc_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.hcalc_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.hcalc_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.hcalc_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.hedit_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.hedit_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.hedit_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.hedit_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.hedit_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.cclean_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Add', lambda: (self.add_files(self.cclean_list)))
-            menu.addAction('Remove', lambda: (self.rm_files(self.cclean_list)))
-            menu.addSeparator()
-            menu.addAction('Expand All', lambda: (self.cclean_list.expandAll()))
-            menu.addAction('Collapse All', lambda: (self.cclean_list.collapseAll()))
-            menu.exec_(event.globalPos())
-            return True
-
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.phot_coor_list:
-            menu = QtWidgets.QMenu()
-            menu.addAction('Remove', lambda: (self.gui_dev.rm(self.phot_coor_list)))
+            menu.addMenu(menu_file)
 
             menu.addSeparator()
-            show_all = menu.addAction('Show All', lambda: (self.plot_coordinates(selected=False)))
-            show_selected = menu.addAction('Show Selected', lambda: (self.plot_coordinates(selected=True)))
-            show_all.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
-            show_selected.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
+            display = menu.addAction('Display...', lambda: (self.display()))
+            if len(selected) < 1:
+                display.setEnabled(False)
+
+            menu_editor = QtWidgets.QMenu("Editor")
+
+            cosmic_clean = menu_editor.addAction("Cosmic Clean...", lambda: (self.cosmic_clean()))
+            if len(selected) != 1:
+                cosmic_clean.setEnabled(False)
+
+            hcalch = menu_editor.addAction("Header Calculator...", lambda: (self.hcalc()))
+            if len(selected) != 1:
+                hcalch.setEnabled(False)
+
+            hedit = menu_editor.addAction("Header...", lambda: (self.hedit()))
+            if len(selected) != 1:
+                hedit.setEnabled(False)
 
             menu.addSeparator()
-            exportation = menu.addAction('Export', lambda: (self.export_coords()))
-            importation = menu.addAction('Import', lambda: (self.import_coords()))
-            importation.setEnabled(self.phot_display.get_data() is not None)
-            exportation.setEnabled(len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0)
+            menu.addMenu(menu_operations)
+            menu_operations.addMenu(menu_operations_combine)
+            menu_operations.addMenu(menu_operations_transform)
+            menu_operations.addMenu(menu_operations_info)
 
+            ccdproc = menu_operations.addAction("CCDProc...", lambda: (self.ccdproc()))
+            if len(selected) != 1:
+                ccdproc.setEnabled(False)
+
+            photometry = menu_operations.addAction("Photometry...", lambda: (self.photometry()))
+            if len(selected) != 1:
+                photometry.setEnabled(False)
+
+            menu.addMenu(menu_editor)
             menu.exec_(event.globalPos())
             return True
 
         return super(MainWindow, self).eventFilter(source, event)
 
-    def export_coords(self):
-        data = self.gui_dev.list_of_list(self.phot_coor_list)
-        if len(data) > 0:
-            out_file = self.gui_file.save_file(file_type="Coordinates File (*.coo)", name="coordinates.coo")
-            if not out_file == "":
-                self.fop.write_list(out_file, data)
-            else:
-                self.logger.warning("saving canceled by user.")
+    def closeEvent(self, event):
+        if self.gui_functions.ask(self, "MYRaf", "Are you sure you want to quit?"):
+            event.accept()
         else:
-            self.logger.warning("No coordinates were found to save")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Please add coordinate(s)")
+            event.ignore()
 
-    def import_coords(self):
-        file = self.gui_file.get_file(file_type="Coordinates File (*.coo)")
-        if file:
-            data = self.fop.read_lis(file)
-            if len(data) > 0:
-                if len(self.gui_dev.list_of_list(self.phot_coor_list)) > 0:
-                    answ = self.gui_dev.ask_calcel(
-                        "Do you want to replace coordinates. Click NO for adding coordinates")
-                    if answ == "yes":
-                        self.gui_dev.replace_list_con(self.phot_coor_list, data)
-                    elif answ == "no":
-                        self.gui_dev.add(self.phot_coor_list, data)
-                    else:
-                        self.logger.warning("User canceled adding coordinates")
-                else:
-                    self.gui_dev.add(self.phot_coor_list, data)
-        else:
-            self.logger.warning("User canceled adding coordinates")
 
-    def rm_files(self, device):
-        self.gui_dev.rm_from_tree(device)
+class PhotometryForm(QWidget, Ui_FormPhotometry):
+    def __init__(self, parent, fits_array):
+        super(PhotometryForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
 
-    def add_files(self, device):
-        self.logger.info("Getting File List")
-        files = self.gui_file.get_files()
-        if files:
-            progress = QtWidgets.QProgressDialog("Adding files...", "Abort", 0, len(files), self)
-            progress.setWindowModality(QtCore.Qt.WindowModal)
-            progress.setWindowTitle('MYRaf: Please Wait')
-            progress.setAutoClose(True)
+        self.canvas = CanvasView(render='widget')
+        self.canvas.enable_autocuts('on')
+        self.canvas.set_autocut_params('zscale')
+        self.canvas.enable_autozoom('on')
+        self.canvas.set_bg(0.2, 0.2, 0.2)
+        self.canvas.ui_set_active(True)
 
-            images_to_add = []
-            for it, file in enumerate(files, start=1):
-                progress.setLabelText("Adding {}".format(file))
+        group_box_layout = QVBoxLayout()
+        self.ginga_widget = self.canvas.get_widget()
+        group_box_layout.addWidget(self.ginga_widget)
+        self.groupBox.setLayout(group_box_layout)
+        self.img = AstroImage(logger=self.parent.logger)
+        self.img.load_data(self.fits_array[0].data)
+        self.canvas.set_image(self.img)
+
+        self.iteration = 0
+        self.current_angle = 0
+
+        self.ginga_widget.installEventFilter(self)
+        self.listWidgetApertureRadii.installEventFilter(self)
+
+        self.reset_transform()
+
+        self.pushButtonAddToRadii.clicked.connect(self.add_to_apertures)
+        self.pushButtonAddToHeaderToExtract.clicked.connect(self.select_header)
+        self.pushButtonRemoveFromHeaderToExtract.clicked.connect(self.take_header)
+
+        self.load_headers()
+
+        self.comboBoxPhotometryMethods.currentIndexChanged.connect(self.save_settings)
+        self.comboBoxExposureInHeader.currentIndexChanged.connect(self.save_settings)
+        self.doubleSpinBoxSexSigma.valueChanged.connect(self.save_settings)
+        self.doubleSpinBoxSexMinimumArea.valueChanged.connect(self.save_settings)
+        self.doubleSpinBoxDAOFindSigma.valueChanged.connect(self.save_settings)
+        self.doubleSpinBoxDAOFindFWHM.valueChanged.connect(self.save_settings)
+        self.doubleSpinBoxDAOindThreshold.valueChanged.connect(self.save_settings)
+        self.load_settings()
+
+        self.pushButtonGO.clicked.connect(self.go)
+
+    def go(self):
+        coordinates = self.parent.gui_functions.get_from_table(self.tableWidgetCoordinates)
+        if not coordinates:
+            self.parent.gui_functions.error(self, "No coordinates were given for aperture")
+            return
+
+        radii = self.parent.gui_functions.get_from_list(self.listWidgetApertureRadii)
+        if not radii:
+            self.parent.gui_functions.error(self, "No radius were given for aperture")
+            return
+
+        headers = self.parent.gui_functions.get_from_list(self.listWidgetHeadersToExtract)
+
+        exposure = self.comboBoxExposureInHeader.currentText()
+
+        numeric_coordinates_x = [int(float(coord[0])) for coord in coordinates]
+        numeric_coordinates_y = [int(float(coord[1])) for coord in coordinates]
+        numeric_radii = [float(each) for each in radii]
+        headers_to_extract = headers if headers else None
+        exposure_in_header = None if exposure == "None" else exposure
+
+        save_file = self.parent.gui_functions.save_file(self, "Save File", "Comma Seperated Value (*.csv)")
+
+        if save_file == "":
+            return
+
+        progress = QtWidgets.QProgressDialog("Doing Photometry ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        photometry = []
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
 
                 if progress.wasCanceled():
                     progress.setLabelText("ABORT!")
                     break
 
-                if self.fts.check(file):
-                    file_type = str(self.fts.header(file, "IMAGETYP"))
-                    stats = self.fts.stats(file)
-                    images_to_add.append([file, file_type, stats])
-                progress.setValue(it)
+                method = self.comboBoxPhotometryMethods.currentIndex()
 
-            if len(images_to_add) > 0:
-                self.logger.info("Add File List to View")
-                self.gui_dev.add_to_tree(images_to_add, device)
-
-            progress.close()
-
-    def remove_settings_profile(self):
-        profile = self.settings_profile_selector.currentText()
-        self.load_settings(profile)
-        if profile == "--Default--":
-            self.logger.warning("Cannot remove Default Profile")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Cannot remove Default profile")
-        elif profile == "--New--":
-            self.logger.warning("Cannot remove New Profile")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "This setting is used for add profile only.")
-        else:
-            all_settings = self.fop.read_json(self.settings_file)
-            del all_settings[profile]
-            self.fop.write_json(self.settings_file, all_settings)
-
-        self.load_list_of_settngs()
-
-    def load_list_of_settngs(self):
-        global current_profile
-        all_settings = self.fop.read_json(self.settings_file)
-        try:
-            current_profile = all_settings["--Current--"]
-            del all_settings["--Current--"]
-        except:
-            self.logger.warning("No current profile available")
-
-        self.gui_dev.c_replace_list_con(self.settings_profile_selector, all_settings.keys())
-        try:
-            self.settings_profile_selector.setCurrentText(current_profile)
-        except:
-            self.logger.warning("No current profile available")
-
-    def setting_profile_changed(self):
-        profile = self.settings_profile_selector.currentText()
-
-        if profile == "--Default--":
-            self.settings_new_profile.setEnabled(False)
-        elif profile == "--New--":
-            self.settings_new_profile.setEnabled(True)
-        else:
-            self.settings_new_profile.setEnabled(False)
-        try:
-            self.load_settings(profile)
-        except Exception as e:
-            self.logger.warning("{}. Probably first load".format(e))
-
-    def load_settings(self, profile_name):
-        all_settings = self.fop.read_json(self.settings_file)
-
-        the_settings = all_settings[profile_name]
-
-        calib_settings = the_settings["calib_settings"]
-        self.zero_combine.setCurrentText(calib_settings["cali_zero_combine"])
-        self.zero_reject.setCurrentText(calib_settings["cali_zero_reject"])
-
-        self.dark_combine.setCurrentText(calib_settings["cali_dark_combine"])
-        self.dark_reject.setCurrentText(calib_settings["cali_dark_reject"])
-        self.dark_scale.setCurrentText(calib_settings["cali_dark_scale"])
-
-        self.flat_combine.setCurrentText(calib_settings["cali_flat_combine"])
-        self.flat_reject.setCurrentText(calib_settings["cali_flat_reject"])
-
-        phot_settings = the_settings["phot_settings"]
-        self.gui_dev.clear_table(self.phot_par_list)
-        self.gui_dev.add_table(self.phot_par_list, phot_settings["phot_pars"])
-        self.gui_dev.replace_list_con(self.phot_header_to_exract, phot_settings["header_to_extract"])
-
-        cosmic_settings = the_settings["cosmic_settings"]
-        self.ccleaner_sigclip.setValue(cosmic_settings["sigclip"])
-        self.ccleaner_sigfrac.setValue(cosmic_settings["sigfrac"])
-        self.ccleaner_objlim.setValue(cosmic_settings["objlim"])
-        self.ccleaner_gain.setValue(cosmic_settings["gain"])
-        self.ccleaner_readnoise.setValue(cosmic_settings["readnoise"])
-        self.ccleaner_satlevel.setValue(cosmic_settings["satlevel"])
-        self.ccleaner_pssl.setValue(cosmic_settings["pssl"])
-        self.ccleaner_iteration.setValue(cosmic_settings["iteration"])
-        self.ccleaner_sepmed.setChecked(cosmic_settings["sepmed"])
-        self.ccleaner_cleantype.setCurrentText(cosmic_settings["cleantype"])
-        self.ccleaner_fsmode.setCurrentText(cosmic_settings["fsmode"])
-        self.ccleaner_psfmodel.setCurrentText(cosmic_settings["psfmodel"])
-        self.ccleaner_psffwhm.setValue(cosmic_settings["psffwhm"])
-        self.ccleaner_psfsize.setValue(cosmic_settings["psfsize"])
-
-    def save_the_settings(self):
-        all_settings = self.fop.read_json(self.settings_file)
-        profile = self.settings_profile_selector.currentText()
-        if profile == "--Current--":
-            pass
-        elif profile == "--Default--":
-            self.settings_new_profile.setEnabled(False)
-            self.logger.warning("Cannot save default settings")
-            QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Cannot save default settings")
-        elif profile == "--New--":
-            self.settings_new_profile.setEnabled(True)
-            profile_name = self.settings_new_profile.text()
-            if not profile_name == "":
-                if not profile_name in self.gui_dev.c_list_pf_list(self.settings_profile_selector):
-                    # Calibration group
-                    cali_zero_combine = self.zero_combine.currentText()
-                    cali_zero_reject = self.zero_reject.currentText()
-
-                    cali_dark_combine = self.dark_combine.currentText()
-                    cali_dark_reject = self.dark_reject.currentText()
-                    cali_dark_scale = self.dark_scale.currentText()
-
-                    cali_flat_combine = self.flat_combine.currentText()
-                    cali_flat_reject = self.flat_reject.currentText()
-                    calib_settings = {"cali_zero_combine": cali_zero_combine, "cali_zero_reject": cali_zero_reject,
-                                      "cali_dark_combine": cali_dark_combine, "cali_dark_reject": cali_dark_reject,
-                                      "cali_dark_scale": cali_dark_scale, "cali_flat_combine": cali_flat_combine,
-                                      "cali_flat_reject": cali_flat_reject}
-
-                    # Photometry group
-                    phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
-                    if phot_pars is None:
-                        phot_pars = []
-                    header_to_extract = self.gui_dev.list_of_list(self.phot_header_to_exract)
-                    phot_settings = {"phot_pars": phot_pars, "header_to_extract": header_to_extract}
-
-                    # Cosmic cleaner group
-                    sigclip = self.ccleaner_sigclip.value()
-                    sigfrac = self.ccleaner_sigfrac.value()
-                    objlim = self.ccleaner_objlim.value()
-                    gain = self.ccleaner_gain.value()
-                    readnoise = self.ccleaner_readnoise.value()
-                    satlevel = self.ccleaner_satlevel.value()
-                    pssl = self.ccleaner_pssl.value()
-                    iteration = self.ccleaner_iteration.value()
-                    sepmed = self.ccleaner_sepmed.isChecked()
-                    cleantype = self.ccleaner_cleantype.currentText()
-                    fsmode = self.ccleaner_fsmode.currentText()
-                    psfmodel = self.ccleaner_psfmodel.currentText()
-                    psffwhm = self.ccleaner_psffwhm.value()
-                    psfsize = self.ccleaner_psfsize.value()
-                    cosmic_settings = {"sigclip": sigclip, "sigfrac": sigfrac, "objlim": objlim, "gain": gain,
-                                       "readnoise": readnoise, "satlevel": satlevel, "pssl": pssl,
-                                       "iteration": iteration, "sepmed": sepmed, "cleantype": cleantype,
-                                       "fsmode": fsmode, "psfmodel": psfmodel, "psffwhm": psffwhm, "psfsize": psfsize}
-
-                    all_settings[profile_name] = {"calib_settings": calib_settings,
-                                                  "phot_settings": phot_settings,
-                                                  "cosmic_settings": cosmic_settings}
-
-                    all_settings["--Current--"] = profile
-                    self.settings_new_profile.setText("")
-
-                    self.fop.write_json(self.settings_file, all_settings)
+                if method == 0:
+                    phot = fits.photometry(numeric_coordinates_x, numeric_coordinates_y, numeric_radii,
+                                           headers_to_extract, exposure_in_header)
+                elif method == 1:
+                    phot = fits.photometry_sep(numeric_coordinates_x, numeric_coordinates_y, numeric_radii,
+                                               headers_to_extract, exposure_in_header)
                 else:
-                    self.logger.warning("Name already exist")
-                    QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "Name already exist")
+                    phot = fits.photometry_phu(numeric_coordinates_x, numeric_coordinates_y, numeric_radii,
+                                               headers_to_extract, exposure_in_header)
 
-            else:
-                self.logger.warning("No new profile name was given. Nothing to do.")
-                QtWidgets.QMessageBox.warning(self, "MYRaf Warning", "No new profile name was given. Nothing to do.")
+                photometry.append(phot)
 
-        else:
-            self.settings_new_profile.setEnabled(False)
-            profile_name = self.settings_profile_selector.currentText()
-            cali_zero_combine = self.zero_combine.currentText()
-            cali_zero_reject = self.zero_reject.currentText()
+                progress.setValue(iteration)
 
-            cali_dark_combine = self.dark_combine.currentText()
-            cali_dark_reject = self.dark_reject.currentText()
-            cali_dark_scale = self.dark_scale.currentText()
+            except Exception as e:
+                self.parent.logger.warning(e)
 
-            cali_flat_combine = self.flat_combine.currentText()
-            cali_flat_reject = self.flat_reject.currentText()
-            calib_settings = {"cali_zero_combine": cali_zero_combine, "cali_zero_reject": cali_zero_reject,
-                              "cali_dark_combine": cali_dark_combine, "cali_dark_reject": cali_dark_reject,
-                              "cali_dark_scale": cali_dark_scale, "cali_flat_combine": cali_flat_combine,
-                              "cali_flat_reject": cali_flat_reject}
+        progress.close()
 
-            # Photometry group
-            phot_pars = self.gui_dev.list_of_table(self.phot_par_list)
-            if phot_pars is None:
-                phot_pars = []
-            header_to_extract = self.gui_dev.list_of_list(self.phot_header_to_exract)
-            phot_settings = {"phot_pars": phot_pars, "header_to_extract": header_to_extract}
+        if len(photometry) == 0:
+            self.parent.logger.warning("Cloudn't do photometry")
+            self.parent.gui_functions.error(self, "Cloudn't do photometry")
+            return
 
-            # Cosmic cleaner group
-            sigclip = self.ccleaner_sigclip.value()
-            sigfrac = self.ccleaner_sigfrac.value()
-            objlim = self.ccleaner_objlim.value()
-            gain = self.ccleaner_gain.value()
-            readnoise = self.ccleaner_readnoise.value()
-            satlevel = self.ccleaner_satlevel.value()
-            pssl = self.ccleaner_pssl.value()
-            iteration = self.ccleaner_iteration.value()
-            sepmed = self.ccleaner_sepmed.isChecked()
-            cleantype = self.ccleaner_cleantype.currentText()
-            fsmode = self.ccleaner_fsmode.currentText()
-            psfmodel = self.ccleaner_psfmodel.currentText()
-            psffwhm = self.ccleaner_psffwhm.value()
-            psfsize = self.ccleaner_psfsize.value()
-            cosmic_settings = {"sigclip": sigclip, "sigfrac": sigfrac, "objlim": objlim, "gain": gain,
-                               "readnoise": readnoise, "satlevel": satlevel, "pssl": pssl, "iteration": iteration,
-                               "sepmed": sepmed, "cleantype": cleantype, "fsmode": fsmode, "psfmodel": psfmodel,
-                               "psffwhm": psffwhm, "psfsize": psfsize}
+        stacked_photometry = vstack(photometry)
+        stacked_photometry.to_pandas().to_csv(save_file)
 
-            all_settings[profile_name] = {"calib_settings": calib_settings,
-                                          "phot_settings": phot_settings,
-                                          "cosmic_settings": cosmic_settings}
-
-            all_settings["--Current--"] = profile
-
-            self.fop.write_json(self.settings_file, all_settings)
-        self.load_list_of_settngs()
-
-    def load_phot_result(self):
-        file = self.gui_file.get_file("*.my")
-        if file:
-            data = ascii.read(file, delimiter='|')
-
-            coordinates = np.unique(data['Coordinate'])
-            self.graph_variabl_index.clear()
-            self.graph_compair_index.clear()
-            self.graph_compair2_index.clear()
-            for coord_pair in coordinates:
-                self.graph_variabl_index.addItem(str(coord_pair))
-                self.graph_compair_index.addItem(str(coord_pair))
-                self.graph_compair2_index.addItem(str(coord_pair))
-
-            self.graph_aperture.clear()
-            apertures = np.unique(data["Aperture"])
-            for aperture in apertures:
-                self.graph_aperture.addItem(str(aperture))
-
-            filters = None
-            for colname in data.colnames:
-                if "filter" in str(colname).lower() or "subset" in colname.lower():
-                    filter_col = colname
-                    filters = np.unique(data[filter_col])
-
-            self.graph_filter.clear()
-            if filters is None:
-                self.graph_filter.addItem("Unknown")
-            else:
-                for filter in filters:
-                    self.graph_filter.addItem(str(filter))
-
-            xs = None
-            self.graph_x_values.clear()
-            for colname in data.colnames:
-                if "DATE" in colname or "JD" in colname or "UT" in colname or "TIME" in colname:
-                    self.graph_x_values.addItem(str(colname))
-
-            # self.GDevice.replace_list_con(self.file_list, image_names)
-            self.graph_path.setText(file)
-
-        else:
-            self.logger.warning("User cancel")
-
-        return True
-        # graph_t_0
-        # graph_period
-
-    def color_picker(self):
-        color = QtWidgets.QColorDialog.getColor()
-        self.graph_color_picker.setStyleSheet(f'background-color: {color.name()}')
-        self.graph_color_picker.setText(color.name())
-
-    def clear_plot(self):
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        self.comboBoxPhotometryMethods.setCurrentIndex(settings["operations"]["photometry"]["kind"])
         try:
-            graph_object.axlc1.cla()
-            graph_object.axlc2.cla()
-        except:
-            pass
+            self.comboBoxExposureInHeader.setCurrentText(settings["operations"]["photometry"]["exposure"])
+        except Exception as _:
+            self.parent.logger.warning("Cannot set exposure header. Setting to default.")
+            self.comboBoxExposureInHeader.setCurrentText("None")
 
-    def plot_phot_result(self):
-        result_file = self.graph_path.text()
-        data = ascii.read(result_file, delimiter="|")
-        data = data[(data["MAG"] != "INDEF") & (data["MERR"] != "INDEF") &
-                    (data["JD"] != "INDEF") & (data["DATE-OBS"] != "INDEF")]
+        self.listWidgetApertureRadii.clear()
+        self.parent.gui_functions.add_to_list(
+            self.listWidgetApertureRadii, settings["operations"]["photometry"]["apertures"]
+        )
 
-        x_axis_name = self.graph_x_values.currentText()
-        target_coord = self.graph_variabl_index.currentText()
-        comp1_coord = self.graph_compair_index.currentText()
-        comp2_coord = self.graph_compair2_index.currentText()
+        self.listWidgetHeadersToExtract.clear()
+        self.parent.gui_functions.add_to_list(
+            self.listWidgetHeadersToExtract, settings["operations"]["photometry"]["headers_to_extract"]
+        )
 
-        filter = self.graph_filter.currentText()
+        self.doubleSpinBoxSexSigma.setValue(settings["operations"]["photometry"]["sextractor"]["extract"]["sigma"])
+        self.doubleSpinBoxSexMinimumArea.setValue(
+            settings["operations"]["photometry"]["sextractor"]["extract"]["maximum_area"]
+        )
 
-        if filter != "Unknown":
-            phot_data_target = data[(data["FILTER"] == filter) & (data["Coordinate"] == target_coord)].group_by(x_axis_name)
-            phot_data_comp1 = data[(data["FILTER"] == filter) & (data["Coordinate"] == comp1_coord)].group_by(x_axis_name)
-            phot_data_comp2 = data[(data["FILTER"] == filter) & (data["Coordinate"] == comp2_coord)].group_by(x_axis_name)
+        self.doubleSpinBoxDAOFindSigma.setValue(settings["operations"]["photometry"]["sextractor"]["daofind"]["sigma"])
+        self.doubleSpinBoxDAOFindFWHM.setValue(settings["operations"]["photometry"]["sextractor"]["daofind"]["fwhm"])
+        self.doubleSpinBoxDAOindThreshold.setValue(
+            settings["operations"]["photometry"]["sextractor"]["daofind"]["threshold"]
+        )
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+
+        settings["operations"]["photometry"]["kind"] = self.comboBoxPhotometryMethods.currentIndex()
+        settings["operations"]["photometry"]["exposure"] = self.comboBoxExposureInHeader.currentText()
+        settings["operations"]["photometry"]["apertures"] = \
+            self.parent.gui_functions.get_from_list(self.listWidgetApertureRadii)
+        settings["operations"]["photometry"]["headers_to_extract"] = \
+            self.parent.gui_functions.get_from_list(self.listWidgetHeadersToExtract)
+        settings["operations"]["photometry"]["sextractor"]["extract"]["sigma"] = self.doubleSpinBoxSexSigma.value()
+        settings["operations"]["photometry"]["sextractor"]["extract"]["maximum_area"] = \
+            self.doubleSpinBoxSexMinimumArea.value()
+        settings["operations"]["photometry"]["sextractor"]["daofind"]["sigma"] = self.doubleSpinBoxDAOFindSigma.value()
+        settings["operations"]["photometry"]["sextractor"]["daofind"]["fwhm"] = self.doubleSpinBoxDAOFindFWHM.value()
+        settings["operations"]["photometry"]["sextractor"]["daofind"]["threshold"] = \
+            self.doubleSpinBoxDAOindThreshold.value()
+
+        self.parent.settings.settings = settings
+
+    def take_header(self):
+        self.parent.gui_functions.remove_from_list(self.listWidgetHeadersToExtract)
+        self.save_settings()
+
+    def select_header(self):
+        def f7(seq):
+            seen = set()
+            seen_add = seen.add
+            return [x for x in seq if not (x in seen or seen_add(x))]
+
+        headers_to_add = self.parent.gui_functions.get_from_list_selected(self.listWidgetHeaders)
+        available_headers = self.parent.gui_functions.get_from_list(self.listWidgetHeadersToExtract)
+        headers = list(f7(available_headers + headers_to_add))
+        self.listWidgetHeadersToExtract.clear()
+        self.parent.gui_functions.add_to_list(self.listWidgetHeadersToExtract, headers)
+        self.save_settings()
+
+    def load_headers(self):
+        header_keys = self.fits_array[0].header.keys()
+
+        self.listWidgetHeaders.clear()
+        self.parent.gui_functions.add_to_list(self.listWidgetHeaders, header_keys)
+
+        self.comboBoxExposureInHeader.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxExposureInHeader, ["None"] + list(header_keys))
+
+    def reset_transform(self):
+        x, y, swap = self.canvas.get_transforms()
+        if x:
+            self.canvas.flip_x()
+        if y:
+            self.canvas.flip_y()
+        if swap:
+            self.canvas.swap_xy()
+
+    def reset(self):
+        self.reset_transform()
+        self.canvas.rotate(0)
+        self.canvas.zoom_fit()
+        self.canvas.set_color_algorithm('linear')
+        self.canvas.restore_cmap()
+        self.canvas.set_color_map('gray')
+        self.canvas.restore_contrast()
+        self.canvas.set_intensity_map('ramp')
+
+    def rotate(self):
+        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        if ok:
+            try:
+                numeric_angle = float(angle)
+                self.canvas.rotate(numeric_angle)
+            except Exception as e:
+                self.logger.warning(e)
+
+    def add_to_apertures(self):
+        aperture = self.doubleSpinBoxApertureRadius.value()
+        apertures = self.parent.gui_functions.get_from_list(self.listWidgetApertureRadii)
+        if str(aperture) in apertures:
+            self.parent.logger.error("aperture already exists")
+            if not self.parent.gui_functions.ask(self, "aperture already exists", "Do you want to force add it?"):
+                return
+
+        self.parent.gui_functions.add_to_list(self.listWidgetApertureRadii, [str(aperture)])
+        self.save_settings()
+
+    def aperture_to_show(self):
+        try:
+            apertures = self.parent.gui_functions.get_from_list(self.listWidgetApertureRadii)
+            aperture = statistics.mean(map(float, apertures))
+            if aperture > 0:
+                return aperture
+            return 10
+        except Exception as e:
+            self.parent.logger.warning(e)
+            return 10
+
+    def draw_aperture(self):
+        current_coord = self.parent.gui_functions.get_from_table_selected(self.tableWidgetCoordinates)
+        aperture = self.aperture_to_show()
+        del self.canvas.canvas.objects[1:]
+        coordinates = self.parent.gui_functions.get_from_table(self.tableWidgetCoordinates)
+        for x, y in coordinates:
+            try:
+                x = int(x)
+                y = int(y)
+            except Exception as e:
+                self.parent.logger.warning(e)
+                return
+
+            color = "red"
+            if current_coord:
+                for each in current_coord:
+                    if each[0] == str(x) and each[1] == str(y):
+                        color = "blue"
+
+            circle = Circle(x, y, aperture, color, 5)
+            self.canvas.canvas.add(circle)
+
+    def source_extraction(self):
+        sources = self.fits_array[0].extract(
+            self.doubleSpinBoxSexSigma.value(),
+            self.doubleSpinBoxSexMinimumArea.value()
+        )
+        coordinates = sources.to_pandas().to_numpy().tolist()
+
+        self.parent.gui_functions.add_to_table(
+            self.tableWidgetCoordinates,
+            [[str(int(each)) for each in coord] for coord in coordinates]
+        )
+        self.draw_aperture()
+
+    def daofind(self):
+        sources = self.fits_array[0].daofind(
+            self.doubleSpinBoxDAOFindSigma.value(),
+            self.doubleSpinBoxDAOFindFWHM.value(),
+            self.doubleSpinBoxDAOFindFWHM.value()
+        )
+        coordinates = sources.to_pandas().to_numpy().tolist()
+
+        self.parent.gui_functions.add_to_table(
+            self.tableWidgetCoordinates,
+            [[str(int(each)) for each in coord] for coord in coordinates]
+        )
+        self.draw_aperture()
+
+    def eventFilter(self, source, event):
+
+        if event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.MiddleButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.canvas.set_pan(the_x, the_y)
+                return True
+
+            if event.button() == Qt.LeftButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.parent.gui_functions.add_to_table(
+                    self.tableWidgetCoordinates,
+                    [[int(the_x).__str__(), int(the_y).__str__()]]
+                )
+                self.draw_aperture()
+                return True
+
+        if event.type() == QtCore.QEvent.Wheel:
+            modifiers = QtWidgets.QApplication.keyboardModifiers()
+            if modifiers == QtCore.Qt.ControlModifier:
+                if event.angleDelta().y() > 0:
+                    self.current_angle += 1
+                else:
+                    self.current_angle -= 1
+
+                self.current_angle %= 360
+                self.canvas.rotate(self.current_angle)
+
+                return True
+            self.canvas.zoom_in(event.angleDelta().y() // 120)
+            return True
+
+        if event.type() == QtCore.QEvent.ContextMenu:
+            if source is self.listWidgetApertureRadii:
+                menu = QtWidgets.QMenu()
+                menu.addAction("Remove",
+                               lambda: (
+                                   self.parent.gui_functions.remove_from_list(self.listWidgetApertureRadii),
+                                   self.save_settings()
+                               ))
+
+                menu.exec_(event.globalPos())
+                return True
+
+            if source is self.ginga_widget:
+                menu = QtWidgets.QMenu()
+
+                transform_menu = QtWidgets.QMenu('Transform')
+                transform_menu.addAction('Reset', lambda: (
+                    self.reset_transform(),
+                    self.canvas.rotate(0),
+                    self.canvas.zoom_fit()
+                ))
+                transform_menu.addSeparator()
+                transform_flip_menu = QtWidgets.QMenu('Flip')
+                transform_flip_menu.addAction('Reset', lambda: self.reset_transform())
+                transform_flip_menu.addSeparator()
+                transform_flip_menu.addAction('X', lambda: self.canvas.flip_x())
+                transform_flip_menu.addAction('Y', lambda: self.canvas.flip_y())
+                transform_flip_menu.addAction('Swap XY', lambda: self.canvas.swap_xy())
+
+                transform_rotate_menu = QtWidgets.QMenu('Rotate')
+                transform_rotate_menu.addAction('Reset', lambda: self.canvas.rotate(0))
+                transform_rotate_menu.addSeparator()
+                transform_rotate_menu.addAction('90', lambda: self.canvas.rotate(90))
+                transform_rotate_menu.addAction('180', lambda: self.canvas.rotate(180))
+                transform_rotate_menu.addAction('270', lambda: self.canvas.rotate(270))
+                transform_rotate_menu.addAction('Custom', lambda: self.rotate())
+
+                display_menu = QtWidgets.QMenu('Display')
+                display_menu.addAction('Reset', lambda: (
+                    self.canvas.set_color_algorithm('linear'),
+                    self.canvas.restore_cmap(),
+                    self.canvas.set_color_map('gray'),
+                    self.canvas.restore_contrast(),
+                    self.canvas.set_intensity_map('ramp')
+                ))
+                display_menu.addSeparator()
+                display_scale_menu = QtWidgets.QMenu('Scale')
+                display_scale_menu.addAction('Reset', lambda: self.canvas.set_color_algorithm('linear'))
+                display_scale_menu.addSeparator()
+                display_scale_menu.addAction('Linear', lambda: self.canvas.set_color_algorithm('linear'))
+                display_scale_menu.addAction('Log', lambda: self.canvas.set_color_algorithm('log'))
+                display_scale_menu.addAction('Power', lambda: self.canvas.set_color_algorithm('power'))
+                display_scale_menu.addAction('Square Root', lambda: self.canvas.set_color_algorithm('sqrt'))
+                display_scale_menu.addAction('Squared', lambda: self.canvas.set_color_algorithm('squared'))
+                display_scale_menu.addAction('Inverse Hyperbolic Sine',
+                                             lambda: self.canvas.set_color_algorithm('asinh'))
+                display_scale_menu.addAction('Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('sinh'))
+                display_scale_menu.addAction('Histogram Equalization',
+                                             lambda: self.canvas.set_color_algorithm('histeq'))
+
+                display_cmap_menu = QtWidgets.QMenu('Map')
+                display_cmap_menu.addAction('Reset', lambda: (
+                    self.canvas.restore_cmap(), self.canvas.set_color_map('gray')
+                ))
+                display_cmap_menu.addAction('Reverse', lambda: self.canvas.invert_cmap())
+                display_cmap_menu.addSeparator()
+                display_cmap_menu.addAction('Accent', lambda: self.canvas.set_color_map('Accent'))
+                display_cmap_menu.addAction('Autumn', lambda: self.canvas.set_color_map('autumn'))
+                display_cmap_menu.addAction('Blue', lambda: self.canvas.set_color_map('blue'))
+                display_cmap_menu.addAction('Blues', lambda: self.canvas.set_color_map('Blues'))
+                display_cmap_menu.addAction('Bone', lambda: self.canvas.set_color_map('bone'))
+                display_cmap_menu.addAction('Color', lambda: self.canvas.set_color_map('color'))
+                display_cmap_menu.addAction('Cool', lambda: self.canvas.set_color_map('cool'))
+                display_cmap_menu.addAction('Cool Warm', lambda: self.canvas.set_color_map('coolwarm'))
+                display_cmap_menu.addAction('Copper', lambda: self.canvas.set_color_map('copper'))
+                display_cmap_menu.addAction('Cube Helix', lambda: self.canvas.set_color_map('cubehelix'))
+                display_cmap_menu.addAction('Dark', lambda: self.canvas.set_color_map('Dark2'))
+                display_cmap_menu.addAction('DS9', lambda: self.canvas.set_color_map('ds9_a'))
+                display_cmap_menu.addAction('DS9 Cool', lambda: self.canvas.set_color_map('ds9_cool'))
+                display_cmap_menu.addAction('DS9 He', lambda: self.canvas.set_color_map('ds9_he'))
+                display_cmap_menu.addAction('Flag', lambda: self.canvas.set_color_map('flag'))
+                display_cmap_menu.addAction('Gist Earth', lambda: self.canvas.set_color_map('gist_earth'))
+                display_cmap_menu.addAction('Gist Gray', lambda: self.canvas.set_color_map('gist_gray'))
+                display_cmap_menu.addAction('Gist Heat', lambda: self.canvas.set_color_map('gist_heat'))
+                display_cmap_menu.addAction('Gist Ncar', lambda: self.canvas.set_color_map('gist_ncar'))
+                display_cmap_menu.addAction('Gist Rainbow', lambda: self.canvas.set_color_map('gist_rainbow'))
+                display_cmap_menu.addAction('Gist Stern', lambda: self.canvas.set_color_map('gist_stern'))
+                display_cmap_menu.addAction('Gist Yarg', lambda: self.canvas.set_color_map('gist_yarg'))
+                display_cmap_menu.addAction('GnBu', lambda: self.canvas.set_color_map('GnBu'))
+                display_cmap_menu.addAction('Gnuplot', lambda: self.canvas.set_color_map('gnuplot'))
+                display_cmap_menu.addAction('Gray Clip', lambda: self.canvas.set_color_map('grayclip'))
+                display_cmap_menu.addAction('Gray', lambda: self.canvas.set_color_map('gray'))
+                display_cmap_menu.addAction('Green', lambda: self.canvas.set_color_map('green'))
+                display_cmap_menu.addAction('Greens', lambda: self.canvas.set_color_map('Greens'))
+                display_cmap_menu.addAction('Light', lambda: self.canvas.set_color_map('light'))
+                display_cmap_menu.addAction('Magma', lambda: self.canvas.set_color_map('magma'))
+                display_cmap_menu.addAction('Nipy Spectral', lambda: self.canvas.set_color_map('nipy_spectral'))
+                display_cmap_menu.addAction('Ocean', lambda: self.canvas.set_color_map('ocean'))
+                display_cmap_menu.addAction('Oranges', lambda: self.canvas.set_color_map('Oranges'))
+                display_cmap_menu.addAction('Paired', lambda: self.canvas.set_color_map('Paired'))
+                display_cmap_menu.addAction('Pastel', lambda: self.canvas.set_color_map('pastel'))
+                display_cmap_menu.addAction('Random', lambda: self.canvas.set_color_map('random'))
+                display_cmap_menu.addAction('Winter', lambda: self.canvas.set_color_map('winter'))
+
+                display_imap_menu = QtWidgets.QMenu('Intensity')
+                display_imap_menu.addAction('Reset', lambda: (
+                    self.canvas.set_intensity_map('ramp')
+                ))
+                display_imap_menu.addSeparator()
+                display_imap_menu.addAction('Equa', lambda: self.canvas.set_intensity_map('equa'))
+                display_imap_menu.addAction('Expo', lambda: self.canvas.set_intensity_map('expo'))
+                display_imap_menu.addAction('Gamma', lambda: self.canvas.set_intensity_map('gamma'))
+                display_imap_menu.addAction('Jigsaw', lambda: self.canvas.set_intensity_map('jigsaw'))
+                display_imap_menu.addAction('Lasritt', lambda: self.canvas.set_intensity_map('lasritt'))
+                display_imap_menu.addAction('Log', lambda: self.canvas.set_intensity_map('log'))
+                display_imap_menu.addAction('Neg', lambda: self.canvas.set_intensity_map('neg'))
+                display_imap_menu.addAction('NegLog', lambda: self.canvas.set_intensity_map('neglog'))
+                display_imap_menu.addAction('Null', lambda: self.canvas.set_intensity_map('null'))
+                display_imap_menu.addAction('Ramp', lambda: self.canvas.set_intensity_map('ramp'))
+                display_imap_menu.addAction('Stairs', lambda: self.canvas.set_intensity_map('stairs'))
+                display_imap_menu.addAction('UltraSmooth', lambda: self.canvas.set_intensity_map('ultrasmooth'))
+
+                transform_menu.addMenu(transform_flip_menu)
+                transform_menu.addMenu(transform_rotate_menu)
+
+                display_menu.addMenu(display_scale_menu)
+                display_menu.addMenu(display_cmap_menu)
+                display_menu.addMenu(display_imap_menu)
+                display_menu.addAction('Contrast', lambda: self.set_contrast())
+
+                sextract_menu = QtWidgets.QMenu('SExtract')
+
+                sextract_menu.addAction("SEP", lambda: self.source_extraction())
+                sextract_menu.addAction("DAOFind", lambda: self.daofind())
+
+                menu.addMenu(sextract_menu)
+                menu.addSeparator()
+                menu.addMenu(display_menu)
+                menu.addMenu(transform_menu)
+
+                menu.exec_(event.globalPos())
+                return True
+
+        return super().eventFilter(source, event)
+
+
+class CCDProcForm(QWidget, Ui_FormCCDPROC):
+    def __init__(self, parent, fits_array):
+        super(CCDProcForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.pushButtonZeroFile.clicked.connect(self.set_zero)
+        self.pushButtonZeroClear.clicked.connect(lambda: self.labelZeroFile.setText(""))
+        self.pushButtonDarkFile.clicked.connect(self.set_dark)
+        self.pushButtonDarkClear.clicked.connect(lambda: (self.labelDarkFile.setText(""), self.reset_exposure_header()))
+        self.pushButtonFlatFile.clicked.connect(self.set_flat)
+        self.pushButtonFlatClear.clicked.connect(lambda: self.labelFlatFile.setText(""))
+
+        self.pushButtonZeroShow.clicked.connect(lambda: self.show_image(self.labelZeroFile))
+        self.pushButtonDarkShow.clicked.connect(lambda: self.show_image(self.labelDarkFile))
+        self.pushButtonFlatShow.clicked.connect(lambda: self.show_image(self.labelFlatFile))
+
+        self.pushButtonGO.clicked.connect(self.go)
+
+        self.pushButtonZeroFile.installEventFilter(self)
+        self.pushButtonDarkFile.installEventFilter(self)
+        self.pushButtonFlatFile.installEventFilter(self)
+
+        self.reset_exposure_header()
+
+        self.comboBoxExposureHeader.currentIndexChanged.connect(self.save_settings)
+        self.checkBoxForce.stateChanged.connect(self.save_settings)
+        self.load_settings()
+
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        try:
+            self.comboBoxExposureHeader.setCurrentText(settings["operations"]["ccdproc"]["exposure"])
+        except Exception as _:
+            self.parent.logger.warning("Cannot set exposure header. Setting to default.")
+            self.comboBoxExposureHeader.setCurrentText("None")
+
+        self.checkBoxForce.setChecked(settings["operations"]["ccdproc"]["force"])
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+        settings["operations"]["ccdproc"]["exposure"] = self.comboBoxExposureHeader.currentText()
+        settings["operations"]["ccdproc"]["force"] = self.checkBoxForce.isChecked()
+
+        self.parent.settings.settings = settings
+
+    def reset_exposure_header(self):
+        self.comboBoxExposureHeader.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxExposureHeader, ["None"])
+
+    def add_from_files_tree(self, file_path_label):
+        files = self.parent.gui_functions.get_selected_files(self.parent.treeWidget)
+        files_data = []
+        for grp, children in files.items():
+            for child in children:
+                files_data.append(
+                    (Path(child.child(0).text(1)) / Path(child.text(0))).absolute().__str__()
+                )
+
+        the_file, ok = self.parent.gui_functions.get_item(self, "Select A File", "File", files_data)
+        if ok:
+            file_path_label.setText(the_file)
+            if file_path_label is self.labelDarkFile:
+                self.reload_exposure_header(the_file)
+
+    def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.ContextMenu:
+            if source is self.pushButtonZeroFile:
+                menu = QtWidgets.QMenu()
+                menu.addAction("Add From list", lambda: self.add_from_files_tree(self.labelZeroFile))
+                menu.exec_(event.globalPos())
+
+            if source is self.pushButtonDarkFile:
+                menu = QtWidgets.QMenu()
+                menu.addAction("Add From list", lambda: self.add_from_files_tree(self.labelDarkFile))
+                menu.exec_(event.globalPos())
+
+            if source is self.pushButtonFlatFile:
+                menu = QtWidgets.QMenu()
+                menu.addAction("Add From list", lambda: self.add_from_files_tree(self.labelFlatFile))
+                menu.exec_(event.globalPos())
+
+            return True
+
+        return super(CCDProcForm, self).eventFilter(source, event)
+
+    def go(self):
+        master_zero = self.labelZeroFile.text()
+        master_dark = self.labelDarkFile.text()
+        master_flat = self.labelFlatFile.text()
+
+        if master_zero == "" and master_dark == "" and master_flat == "":
+            self.parent.gui_functions.error(self, "No action")
+            return
+
+        force = self.checkBoxForce.isChecked()
+        exposure_header = self.comboBoxExposureHeader.currentText()
+
+        if exposure_header == "None":
+            exposure = None
         else:
-            phot_data_target = data[data["Coordinate"] == target_coord].group_by(x_axis_name)
-            phot_data_comp1 = data[data["Coordinate"] == comp1_coord].group_by(x_axis_name)
-            phot_data_comp2 = data[data["Coordinate"] == comp2_coord].group_by(x_axis_name)
+            exposure = exposure_header
+
+        save_dir = self.parent.gui_functions.get_directory(self, "Save Directory")
+
+        if save_dir == "":
+            return
+
+        progress = QtWidgets.QProgressDialog("Calibrating ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Calibrated"])
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = Path(save_dir) / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = Fits.from_data_header(fits.data, fits.hdu[0].header, file_name.__str__())
+
+                if master_zero:
+                    new_fits.zero_correction(Fits.from_path(master_zero), force=force)
+
+                if master_dark:
+                    new_fits.dark_correction(Fits.from_path(master_dark), exposure=exposure, force=force)
+
+                if master_flat:
+                    new_fits.flat_correction(Fits.from_path(master_flat), force=force)
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+    def show_image(self, file_label):
+        file = file_label.text()
+        if file == "":
+            self.parent.gui_functions.error(self, "Nothing to show")
+            return
+
+        fits = Fits.from_path(file)
+        self.parent.show_window(DisplayForm(self.parent, FitsArray([fits])))
+
+    def set_zero(self):
+        file = self.parent.gui_functions.get_file(self, "Zero File")
+        if file:
+            self.labelZeroFile.setText(file)
+
+    def set_dark(self):
+        file = self.parent.gui_functions.get_file(self, "Dark File")
+        if file:
+            self.labelDarkFile.setText(file)
+            self.reload_exposure_header(file)
+
+    def reload_exposure_header(self, file):
+        dark_fits = Fits.from_path(file)
+        self.reset_exposure_header()
+        self.parent.gui_functions.add_to_combo(self.comboBoxExposureHeader, list(dark_fits.header.keys()))
+
+    def set_flat(self):
+        file = self.parent.gui_functions.get_file(self, "Flat File")
+        if file:
+            self.labelFlatFile.setText(file)
 
 
-        if "DATE" in x_axis_name or "TIME" in x_axis_name:
-            if "T" in phot_data_target[x_axis_name][0]:
-                format = "isot"
-            else:
-                format = "iso"
-            offset = 0
-        elif "MJD" in x_axis_name:
-            format = "mjd"
-        elif "JD" in x_axis_name:
-            format = "jd"
+class HCalcForm(QWidget, Ui_FormHeaderCalculator):
+    def __init__(self, parent, fits_array):
+        super(HCalcForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
 
-        time_xs = Time(phot_data_target[x_axis_name], format=format).jd
+        self.load()
 
-        if self.graph_do_phase.isChecked():
-            if self.graph_t_0.value() and self.graph_period.value():
-                t0 = float(self.graph_t_0.value())
-                period = float(self.graph_period.value())
-                time_xs = ((time_xs - t0) / period) - ((time_xs - t0) / period).astype(int)
-                time_axis_label = "PHASE"
-            else:
-                time_axis_label = "TIME [JD]"
-                time_xs = phot_data_target[x_axis_name]
+        self.pushButtonGO.clicked.connect(self.go)
+
+    def go(self):
+        if not self.groupBoxTime.isChecked() and not self.groupBoxJDAirmass.isChecked():
+            self.parent.gui_functions.error(self, "No action. Nothing to do!")
+            return
+
+        progress = QtWidgets.QProgressDialog("Calculating ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        for iteration, fits in enumerate(self.fits_array):
+            progress.setLabelText(f"Operating on {fits.path.name}")
+            if progress.wasCanceled():
+                progress.setLabelText("ABORT!")
+                break
+
+            try:
+                current_time = Time(fits.hdu[0].header[self.comboBoxTimeInHeader.currentText()])
+                amount = self.doubleSpinBoxTimeAmount.value()
+                if self.groupBoxTime.isChecked():
+                    time_format = self.comboBoxTimeType.currentText()
+                    if time_format == "Second":
+                        time_delta = relativedelta(seconds=amount)
+                    elif time_format == "Minute":
+                        time_delta = relativedelta(minutes=amount)
+                    elif time_format == "Hour":
+                        time_delta = relativedelta(hours=amount)
+                    elif time_format == "Day":
+                        time_delta = relativedelta(days=amount)
+                    elif time_format == "Month":
+                        time_delta = relativedelta(months=amount)
+                    elif time_format == "Year":
+                        time_delta = relativedelta(years=amount)
+                    else:
+                        self.parent.gui_functions.error("Unrecognized time format.")
+                        return
+                    new_time = Time(current_time.to_datetime() + time_delta)
+                    fits.hedit("MY-DATE", new_time.strftime("%Y-%m-%d %H:%M:%S.%f"), comments="Calculated By MYRaf")
+
+                if self.groupBoxJDAirmass.isChecked():
+                    observatory = fits.header[self.comboBoxObservatoryInHeader.currentText()]
+                    obj = fits.header[self.comboBoxObjectInHeader.currentText()]
+
+                    sky_object = SkyCoord.from_name(obj)
+                    location = ObservatoriesForm.get(observatory)
+
+                    ltt_heli = current_time.light_travel_time(sky_object, location=location, kind="heliocentric")
+                    hjd = current_time + ltt_heli
+                    ltt_bary = current_time.light_travel_time(sky_object, location=location, kind="barycentric")
+                    bjd = current_time + ltt_bary
+
+                    altaz_frame = AltAz(obstime=current_time, location=location)
+                    altaz = sky_object.transform_to(altaz_frame)
+                    airmass = altaz.secz
+
+                    fits.hedit(["my_bjd", "my_hjd", "my_armss"], [hjd.jd, bjd.jd, airmass.value],
+                               comments=["Calculated By MYRaf", "Calculated By MYRaf", "Calculated By MYRaf"])
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+            progress.setValue(iteration)
+        progress.close()
+
+    def load(self):
+        header = self.fits_array[0].header
+
+        self.comboBoxTimeInHeader.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxTimeInHeader, header.keys())
+
+        self.comboBoxObjectInHeader.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxObjectInHeader, header.keys())
+
+        self.comboBoxObservatoryInHeader.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxObservatoryInHeader, header.keys())
+
+
+class StatisticsForm(QWidget, Ui_FormStatics):
+    def __init__(self, parent, stats):
+        super(StatisticsForm, self).__init__(parent)
+        self.parent = parent
+        self.stats = stats
+        self.setupUi(self)
+
+        self.load()
+
+    def load(self):
+        self.parent.gui_functions.add_to_table(self.tableWidgetStats, self.stats)
+
+
+class HSelectForm(QWidget, Ui_FormHSelect):
+    def __init__(self, parent, fits_array):
+        super(HSelectForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.load()
+
+        self.pushButtonExport.clicked.connect(self.export)
+
+    def export(self):
+        file = self.parent.gui_functions.save_file(self, "Export HSelect", "Comma Seperated Values (*.csv)")
+        if file:
+            header = self.parent.gui_functions.get_from_table_selected(self.tableWidgetHeaders)
+            table = self.fits_array.hselect([h[0] for h in header])
+            table.to_pandas().to_csv(file, index=False)
+
+    def load(self):
+        fits = self.fits_array[0]
+        header = fits.hdu[0].header
+        data = []
+        for key in header:
+            if key not in ['COMMENT', 'HISTORY']:
+                data.append([key, header[key], header.comments[key]])
+
+        self.parent.gui_functions.clear_table(self.tableWidgetHeaders)
+        self.parent.gui_functions.add_to_table(self.tableWidgetHeaders, data)
+
+
+class HeaderForm(QWidget, Ui_FormHeader):
+    def __init__(self, parent, fits_array):
+        super(HeaderForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+        self.set_files()
+
+        self.listWidgetFiles.clicked.connect(self.display_header)
+        self.display_header()
+
+    def display_header(self):
+        selected = self.listWidgetFiles.selectionModel().currentIndex().row()
+        fits = self.fits_array[selected]
+        header = fits.hdu[0].header
+        data = []
+        for key in header:
+            if key not in ['COMMENT', 'HISTORY']:
+                data.append([key, header[key], header.comments[key]])
+
+        self.parent.gui_functions.clear_table(self.tableWidgetHeaders)
+        self.parent.gui_functions.add_to_table(self.tableWidgetHeaders, data)
+
+    def set_files(self):
+        self.parent.gui_functions.add_to_list(self.listWidgetFiles,
+                                              [each.path.absolute().name for each in self.fits_array])
+        self.listWidgetFiles.item(0).setSelected(True)
+
+
+class CropForm(QWidget, Ui_FormCrop):
+    def __init__(self, parent, fits_array):
+        super(CropForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.canvas = CanvasView(render='widget')
+        self.canvas.enable_autocuts('on')
+        self.canvas.set_autocut_params('zscale')
+        self.canvas.enable_autozoom('on')
+        self.canvas.set_bg(0.2, 0.2, 0.2)
+        self.canvas.ui_set_active(True)
+
+        group_box_layout = QVBoxLayout()
+        self.ginga_widget = self.canvas.get_widget()
+        group_box_layout.addWidget(self.ginga_widget)
+        self.groupBox.setLayout(group_box_layout)
+        self.img = AstroImage(logger=self.parent.logger)
+        self.img.load_data(self.fits_array[0].data)
+        self.canvas.set_image(self.img)
+
+        self.current_angle = 0
+        self.iteration = 0
+        self.start = None
+
+        self.ginga_widget.installEventFilter(self)
+
+        self.pushButtonGO.clicked.connect(self.go)
+
+    def go(self):
+        x_amounts = self.spinBoxXAmount.value()
+        y_amounts = self.spinBoxYAmount.value()
+        w_amounts = self.spinBoxWAmount.value()
+        h_amounts = self.spinBoxHAmount.value()
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Cropping ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Cropped"])
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = temp_dir / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = fits.crop(x_amounts, y_amounts, w_amounts, h_amounts, output=file_name.absolute().__str__())
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+    def reset_transform(self):
+        x, y, swap = self.canvas.get_transforms()
+        if x:
+            self.canvas.flip_x()
+        if y:
+            self.canvas.flip_y()
+        if swap:
+            self.canvas.swap_xy()
+
+    def set_contrast(self):
+        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        if ok:
+            self.canvas.set_contrast(number / 100)
+
+    def reset(self):
+        self.reset_transform()
+        self.canvas.rotate(0)
+        self.canvas.zoom_fit()
+        self.canvas.set_color_algorithm('linear')
+        self.canvas.restore_cmap()
+        self.canvas.set_color_map('gray')
+        self.canvas.restore_contrast()
+        self.canvas.set_intensity_map('ramp')
+
+    def draw_rect(self, p1, p2, color='red', linestyle="solid"):
+        del self.canvas.canvas.objects[1:]
+        try:
+            w, h = self.canvas.get_data_size()
+            if p1[0] < 0:
+                p1[0] = 0
+
+            if p1[0] > w:
+                p1[0] = w
+
+            if p1[1] < 0:
+                p1[1] = 0
+
+            if p1[1] > h:
+                p1[1] = h
+
+            if p2[0] < 0:
+                p2[0] = 0
+
+            if p2[0] > w:
+                p2[0] = w
+
+            if p2[1] < 0:
+                p2[1] = 0
+
+            if p2[1] > h:
+                p2[1] = h
+
+            rect = Rectangle(*p1, *p2, color, 2, linestyle=linestyle)
+            self.canvas.canvas.add(rect)
+        except Exception as e:
+            self.parent.logger.warning(e)
+            return
+
+    def eventFilter(self, source, event):
+
+        if event.type() == QtCore.QEvent.MouseMove:
+            if self.start is not None:
+                end = self.canvas.get_data_xy(event.x(), event.y())
+                self.draw_rect(self.start, end, 'red', "dash")
+
+        if event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.MiddleButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.canvas.set_pan(the_x, the_y)
+                return True
+
+            if event.button() == Qt.LeftButton:
+                self.start = self.canvas.get_data_xy(event.x(), event.y())
+                return True
+
+        if event.type() == QEvent.MouseButtonRelease:
+            if event.button() == Qt.LeftButton:
+                end = self.canvas.get_data_xy(event.x(), event.y())
+                self.draw_rect(self.start, end)
+                rect: Rectangle = self.canvas.canvas.objects[1:][0]
+
+                self.spinBoxXAmount.setValue(int(min(rect.x1, rect.x2)))
+                self.spinBoxYAmount.setValue(int(min(rect.y1, rect.y2)))
+                self.spinBoxWAmount.setValue(int(abs(rect.x2 - rect.x1)))
+                self.spinBoxHAmount.setValue(int(abs(rect.y2 - rect.y1)))
+                self.start = None
+                return True
+
+        if event.type() == QtCore.QEvent.Wheel:
+            modifiers = QtWidgets.QApplication.keyboardModifiers()
+            if modifiers == QtCore.Qt.ControlModifier:
+                if event.angleDelta().y() > 0:
+                    self.current_angle += 1
+                else:
+                    self.current_angle -= 1
+
+                self.current_angle %= 360
+                self.canvas.rotate(self.current_angle)
+
+                return True
+            self.canvas.zoom_in(event.angleDelta().y() // 120)
+            return True
+
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.ginga_widget:
+            menu = QtWidgets.QMenu()
+
+            transform_menu = QtWidgets.QMenu('Transform')
+            transform_menu.addAction('Reset', lambda: (
+                self.reset_transform(),
+                self.canvas.rotate(0),
+                self.canvas.zoom_fit()
+            ))
+            transform_menu.addSeparator()
+            transform_flip_menu = QtWidgets.QMenu('Flip')
+            transform_flip_menu.addAction('Reset', lambda: self.reset_transform())
+            transform_flip_menu.addSeparator()
+            transform_flip_menu.addAction('X', lambda: self.canvas.flip_x())
+            transform_flip_menu.addAction('Y', lambda: self.canvas.flip_y())
+            transform_flip_menu.addAction('Swap XY', lambda: self.canvas.swap_xy())
+
+            transform_rotate_menu = QtWidgets.QMenu('Rotate')
+            transform_rotate_menu.addAction('Reset', lambda: self.canvas.rotate(0))
+            transform_rotate_menu.addSeparator()
+            transform_rotate_menu.addAction('90', lambda: self.canvas.rotate(90))
+            transform_rotate_menu.addAction('180', lambda: self.canvas.rotate(180))
+            transform_rotate_menu.addAction('270', lambda: self.canvas.rotate(270))
+            transform_rotate_menu.addAction('Custom', lambda: self.rotate())
+
+            display_menu = QtWidgets.QMenu('Display')
+            display_menu.addAction('Reset', lambda: (
+                self.canvas.set_color_algorithm('linear'),
+                self.canvas.restore_cmap(),
+                self.canvas.set_color_map('gray'),
+                self.canvas.restore_contrast(),
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_menu.addSeparator()
+            display_scale_menu = QtWidgets.QMenu('Scale')
+            display_scale_menu.addAction('Reset', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addSeparator()
+            display_scale_menu.addAction('Linear', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addAction('Log', lambda: self.canvas.set_color_algorithm('log'))
+            display_scale_menu.addAction('Power', lambda: self.canvas.set_color_algorithm('power'))
+            display_scale_menu.addAction('Square Root', lambda: self.canvas.set_color_algorithm('sqrt'))
+            display_scale_menu.addAction('Squared', lambda: self.canvas.set_color_algorithm('squared'))
+            display_scale_menu.addAction('Inverse Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('asinh'))
+            display_scale_menu.addAction('Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('sinh'))
+            display_scale_menu.addAction('Histogram Equalization', lambda: self.canvas.set_color_algorithm('histeq'))
+
+            display_cmap_menu = QtWidgets.QMenu('Map')
+            display_cmap_menu.addAction('Reset', lambda: (
+                self.canvas.restore_cmap(), self.canvas.set_color_map('gray')
+            ))
+            display_cmap_menu.addAction('Reverse', lambda: self.canvas.invert_cmap())
+            display_cmap_menu.addSeparator()
+            display_cmap_menu.addAction('Accent', lambda: self.canvas.set_color_map('Accent'))
+            display_cmap_menu.addAction('Autumn', lambda: self.canvas.set_color_map('autumn'))
+            display_cmap_menu.addAction('Blue', lambda: self.canvas.set_color_map('blue'))
+            display_cmap_menu.addAction('Blues', lambda: self.canvas.set_color_map('Blues'))
+            display_cmap_menu.addAction('Bone', lambda: self.canvas.set_color_map('bone'))
+            display_cmap_menu.addAction('Color', lambda: self.canvas.set_color_map('color'))
+            display_cmap_menu.addAction('Cool', lambda: self.canvas.set_color_map('cool'))
+            display_cmap_menu.addAction('Cool Warm', lambda: self.canvas.set_color_map('coolwarm'))
+            display_cmap_menu.addAction('Copper', lambda: self.canvas.set_color_map('copper'))
+            display_cmap_menu.addAction('Cube Helix', lambda: self.canvas.set_color_map('cubehelix'))
+            display_cmap_menu.addAction('Dark', lambda: self.canvas.set_color_map('Dark2'))
+            display_cmap_menu.addAction('DS9', lambda: self.canvas.set_color_map('ds9_a'))
+            display_cmap_menu.addAction('DS9 Cool', lambda: self.canvas.set_color_map('ds9_cool'))
+            display_cmap_menu.addAction('DS9 He', lambda: self.canvas.set_color_map('ds9_he'))
+            display_cmap_menu.addAction('Flag', lambda: self.canvas.set_color_map('flag'))
+            display_cmap_menu.addAction('Gist Earth', lambda: self.canvas.set_color_map('gist_earth'))
+            display_cmap_menu.addAction('Gist Gray', lambda: self.canvas.set_color_map('gist_gray'))
+            display_cmap_menu.addAction('Gist Heat', lambda: self.canvas.set_color_map('gist_heat'))
+            display_cmap_menu.addAction('Gist Ncar', lambda: self.canvas.set_color_map('gist_ncar'))
+            display_cmap_menu.addAction('Gist Rainbow', lambda: self.canvas.set_color_map('gist_rainbow'))
+            display_cmap_menu.addAction('Gist Stern', lambda: self.canvas.set_color_map('gist_stern'))
+            display_cmap_menu.addAction('Gist Yarg', lambda: self.canvas.set_color_map('gist_yarg'))
+            display_cmap_menu.addAction('GnBu', lambda: self.canvas.set_color_map('GnBu'))
+            display_cmap_menu.addAction('Gnuplot', lambda: self.canvas.set_color_map('gnuplot'))
+            display_cmap_menu.addAction('Gray Clip', lambda: self.canvas.set_color_map('grayclip'))
+            display_cmap_menu.addAction('Gray', lambda: self.canvas.set_color_map('gray'))
+            display_cmap_menu.addAction('Green', lambda: self.canvas.set_color_map('green'))
+            display_cmap_menu.addAction('Greens', lambda: self.canvas.set_color_map('Greens'))
+            display_cmap_menu.addAction('Light', lambda: self.canvas.set_color_map('light'))
+            display_cmap_menu.addAction('Magma', lambda: self.canvas.set_color_map('magma'))
+            display_cmap_menu.addAction('Nipy Spectral', lambda: self.canvas.set_color_map('nipy_spectral'))
+            display_cmap_menu.addAction('Ocean', lambda: self.canvas.set_color_map('ocean'))
+            display_cmap_menu.addAction('Oranges', lambda: self.canvas.set_color_map('Oranges'))
+            display_cmap_menu.addAction('Paired', lambda: self.canvas.set_color_map('Paired'))
+            display_cmap_menu.addAction('Pastel', lambda: self.canvas.set_color_map('pastel'))
+            display_cmap_menu.addAction('Random', lambda: self.canvas.set_color_map('random'))
+            display_cmap_menu.addAction('Winter', lambda: self.canvas.set_color_map('winter'))
+
+            display_imap_menu = QtWidgets.QMenu('Intensity')
+            display_imap_menu.addAction('Reset', lambda: (
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_imap_menu.addSeparator()
+            display_imap_menu.addAction('Equa', lambda: self.canvas.set_intensity_map('equa'))
+            display_imap_menu.addAction('Expo', lambda: self.canvas.set_intensity_map('expo'))
+            display_imap_menu.addAction('Gamma', lambda: self.canvas.set_intensity_map('gamma'))
+            display_imap_menu.addAction('Jigsaw', lambda: self.canvas.set_intensity_map('jigsaw'))
+            display_imap_menu.addAction('Lasritt', lambda: self.canvas.set_intensity_map('lasritt'))
+            display_imap_menu.addAction('Log', lambda: self.canvas.set_intensity_map('log'))
+            display_imap_menu.addAction('Neg', lambda: self.canvas.set_intensity_map('neg'))
+            display_imap_menu.addAction('NegLog', lambda: self.canvas.set_intensity_map('neglog'))
+            display_imap_menu.addAction('Null', lambda: self.canvas.set_intensity_map('null'))
+            display_imap_menu.addAction('Ramp', lambda: self.canvas.set_intensity_map('ramp'))
+            display_imap_menu.addAction('Stairs', lambda: self.canvas.set_intensity_map('stairs'))
+            display_imap_menu.addAction('UltraSmooth', lambda: self.canvas.set_intensity_map('ultrasmooth'))
+
+            transform_menu.addMenu(transform_flip_menu)
+            transform_menu.addMenu(transform_rotate_menu)
+
+            display_menu.addMenu(display_scale_menu)
+            display_menu.addMenu(display_cmap_menu)
+            display_menu.addMenu(display_imap_menu)
+            display_menu.addAction('Contrast', lambda: self.set_contrast())
+
+            menu.addSeparator()
+
+            menu.addMenu(display_menu)
+            menu.addMenu(transform_menu)
+
+            menu.exec_(event.globalPos())
+            return True
+
+        return super().eventFilter(source, event)
+
+
+class BinForm(QWidget, Ui_FormBin):
+    def __init__(self, parent, fits_array):
+        super(BinForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.are_the_same = True
+        self.spinBoxXAmount.valueChanged.connect(self.fallow)
+        self.spinBoxYAmount.valueChanged.connect(self.toggle)
+
+        self.pushButtonGo.clicked.connect(self.go)
+
+    def go(self):
+        x_amounts = self.spinBoxXAmount.value()
+        y_amounts = self.spinBoxYAmount.value()
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Binning ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Binned"])
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = temp_dir / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = fits.bin((x_amounts, y_amounts), output=file_name.absolute().__str__())
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+    def fallow(self):
+        if self.are_the_same:
+            self.spinBoxYAmount.setValue(self.spinBoxXAmount.value())
+
+    def toggle(self):
+        self.are_the_same = self.spinBoxYAmount.value() == self.spinBoxXAmount.value()
+
+
+class HeditForm(QWidget, Ui_FormHedit):
+    def __init__(self, parent, fits_array):
+        super(HeditForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.set_header()
+
+        self.checkBoxUseFromValue.stateChanged.connect(self.toggle)
+        self.tableWidgetHeaders.clicked.connect(self.get_header)
+        self.pushButtonSaveUpdate.clicked.connect(self.save_update)
+        self.pushButtonDelete.clicked.connect(self.delete_header)
+
+    def set_header(self):
+        header = self.fits_array[0].hdu[0].header
+        data = []
+        for key in header:
+            if key not in ['COMMENT', 'HISTORY']:
+                data.append([key, header[key], header.comments[key]])
+
+        self.parent.gui_functions.clear_table(self.tableWidgetHeaders)
+        self.parent.gui_functions.add_to_table(self.tableWidgetHeaders, data)
+        self.comboBoxValue.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxValue,
+                                               [f"{each[0]} = {each[1].__str__()[:12]}" for each in data])
+
+    def delete_header(self):
+        key = self.lineEditKey.text()
+
+        progress = QtWidgets.QProgressDialog("Deleting Header ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                fits.hedit(key, delete=True)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        self.set_header()
+
+    def save_update(self):
+        is_key = self.checkBoxUseFromValue.isChecked()
+        key = self.lineEditKey.text()
+        if is_key:
+            value = self.comboBoxValue.currentText().split("=")[0].strip()
         else:
-            time_axis_label = "TIME [JD]"
-            time_axis_value = phot_data_target[x_axis_name]
+            value = self.lineEditValue.text()
+        comment = self.lineEditComment.text()
 
-        target_mag = phot_data_target["MAG"].astype(float)
-        target_mag_err = phot_data_target["MERR"].astype(float)
-        comp1_mag = phot_data_comp1["MAG"].astype(float)
-        comp1_mag_err = phot_data_comp1["MERR"].astype(float)
-        comp2_mag = phot_data_comp2["MAG"].astype(float)
-        comp2_mag_err = phot_data_comp2["MERR"].astype(float)
+        if key.strip() == "":
+            self.parent.gun_functions.error("No key was given")
+            return
 
-        target_comp1_diff = target_mag - comp1_mag
-        comp1_comp2_diff = comp1_mag - comp2_mag
+        progress = QtWidgets.QProgressDialog("Editing Header ...", "Abort", 0, len(self.fits_array), self)
 
-        target_comp1_diff_err = np.sqrt(np.power((target_mag_err), 2) +
-                                         np.power((comp1_mag_err), 2))
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
 
-        comp1_comp2_diff_err = np.sqrt(np.power((comp2_mag_err), 2) +
-                                       np.power((comp2_mag_err), 2))
+                fits.hedit(key, value, comment, value_is_key=is_key)
 
-        phot_stdev = np.std(comp1_comp2_diff)
+                progress.setValue(iteration)
 
-        graph_object = self.graph_chart.canvas
+            except Exception as e:
+                self.parent.logger.warning(e)
 
-        # graph_object.axlc1.cla()
+        progress.close()
+        self.set_header()
 
-        point_color = self.graph_color_picker.text()
+    def toggle(self):
+        enabled = self.checkBoxUseFromValue.isChecked()
+        self.lineEditValue.setEnabled(not enabled)
+        self.comboBoxValue.setEnabled(enabled)
 
-        if point_color == "Pick color":
-            point_color = "blue"
+    def get_header(self):
+        current_row = self.tableWidgetHeaders.currentRow()
 
-        point_shape = self.graph_shape.currentText()
+        key = self.tableWidgetHeaders.item(current_row, 0).text()
+        value = self.tableWidgetHeaders.item(current_row, 1).text()
+        comment = self.tableWidgetHeaders.item(current_row, 2).text()
 
-        # graph_object.axlc1.cla()
-        # graph_object.axlc2.cla()
-        graph_object.axlc1.errorbar(time_xs, target_comp1_diff, yerr=target_comp1_diff_err,
-                                    color=point_color, marker=point_shape, ecolor='k', capsize=2, capthick=2,
-                                    label='{}'.format(filter))
-        graph_object.axlc2.errorbar(time_xs, comp1_comp2_diff, yerr=comp1_comp2_diff_err,
-                                    color=point_color, marker=point_shape, ecolor='k', capsize=2, capthick=2,
-                                    label="{} ($\sigma$: {:.3f}$^m$)".format(filter, phot_stdev))
-        graph_object.axlc2.axhline(y=phot_stdev, color='k', linestyle='-', linewidth=0.5)
+        self.lineEditKey.setText(key)
+        self.lineEditValue.setText(value)
+        self.lineEditComment.setText(comment)
 
-        # get handles
-        handles, labels = graph_object.axlc1.get_legend_handles_labels()
-        # remove the errorbars
-        handles = [h[0] for h in handles]
-        # use them in the legend
-        graph_object.axlc1.legend(handles, labels, loc = 'best')
 
-        # get handles
-        handles, labels = graph_object.axlc2.get_legend_handles_labels()
-        # remove the errorbars
-        handles = [h[0] for h in handles]
-        # use them in the legend
-        graph_object.axlc2.legend(handles, labels, loc='best')
+class RotateForm(QWidget, Ui_FormRotate):
+    def __init__(self, parent, fits_array):
+        super(RotateForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
 
-        # plt.grid(True)
-        # graph_object.axlc1.invert_yaxis()
-        graph_object.axlc1.set_ylim(sorted(graph_object.axlc1.get_ylim(), reverse=True))
-        # graph_object.axlc2.invert_yaxis()
-        graph_object.axlc2.set_ylim(sorted(graph_object.axlc2.get_ylim(), reverse=True))
-        graph_object.axlc1.set_title("MYRaf Project (v3.0.0) Photometry Result, {}".format(
-            time.strftime("%d %B %Y %I:%M:%S %p")))
-        graph_object.axlc2.set_xlabel(time_axis_label.upper(), fontsize = 9)
-        graph_object.axlc1.set_ylabel("Diff. Mag. (V - C1)", fontsize = 9)
-        graph_object.axlc2.set_ylabel("Diff. Mag. (C1 - C2)", fontsize = 9)
-        graph_object.axlc1.get_xaxis().get_major_formatter().set_scientific(False)
-        graph_object.axlc2.get_xaxis().get_major_formatter().set_scientific(False)
-        graph_object.draw()
-        # graph_object.fig.tight_layout()
+        self.canvas = CanvasView(render='widget')
+        self.canvas.enable_autocuts('on')
+        self.canvas.set_autocut_params('zscale')
+        self.canvas.enable_autozoom('on')
+        self.canvas.set_bg(0.2, 0.2, 0.2)
+        self.canvas.ui_set_active(True)
 
-        mpl_cursor = mplcursors.cursor(graph_object.fig)
+        group_box_layout = QVBoxLayout()
+        self.ginga_widget = self.canvas.get_widget()
+        group_box_layout.addWidget(self.ginga_widget)
+        self.groupBox.setLayout(group_box_layout)
+        self.img = AstroImage(logger=self.parent.logger)
+        self.img.load_data(self.fits_array[0].data)
+        self.canvas.set_image(self.img)
 
-        @mpl_cursor.connect("add")
-        def on_add(sel):
-            otime = sel.target[0]
-            sel.annotation.set(text=f'Point: \nX: {sel.target[0]: .6f} \nY: {sel.target[1]: .3f}',
-                               ha="left", va="center")
-            sel.annotation.set_ha('left')
-            sel.annotation.set_weight('bold')
+        self.current_angle = 0
+        self.iteration = 0
 
-            itemindex = np.where((time_xs - otime) == 0)
+        self.ginga_widget.installEventFilter(self)
 
-            fits_file = data['File_name'][itemindex][0]
+        self.start = None
 
-            # print(time_xs[itemindex][0],fits_file)
+        self.set_amount_table()
 
-            self.phot_display.load(fits_file)
+        self.tableWidgetAmount.clicked.connect(self.set_current)
+        self.pushButtonGo.clicked.connect(self.go)
 
-    def plot_imexam(self, event):
-        if event.key == 'r':
-            x = event.xdata
-            y = event.ydata
-            fits_data = self.phot_display.image.get_data()
-            plots = Imexamine()
-            plots.radial_profile(x, y, fits_data)
+    def go(self):
+        amounts = self.parent.gui_functions.get_from_table(self.tableWidgetAmount)
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Rotating ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Rotated"])
+
+        for iteration, (fits, (_, angle)) in enumerate(zip(self.fits_array, amounts)):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = temp_dir / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = fits.rotate(math.radians(float(angle)), output=file_name.absolute().__str__())
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+    def rerotate(self):
+        current_row = self.tableWidgetAmount.currentRow()
+        angle = self.tableWidgetAmount.item(current_row, 1).text()
+        try:
+            angle = float(angle)
+        except Exception as e:
+            self.parent.logger.warning(e)
+            return
+
+        self.canvas.rotate(angle)
+
+    def set_current(self):
+        self.iteration = self.tableWidgetAmount.selectionModel().currentIndex().row()
+        self.img.load_data(self.fits_array[self.iteration].data)
+        self.tableWidgetAmount.selectRow(self.iteration)
+        self.rerotate()
+
+    def go_next(self):
+        self.iteration += 1
+
+        if self.iteration == self.tableWidgetAmount.rowCount():
+            self.iteration = 0
+            self.parent.gui_functions.warning(self, "End of list")
+
+        self.img.load_data(self.fits_array[self.iteration].data)
+        self.tableWidgetAmount.selectRow(self.iteration)
+        self.rerotate()
+
+    def set_amount_table(self):
+        self.parent.gui_functions.clear_table(self.tableWidgetAmount)
+        self.parent.gui_functions.add_to_table(
+            self.tableWidgetAmount,
+            [[each.path.absolute().name, ""] for each in self.fits_array]
+        )
+
+    def reset_transform(self):
+        x, y, swap = self.canvas.get_transforms()
+        if x:
+            self.canvas.flip_x()
+        if y:
+            self.canvas.flip_y()
+        if swap:
+            self.canvas.swap_xy()
+
+    def set_contrast(self):
+        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        if ok:
+            self.canvas.set_contrast(number / 100)
+
+    def reset(self):
+        self.reset_transform()
+        self.canvas.rotate(0)
+        self.canvas.zoom_fit()
+        self.canvas.set_color_algorithm('linear')
+        self.canvas.restore_cmap()
+        self.canvas.set_color_map('gray')
+        self.canvas.restore_contrast()
+        self.canvas.set_intensity_map('ramp')
+
+    def eventFilter(self, source, event):
+
+        if event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.MiddleButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.canvas.set_pan(the_x, the_y)
+                return True
+
+            if event.button() == Qt.LeftButton:
+                rot = self.canvas.get_rotation()
+                self.tableWidgetAmount.setItem(self.iteration, 1, QTableWidgetItem(rot.__str__()))
+                self.go_next()
+
+        if event.type() == QtCore.QEvent.Wheel:
+            modifiers = QtWidgets.QApplication.keyboardModifiers()
+            if modifiers == QtCore.Qt.ControlModifier:
+                if event.angleDelta().y() > 0:
+                    self.current_angle += 1
+                else:
+                    self.current_angle -= 1
+
+                self.current_angle %= 360
+                self.canvas.rotate(self.current_angle)
+
+                return True
+            self.canvas.zoom_in(event.angleDelta().y() // 120)
+            return True
+
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.ginga_widget:
+            menu = QtWidgets.QMenu()
+
+            transform_menu = QtWidgets.QMenu('Transform')
+            transform_menu.addAction('Reset', lambda: (
+                self.reset_transform(),
+                self.canvas.rotate(0),
+                self.canvas.zoom_fit()
+            ))
+            transform_menu.addSeparator()
+            transform_flip_menu = QtWidgets.QMenu('Flip')
+            transform_flip_menu.addAction('Reset', lambda: self.reset_transform())
+            transform_flip_menu.addSeparator()
+            transform_flip_menu.addAction('X', lambda: self.canvas.flip_x())
+            transform_flip_menu.addAction('Y', lambda: self.canvas.flip_y())
+            transform_flip_menu.addAction('Swap XY', lambda: self.canvas.swap_xy())
+
+            transform_rotate_menu = QtWidgets.QMenu('Rotate')
+            transform_rotate_menu.addAction('Reset', lambda: self.canvas.rotate(0))
+            transform_rotate_menu.addSeparator()
+            transform_rotate_menu.addAction('90', lambda: self.canvas.rotate(90))
+            transform_rotate_menu.addAction('180', lambda: self.canvas.rotate(180))
+            transform_rotate_menu.addAction('270', lambda: self.canvas.rotate(270))
+            transform_rotate_menu.addAction('Custom', lambda: self.rotate())
+
+            display_menu = QtWidgets.QMenu('Display')
+            display_menu.addAction('Reset', lambda: (
+                self.canvas.set_color_algorithm('linear'),
+                self.canvas.restore_cmap(),
+                self.canvas.set_color_map('gray'),
+                self.canvas.restore_contrast(),
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_menu.addSeparator()
+            display_scale_menu = QtWidgets.QMenu('Scale')
+            display_scale_menu.addAction('Reset', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addSeparator()
+            display_scale_menu.addAction('Linear', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addAction('Log', lambda: self.canvas.set_color_algorithm('log'))
+            display_scale_menu.addAction('Power', lambda: self.canvas.set_color_algorithm('power'))
+            display_scale_menu.addAction('Square Root', lambda: self.canvas.set_color_algorithm('sqrt'))
+            display_scale_menu.addAction('Squared', lambda: self.canvas.set_color_algorithm('squared'))
+            display_scale_menu.addAction('Inverse Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('asinh'))
+            display_scale_menu.addAction('Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('sinh'))
+            display_scale_menu.addAction('Histogram Equalization', lambda: self.canvas.set_color_algorithm('histeq'))
+
+            display_cmap_menu = QtWidgets.QMenu('Map')
+            display_cmap_menu.addAction('Reset', lambda: (
+                self.canvas.restore_cmap(), self.canvas.set_color_map('gray')
+            ))
+            display_cmap_menu.addAction('Reverse', lambda: self.canvas.invert_cmap())
+            display_cmap_menu.addSeparator()
+            display_cmap_menu.addAction('Accent', lambda: self.canvas.set_color_map('Accent'))
+            display_cmap_menu.addAction('Autumn', lambda: self.canvas.set_color_map('autumn'))
+            display_cmap_menu.addAction('Blue', lambda: self.canvas.set_color_map('blue'))
+            display_cmap_menu.addAction('Blues', lambda: self.canvas.set_color_map('Blues'))
+            display_cmap_menu.addAction('Bone', lambda: self.canvas.set_color_map('bone'))
+            display_cmap_menu.addAction('Color', lambda: self.canvas.set_color_map('color'))
+            display_cmap_menu.addAction('Cool', lambda: self.canvas.set_color_map('cool'))
+            display_cmap_menu.addAction('Cool Warm', lambda: self.canvas.set_color_map('coolwarm'))
+            display_cmap_menu.addAction('Copper', lambda: self.canvas.set_color_map('copper'))
+            display_cmap_menu.addAction('Cube Helix', lambda: self.canvas.set_color_map('cubehelix'))
+            display_cmap_menu.addAction('Dark', lambda: self.canvas.set_color_map('Dark2'))
+            display_cmap_menu.addAction('DS9', lambda: self.canvas.set_color_map('ds9_a'))
+            display_cmap_menu.addAction('DS9 Cool', lambda: self.canvas.set_color_map('ds9_cool'))
+            display_cmap_menu.addAction('DS9 He', lambda: self.canvas.set_color_map('ds9_he'))
+            display_cmap_menu.addAction('Flag', lambda: self.canvas.set_color_map('flag'))
+            display_cmap_menu.addAction('Gist Earth', lambda: self.canvas.set_color_map('gist_earth'))
+            display_cmap_menu.addAction('Gist Gray', lambda: self.canvas.set_color_map('gist_gray'))
+            display_cmap_menu.addAction('Gist Heat', lambda: self.canvas.set_color_map('gist_heat'))
+            display_cmap_menu.addAction('Gist Ncar', lambda: self.canvas.set_color_map('gist_ncar'))
+            display_cmap_menu.addAction('Gist Rainbow', lambda: self.canvas.set_color_map('gist_rainbow'))
+            display_cmap_menu.addAction('Gist Stern', lambda: self.canvas.set_color_map('gist_stern'))
+            display_cmap_menu.addAction('Gist Yarg', lambda: self.canvas.set_color_map('gist_yarg'))
+            display_cmap_menu.addAction('GnBu', lambda: self.canvas.set_color_map('GnBu'))
+            display_cmap_menu.addAction('Gnuplot', lambda: self.canvas.set_color_map('gnuplot'))
+            display_cmap_menu.addAction('Gray Clip', lambda: self.canvas.set_color_map('grayclip'))
+            display_cmap_menu.addAction('Gray', lambda: self.canvas.set_color_map('gray'))
+            display_cmap_menu.addAction('Green', lambda: self.canvas.set_color_map('green'))
+            display_cmap_menu.addAction('Greens', lambda: self.canvas.set_color_map('Greens'))
+            display_cmap_menu.addAction('Light', lambda: self.canvas.set_color_map('light'))
+            display_cmap_menu.addAction('Magma', lambda: self.canvas.set_color_map('magma'))
+            display_cmap_menu.addAction('Nipy Spectral', lambda: self.canvas.set_color_map('nipy_spectral'))
+            display_cmap_menu.addAction('Ocean', lambda: self.canvas.set_color_map('ocean'))
+            display_cmap_menu.addAction('Oranges', lambda: self.canvas.set_color_map('Oranges'))
+            display_cmap_menu.addAction('Paired', lambda: self.canvas.set_color_map('Paired'))
+            display_cmap_menu.addAction('Pastel', lambda: self.canvas.set_color_map('pastel'))
+            display_cmap_menu.addAction('Random', lambda: self.canvas.set_color_map('random'))
+            display_cmap_menu.addAction('Winter', lambda: self.canvas.set_color_map('winter'))
+
+            display_imap_menu = QtWidgets.QMenu('Intensity')
+            display_imap_menu.addAction('Reset', lambda: (
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_imap_menu.addSeparator()
+            display_imap_menu.addAction('Equa', lambda: self.canvas.set_intensity_map('equa'))
+            display_imap_menu.addAction('Expo', lambda: self.canvas.set_intensity_map('expo'))
+            display_imap_menu.addAction('Gamma', lambda: self.canvas.set_intensity_map('gamma'))
+            display_imap_menu.addAction('Jigsaw', lambda: self.canvas.set_intensity_map('jigsaw'))
+            display_imap_menu.addAction('Lasritt', lambda: self.canvas.set_intensity_map('lasritt'))
+            display_imap_menu.addAction('Log', lambda: self.canvas.set_intensity_map('log'))
+            display_imap_menu.addAction('Neg', lambda: self.canvas.set_intensity_map('neg'))
+            display_imap_menu.addAction('NegLog', lambda: self.canvas.set_intensity_map('neglog'))
+            display_imap_menu.addAction('Null', lambda: self.canvas.set_intensity_map('null'))
+            display_imap_menu.addAction('Ramp', lambda: self.canvas.set_intensity_map('ramp'))
+            display_imap_menu.addAction('Stairs', lambda: self.canvas.set_intensity_map('stairs'))
+            display_imap_menu.addAction('UltraSmooth', lambda: self.canvas.set_intensity_map('ultrasmooth'))
+
+            transform_menu.addMenu(transform_flip_menu)
+            transform_menu.addMenu(transform_rotate_menu)
+
+            display_menu.addMenu(display_scale_menu)
+            display_menu.addMenu(display_cmap_menu)
+            display_menu.addMenu(display_imap_menu)
+            display_menu.addAction('Contrast', lambda: self.set_contrast())
+
+            menu.addSeparator()
+
+            menu.addMenu(display_menu)
+            menu.addMenu(transform_menu)
+
+            menu.exec_(event.globalPos())
+            return True
+
+        return super().eventFilter(source, event)
+
+
+class ShiftForm(QWidget, Ui_FormShift):
+    def __init__(self, parent, fits_array):
+        super(ShiftForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.canvas = CanvasView(render='widget')
+        self.canvas.enable_autocuts('on')
+        self.canvas.set_autocut_params('zscale')
+        self.canvas.enable_autozoom('on')
+        self.canvas.set_bg(0.2, 0.2, 0.2)
+        self.canvas.ui_set_active(True)
+
+        group_box_layout = QVBoxLayout()
+        self.ginga_widget = self.canvas.get_widget()
+        group_box_layout.addWidget(self.ginga_widget)
+        self.groupBox.setLayout(group_box_layout)
+        self.img = AstroImage(logger=self.parent.logger)
+        self.img.load_data(self.fits_array[0].data)
+        self.canvas.set_image(self.img)
+
+        self.ginga_widget.installEventFilter(self)
+
+        self.set_amount_table()
+        self.iteration = 0
+        self.current_angle = 0
+
+        self.tableWidgetAmount.selectRow(self.iteration)
+        self.reset_transform()
+
+        self.tableWidgetAmount.clicked.connect(self.set_current)
+        self.pushButtonGo.clicked.connect(self.go)
+
+    def go(self):
+
+        ref = self.tableWidgetAmount.currentRow()
+
+        ref_x = self.tableWidgetAmount.item(ref, 1).text()
+        ref_y = self.tableWidgetAmount.item(ref, 2).text()
+
+        amounts = self.parent.gui_functions.get_from_table(self.tableWidgetAmount)
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Shifting ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Shifted"])
+
+        for iteration, (fits, (_, x, y)) in enumerate(zip(self.fits_array, amounts)):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = temp_dir / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = fits.shift(int(float(x) - float(ref_x)), int(float(y) - float(ref_y)),
+                                      output=file_name.absolute().__str__())
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+    def draw_aperture(self):
+
+        current_row = self.tableWidgetAmount.currentRow()
+        x = self.tableWidgetAmount.item(current_row, 1).text()
+        y = self.tableWidgetAmount.item(current_row, 2).text()
+        del self.canvas.canvas.objects[1:]
+        try:
+            x = float(x)
+            y = float(y)
+        except Exception as e:
+            self.parent.logger.warning(e)
+            return
+
+        circle = Circle(x, y, 25, "red", 5)
+        self.canvas.canvas.add(circle)
+
+        circle = Circle(x, y, 35, "blue", 5)
+        self.canvas.canvas.add(circle)
+
+    def set_current(self):
+        self.iteration = self.tableWidgetAmount.selectionModel().currentIndex().row()
+        self.img.load_data(self.fits_array[self.iteration].data)
+        self.tableWidgetAmount.selectRow(self.iteration)
+        self.draw_aperture()
+
+    def go_next(self):
+        self.iteration += 1
+
+        if self.iteration == self.tableWidgetAmount.rowCount():
+            self.iteration = 0
+            self.parent.gui_functions.warning(self, "End of list")
+
+        self.img.load_data(self.fits_array[self.iteration].data)
+        self.tableWidgetAmount.selectRow(self.iteration)
+        self.draw_aperture()
+
+    def set_amount_table(self):
+        self.parent.gui_functions.clear_table(self.tableWidgetAmount)
+        self.parent.gui_functions.add_to_table(
+            self.tableWidgetAmount,
+            [[each.path.absolute().name, "", ""] for each in self.fits_array]
+        )
+
+    def rotate(self):
+        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        if ok:
+            try:
+                numeric_angle = float(angle)
+                self.canvas.rotate(numeric_angle)
+            except Exception as e:
+                self.logger.warning(e)
+
+    def reset_transform(self):
+        x, y, swap = self.canvas.get_transforms()
+        if x:
+            self.canvas.flip_x()
+        if y:
+            self.canvas.flip_y()
+        if swap:
+            self.canvas.swap_xy()
+
+    def set_contrast(self):
+        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        if ok:
+            self.canvas.set_contrast(number / 100)
+
+    def reset(self):
+        self.reset_transform()
+        self.canvas.rotate(0)
+        self.canvas.zoom_fit()
+        self.canvas.set_color_algorithm('linear')
+        self.canvas.restore_cmap()
+        self.canvas.set_color_map('gray')
+        self.canvas.restore_contrast()
+        self.canvas.set_intensity_map('ramp')
+
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.MiddleButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.canvas.set_pan(the_x, the_y)
+                return True
+            if event.button() == Qt.LeftButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.tableWidgetAmount.setItem(self.iteration, 1, QTableWidgetItem(the_x.__str__()))
+                self.tableWidgetAmount.setItem(self.iteration, 2, QTableWidgetItem(the_y.__str__()))
+                self.go_next()
+                return True
+
+        if event.type() == QtCore.QEvent.Wheel:
+            modifiers = QtWidgets.QApplication.keyboardModifiers()
+            if modifiers == QtCore.Qt.ControlModifier:
+                if event.angleDelta().y() > 0:
+                    self.current_angle += 1
+                else:
+                    self.current_angle -= 1
+
+                self.current_angle %= 360
+                self.canvas.rotate(self.current_angle)
+
+                return True
+            self.canvas.zoom_in(event.angleDelta().y() // 120)
+            return True
+
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.ginga_widget:
+            menu = QtWidgets.QMenu()
+
+            transform_menu = QtWidgets.QMenu('Transform')
+            transform_menu.addAction('Reset', lambda: (
+                self.reset_transform(),
+                self.canvas.rotate(0),
+                self.canvas.zoom_fit()
+            ))
+            transform_menu.addSeparator()
+            transform_flip_menu = QtWidgets.QMenu('Flip')
+            transform_flip_menu.addAction('Reset', lambda: self.reset_transform())
+            transform_flip_menu.addSeparator()
+            transform_flip_menu.addAction('X', lambda: self.canvas.flip_x())
+            transform_flip_menu.addAction('Y', lambda: self.canvas.flip_y())
+            transform_flip_menu.addAction('Swap XY', lambda: self.canvas.swap_xy())
+
+            transform_rotate_menu = QtWidgets.QMenu('Rotate')
+            transform_rotate_menu.addAction('Reset', lambda: self.canvas.rotate(0))
+            transform_rotate_menu.addSeparator()
+            transform_rotate_menu.addAction('90', lambda: self.canvas.rotate(90))
+            transform_rotate_menu.addAction('180', lambda: self.canvas.rotate(180))
+            transform_rotate_menu.addAction('270', lambda: self.canvas.rotate(270))
+            transform_rotate_menu.addAction('Custom', lambda: self.rotate())
+
+            display_menu = QtWidgets.QMenu('Display')
+            display_menu.addAction('Reset', lambda: (
+                self.canvas.set_color_algorithm('linear'),
+                self.canvas.restore_cmap(),
+                self.canvas.set_color_map('gray'),
+                self.canvas.restore_contrast(),
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_menu.addSeparator()
+            display_scale_menu = QtWidgets.QMenu('Scale')
+            display_scale_menu.addAction('Reset', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addSeparator()
+            display_scale_menu.addAction('Linear', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addAction('Log', lambda: self.canvas.set_color_algorithm('log'))
+            display_scale_menu.addAction('Power', lambda: self.canvas.set_color_algorithm('power'))
+            display_scale_menu.addAction('Square Root', lambda: self.canvas.set_color_algorithm('sqrt'))
+            display_scale_menu.addAction('Squared', lambda: self.canvas.set_color_algorithm('squared'))
+            display_scale_menu.addAction('Inverse Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('asinh'))
+            display_scale_menu.addAction('Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('sinh'))
+            display_scale_menu.addAction('Histogram Equalization', lambda: self.canvas.set_color_algorithm('histeq'))
+
+            display_cmap_menu = QtWidgets.QMenu('Map')
+            display_cmap_menu.addAction('Reset', lambda: (
+                self.canvas.restore_cmap(), self.canvas.set_color_map('gray')
+            ))
+            display_cmap_menu.addAction('Reverse', lambda: self.canvas.invert_cmap())
+            display_cmap_menu.addSeparator()
+            display_cmap_menu.addAction('Accent', lambda: self.canvas.set_color_map('Accent'))
+            display_cmap_menu.addAction('Autumn', lambda: self.canvas.set_color_map('autumn'))
+            display_cmap_menu.addAction('Blue', lambda: self.canvas.set_color_map('blue'))
+            display_cmap_menu.addAction('Blues', lambda: self.canvas.set_color_map('Blues'))
+            display_cmap_menu.addAction('Bone', lambda: self.canvas.set_color_map('bone'))
+            display_cmap_menu.addAction('Color', lambda: self.canvas.set_color_map('color'))
+            display_cmap_menu.addAction('Cool', lambda: self.canvas.set_color_map('cool'))
+            display_cmap_menu.addAction('Cool Warm', lambda: self.canvas.set_color_map('coolwarm'))
+            display_cmap_menu.addAction('Copper', lambda: self.canvas.set_color_map('copper'))
+            display_cmap_menu.addAction('Cube Helix', lambda: self.canvas.set_color_map('cubehelix'))
+            display_cmap_menu.addAction('Dark', lambda: self.canvas.set_color_map('Dark2'))
+            display_cmap_menu.addAction('DS9', lambda: self.canvas.set_color_map('ds9_a'))
+            display_cmap_menu.addAction('DS9 Cool', lambda: self.canvas.set_color_map('ds9_cool'))
+            display_cmap_menu.addAction('DS9 He', lambda: self.canvas.set_color_map('ds9_he'))
+            display_cmap_menu.addAction('Flag', lambda: self.canvas.set_color_map('flag'))
+            display_cmap_menu.addAction('Gist Earth', lambda: self.canvas.set_color_map('gist_earth'))
+            display_cmap_menu.addAction('Gist Gray', lambda: self.canvas.set_color_map('gist_gray'))
+            display_cmap_menu.addAction('Gist Heat', lambda: self.canvas.set_color_map('gist_heat'))
+            display_cmap_menu.addAction('Gist Ncar', lambda: self.canvas.set_color_map('gist_ncar'))
+            display_cmap_menu.addAction('Gist Rainbow', lambda: self.canvas.set_color_map('gist_rainbow'))
+            display_cmap_menu.addAction('Gist Stern', lambda: self.canvas.set_color_map('gist_stern'))
+            display_cmap_menu.addAction('Gist Yarg', lambda: self.canvas.set_color_map('gist_yarg'))
+            display_cmap_menu.addAction('GnBu', lambda: self.canvas.set_color_map('GnBu'))
+            display_cmap_menu.addAction('Gnuplot', lambda: self.canvas.set_color_map('gnuplot'))
+            display_cmap_menu.addAction('Gray Clip', lambda: self.canvas.set_color_map('grayclip'))
+            display_cmap_menu.addAction('Gray', lambda: self.canvas.set_color_map('gray'))
+            display_cmap_menu.addAction('Green', lambda: self.canvas.set_color_map('green'))
+            display_cmap_menu.addAction('Greens', lambda: self.canvas.set_color_map('Greens'))
+            display_cmap_menu.addAction('Light', lambda: self.canvas.set_color_map('light'))
+            display_cmap_menu.addAction('Magma', lambda: self.canvas.set_color_map('magma'))
+            display_cmap_menu.addAction('Nipy Spectral', lambda: self.canvas.set_color_map('nipy_spectral'))
+            display_cmap_menu.addAction('Ocean', lambda: self.canvas.set_color_map('ocean'))
+            display_cmap_menu.addAction('Oranges', lambda: self.canvas.set_color_map('Oranges'))
+            display_cmap_menu.addAction('Paired', lambda: self.canvas.set_color_map('Paired'))
+            display_cmap_menu.addAction('Pastel', lambda: self.canvas.set_color_map('pastel'))
+            display_cmap_menu.addAction('Random', lambda: self.canvas.set_color_map('random'))
+            display_cmap_menu.addAction('Winter', lambda: self.canvas.set_color_map('winter'))
+
+            display_imap_menu = QtWidgets.QMenu('Intensity')
+            display_imap_menu.addAction('Reset', lambda: (
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_imap_menu.addSeparator()
+            display_imap_menu.addAction('Equa', lambda: self.canvas.set_intensity_map('equa'))
+            display_imap_menu.addAction('Expo', lambda: self.canvas.set_intensity_map('expo'))
+            display_imap_menu.addAction('Gamma', lambda: self.canvas.set_intensity_map('gamma'))
+            display_imap_menu.addAction('Jigsaw', lambda: self.canvas.set_intensity_map('jigsaw'))
+            display_imap_menu.addAction('Lasritt', lambda: self.canvas.set_intensity_map('lasritt'))
+            display_imap_menu.addAction('Log', lambda: self.canvas.set_intensity_map('log'))
+            display_imap_menu.addAction('Neg', lambda: self.canvas.set_intensity_map('neg'))
+            display_imap_menu.addAction('NegLog', lambda: self.canvas.set_intensity_map('neglog'))
+            display_imap_menu.addAction('Null', lambda: self.canvas.set_intensity_map('null'))
+            display_imap_menu.addAction('Ramp', lambda: self.canvas.set_intensity_map('ramp'))
+            display_imap_menu.addAction('Stairs', lambda: self.canvas.set_intensity_map('stairs'))
+            display_imap_menu.addAction('UltraSmooth', lambda: self.canvas.set_intensity_map('ultrasmooth'))
+
+            transform_menu.addMenu(transform_flip_menu)
+            transform_menu.addMenu(transform_rotate_menu)
+
+            display_menu.addMenu(display_scale_menu)
+            display_menu.addMenu(display_cmap_menu)
+            display_menu.addMenu(display_imap_menu)
+            display_menu.addAction('Contrast', lambda: self.set_contrast())
+
+            menu.addSeparator()
+
+            menu.addMenu(display_menu)
+            menu.addMenu(transform_menu)
+
+            menu.exec_(event.globalPos())
+            return True
+
+        return super().eventFilter(source, event)
+
+
+class AlignForm(QWidget, Ui_FormAlign):
+    def __init__(self, parent, fits_array):
+        super(AlignForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.set_reference()
+
+        self.pushButtonShow.clicked.connect(self.show_reference)
+        self.pushButtonGO.clicked.connect(self.go)
+
+        self.spinBoxMaxControlPoint.valueChanged.connect(self.save_settings)
+        self.doubleSpinDetectionSigma.valueChanged.connect(self.save_settings)
+        self.spinBoxMinArea.valueChanged.connect(self.save_settings)
+
+        self.load_settings()
+
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        self.spinBoxMaxControlPoint.setValue(settings["operations"]["transform"]["align"]["maximum_control_point"])
+        self.doubleSpinDetectionSigma.setValue(settings["operations"]["transform"]["align"]["detection_sigma"])
+        self.spinBoxMinArea.setValue(settings["operations"]["transform"]["align"]["minimum_area"])
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+        settings["operations"]["transform"]["align"]["maximum_control_point"] = self.spinBoxMaxControlPoint.value()
+        settings["operations"]["transform"]["align"]["detection_sigma"] = self.doubleSpinDetectionSigma.value()
+        settings["operations"]["transform"]["align"]["minimum_area"] = self.spinBoxMinArea.value()
+
+        self.parent.settings.settings = settings
+
+    def go(self):
+        reference = self.fits_array[self.comboBoxReference.currentIndex()]
+        max_control_points = self.spinBoxMaxControlPoint.value()
+        detection_sigma = self.doubleSpinDetectionSigma.value()
+        min_area = self.spinBoxMinArea.value()
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Aligning ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Aligned"])
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = temp_dir / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = fits.align(
+                    reference, max_control_points=max_control_points,
+                    detection_sigma=detection_sigma, min_area=min_area,
+                    output=file_name.absolute().__str__()
+                )
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+    def show_reference(self):
+        selected_file = self.fits_array[self.comboBoxReference.currentIndex()]
+        self.parent.show_window(DisplayForm(self.parent, FitsArray([selected_file])))
+
+    def set_reference(self):
+        files = [each.path.name for each in self.fits_array]
+        self.comboBoxReference.clear()
+        self.parent.gui_functions.add_to_combo(self.comboBoxReference, files)
+
+
+class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
+    def __init__(self, parent, fits_array):
+        super(CosmicCleanerForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.pushButtonGO.clicked.connect(self.go)
+
+        self.doubleSpinSigclip.valueChanged.connect(self.save_settings)
+        self.doubleSpinSigfrac.valueChanged.connect(self.save_settings)
+        self.doubleSpinObjlim.valueChanged.connect(self.save_settings)
+        self.doubleSpinGain.valueChanged.connect(self.save_settings)
+        self.doubleSpinReadnoise.valueChanged.connect(self.save_settings)
+        self.doubleSpinSatlevel.valueChanged.connect(self.save_settings)
+        self.doubleSpinPssl.valueChanged.connect(self.save_settings)
+        self.spinBoxNiter.valueChanged.connect(self.save_settings)
+        self.checkBoxSepmed.stateChanged.connect(self.save_settings)
+        self.comboBoxCleantype.currentIndexChanged.connect(self.save_settings)
+        self.comboBoxFsmode.currentIndexChanged.connect(self.save_settings)
+        self.comboBoxPsfmodel.currentIndexChanged.connect(self.save_settings)
+        self.doubleSpinPsffwhm.valueChanged.connect(self.save_settings)
+        self.spinBoxPsfsize.valueChanged.connect(self.save_settings)
+        self.doubleSpinPsfbeta.valueChanged.connect(self.save_settings)
+        self.checkBoxGain_apply.stateChanged.connect(self.save_settings)
+        self.load_settings()
+
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        self.doubleSpinSigclip.setValue(settings["edit"]["cosmic_clean"]["sigclip"])
+        self.doubleSpinSigfrac.setValue(settings["edit"]["cosmic_clean"]["sigfrac"])
+        self.doubleSpinObjlim.setValue(settings["edit"]["cosmic_clean"]["objlim"])
+        self.doubleSpinGain.setValue(settings["edit"]["cosmic_clean"]["gain"])
+        self.doubleSpinReadnoise.setValue(settings["edit"]["cosmic_clean"]["readnoise"])
+        self.doubleSpinSatlevel.setValue(settings["edit"]["cosmic_clean"]["satlevel"])
+        self.doubleSpinPssl.setValue(settings["edit"]["cosmic_clean"]["pssl"])
+        self.spinBoxNiter.setValue(settings["edit"]["cosmic_clean"]["niter"])
+        self.checkBoxSepmed.setChecked(settings["edit"]["cosmic_clean"]["sepmed"])
+        self.comboBoxCleantype.setCurrentIndex(settings["edit"]["cosmic_clean"]["cleantype"])
+        self.comboBoxFsmode.setCurrentIndex(settings["edit"]["cosmic_clean"]["fsmode"])
+        self.comboBoxPsfmodel.setCurrentIndex(settings["edit"]["cosmic_clean"]["psfmodel"])
+        self.doubleSpinPsffwhm.setValue(settings["edit"]["cosmic_clean"]["psffwhm"])
+        self.spinBoxPsfsize.setValue(settings["edit"]["cosmic_clean"]["psfsize"])
+        self.doubleSpinPsfbeta.setValue(settings["edit"]["cosmic_clean"]["psfbeta"])
+        self.checkBoxGain_apply.setChecked(settings["edit"]["cosmic_clean"]["gain_apply"])
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+        settings["edit"]["cosmic_clean"]["sigclip"] = self.doubleSpinSigclip.value()
+        settings["edit"]["cosmic_clean"]["sigfrac"] = self.doubleSpinSigfrac.value()
+        settings["edit"]["cosmic_clean"]["objlim"] = self.doubleSpinObjlim.value()
+        settings["edit"]["cosmic_clean"]["gain"] = self.doubleSpinGain.value()
+        settings["edit"]["cosmic_clean"]["readnoise"] = self.doubleSpinReadnoise.value()
+        settings["edit"]["cosmic_clean"]["satlevel"] = self.doubleSpinSatlevel.value()
+        settings["edit"]["cosmic_clean"]["pssl"] = self.doubleSpinPssl.value()
+        settings["edit"]["cosmic_clean"]["niter"] = self.spinBoxNiter.value()
+        settings["edit"]["cosmic_clean"]["sepmed"] = self.checkBoxSepmed.isChecked()
+        settings["edit"]["cosmic_clean"]["cleantype"] = self.comboBoxCleantype.currentIndex()
+        settings["edit"]["cosmic_clean"]["fsmode"] = self.comboBoxFsmode.currentIndex()
+        settings["edit"]["cosmic_clean"]["psfmodel"] = self.comboBoxPsfmodel.currentIndex()
+        settings["edit"]["cosmic_clean"]["psffwhm"] = self.doubleSpinPsffwhm.value()
+        settings["edit"]["cosmic_clean"]["psfsize"] = self.spinBoxPsfsize.value()
+        settings["edit"]["cosmic_clean"]["psfbeta"] = self.doubleSpinPsfbeta.value()
+        settings["edit"]["cosmic_clean"]["gain_apply"] = self.checkBoxGain_apply.isChecked()
+
+        self.parent.settings.settings = settings
+
+    def go(self):
+        sigclip = self.doubleSpinSigclip.value()
+        sigfrac = self.doubleSpinSigfrac.value()
+        objlim = self.doubleSpinObjlim.value()
+        gain = self.doubleSpinGain.value()
+        readnoise = self.doubleSpinReadnoise.value()
+        satlevel = self.doubleSpinSatlevel.value()
+        pssl = self.doubleSpinPssl.value()
+        niter = self.doubleSpinPssl.value()
+        sepmed = self.checkBoxSepmed.isChecked()
+        cleantype = self.comboBoxCleantype.currentText()
+        fsmode = self.comboBoxFsmode.currentText()
+        psfmodel = self.comboBoxPsfmodel.currentText()
+        psffwhm = self.doubleSpinPsffwhm.value()
+        psfsize = self.spinBoxPsfsize.value()
+        psfbeta = self.doubleSpinPsfbeta.value()
+        gain_apply = self.checkBoxGain_apply.isChecked()
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Cleaning ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Cleaned"])
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = temp_dir / Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                new_fits = fits.cosmic_cleaner(
+                    sigclip=sigclip, sigfrac=sigfrac, objlim=objlim, gain=gain, readnoise=readnoise, satlevel=satlevel,
+                    pssl=pssl, niter=niter, sepmed=sepmed, cleantype=cleantype, fsmode=fsmode, psfmodel=psfmodel,
+                    psffwhm=psffwhm, psfsize=psfsize, psfbeta=psfbeta, gain_apply=gain_apply,
+                    output=file_name.absolute().__str__()
+                )
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+
+class CombineForm(QWidget, Ui_FormCombine):
+    def __init__(self, parent, fits_array):
+        super(CombineForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.combine_type = "combine"
+
+        self.comboBoxWeight.currentIndexChanged.connect(self.set_weights)
+
+        self.set_from_header()
+        self.set_weights()
+
+        self.comboBoxMethod.currentIndexChanged.connect(self.save_settings)
+        self.comboBoxClipping.currentIndexChanged.connect(self.save_settings)
+        self.comboBoxWeight.currentIndexChanged.connect(self.save_settings)
+        self.load_settings()
+
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        self.comboBoxMethod.setCurrentIndex(settings["operations"]["combine"][self.combine_type]["method"])
+        self.comboBoxClipping.setCurrentIndex(settings["operations"]["combine"][self.combine_type]["clipping"])
+        try:
+            self.comboBoxWeight.setCurrentText(settings["operations"]["combine"][self.combine_type]["weight"])
+        except Exception as _:
+            self.parent.logger.warning("Cannot set weight. Setting to default.")
+            self.comboBoxWeight.setCurrentText("None")
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+        settings["operations"]["combine"][self.combine_type]["method"] = self.comboBoxMethod.currentIndex()
+        settings["operations"]["combine"][self.combine_type]["clipping"] = self.comboBoxClipping.currentIndex()
+        settings["operations"]["combine"][self.combine_type]["weight"] = self.comboBoxWeight.currentText()
+
+        self.parent.settings.settings = settings
+
+    def set_from_header(self):
+        header = self.fits_array[0].header
+        self.parent.gui_functions.add_to_combo(self.comboBoxWeight, list(header.keys()))
+
+        self.pushButtonGo.clicked.connect(self.go)
+
+    def set_weights(self):
+        weight = self.comboBoxWeight.currentText()
+        weights = []
+        if weight == "None":
+
+            for f in self.fits_array:
+                weights.append([f.path.name, 1.0])
+
+        elif weight == "Custom":
+            for f in self.fits_array:
+                weights.append([f.path.name, ""])
+        else:
+            headers = self.fits_array.header
+            for h in headers:
+                each_weight = h[weight]
+                if isinstance(each_weight, (float, int)):
+                    weights.append([Path(h["image"]).name, float(each_weight)])
+                else:
+                    weights.append([Path(h["image"]).name, 1.0])
+
+        self.parent.gui_functions.clear_table(self.tableWidgetWeights)
+        self.parent.gui_functions.add_to_table(self.tableWidgetWeights, weights)
+
+    def go(self):
+        method = self.comboBoxMethod.currentText()
+        clipping = self.comboBoxClipping.currentText()
+        clipping_to_use = None if clipping == "None" else clipping.lower()
+        table_content = self.parent.gui_functions.get_from_table(self.tableWidgetWeights)
+        try:
+            weights = [float(each[1]) for each in table_content]
+        except Exception as e:
+            self.parent.logger.warning(e)
+            self.parent.gui_functions.error(self, "Cannot convert at least one of weights to numeric")
+            return
+
+        combined = self.fits_array.combine(method=method.lower(), clipping=clipping_to_use, weights=weights)
+        combined.is_temp = False
+        self.parent.gui_functions.add_to_files(
+            self, [combined.path.absolute().__str__()], self.parent.treeWidget, grp="Combined"
+        )
+
+
+class ArithmeticForm(QWidget, Ui_FormArithmetic):
+    def __init__(self, parent, fits_array):
+        super(ArithmeticForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.pushButtonGetFile.clicked.connect(self.get_operand)
+        self.pushButtonGO.clicked.connect(self.go)
+
+        self.pushButtonGetFile.installEventFilter(self)
+
+        self.comboOperation.currentIndexChanged.connect(self.save_settings)
+        self.doubleSpinBoxValue.valueChanged.connect(self.save_settings)
+        self.load_settings()
+
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        self.comboOperation.setCurrentIndex(settings["operations"]["arithmetic"]["operation"])
+        self.doubleSpinBoxValue.setValue(settings["operations"]["arithmetic"]["default_value"])
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+        settings["operations"]["arithmetic"]["operation"] = self.comboOperation.currentIndex()
+        settings["operations"]["arithmetic"]["default_value"] = self.doubleSpinBoxValue.value()
+
+        self.parent.settings.settings = settings
+
+    def add_from_files_tree(self, file_path_label):
+        files = self.parent.gui_functions.get_selected_files(self.parent.treeWidget)
+        files_data = []
+        for grp, children in files.items():
+            for child in children:
+                files_data.append(
+                    (Path(child.child(0).text(1)) / Path(child.text(0))).absolute().__str__()
+                )
+
+        the_file, ok = self.parent.gui_functions.get_item(self, "Select A File", "File", files_data)
+        if ok:
+            file_path_label.setText(the_file)
+
+    def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.ContextMenu:
+            if source is self.pushButtonGetFile:
+                menu = QtWidgets.QMenu()
+                menu.addAction("Add From list", lambda: self.add_from_files_tree(self.labelFile))
+                menu.exec_(event.globalPos())
+
+            return True
+
+        return super(ArithmeticForm, self).eventFilter(source, event)
+
+    def get_operand(self):
+        file = self.parent.gui_functions.get_file(self, "Get Operand")
+        if file:
+            self.labelFile.setText(file)
+
+    def go(self):
+        if self.tabWidget.currentIndex() == 0:
+            other = self.doubleSpinBoxValue.value()
+        else:
+            other_file = self.labelFile.text()
+            if other_file == "":
+                self.parent.gui_functions.error(self, "No operand file was selected")
+                return
+            other = Fits.from_path(other_file)
+        operator = self.comboOperation.currentText()
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="myraf_"))
+
+        progress = QtWidgets.QProgressDialog("Adding ...", "Abort", 0, len(self.fits_array), self)
+
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
+        progress.setWindowTitle('MYRaf: Please Wait')
+        progress.setAutoClose(True)
+
+        group_layer = CustomQTreeWidgetItem(self.parent.treeWidget, ["Operated"])
+
+        for iteration, fits in enumerate(self.fits_array):
+            try:
+                progress.setLabelText(f"Operating on {fits.path.name}")
+
+                file_name = Path(fits.path.name)
+                if progress.wasCanceled():
+                    progress.setLabelText("ABORT!")
+                    break
+
+                if operator == "+ Add":
+                    new_fits = fits.add(other, output=(temp_dir / file_name).absolute().__str__())
+                elif operator == "- Subtract":
+                    new_fits = fits.sub(other, output=(temp_dir / file_name).absolute().__str__())
+                elif operator == "* Multiply":
+                    new_fits = fits.mul(other, output=(temp_dir / file_name).absolute().__str__())
+                elif operator == "/ Divide":
+                    new_fits = fits.div(other, output=(temp_dir / file_name).absolute().__str__())
+                elif operator == "^ Power":
+                    new_fits = fits.pow(other, output=(temp_dir / file_name).absolute().__str__())
+                else:
+                    new_fits = fits.mod(other, output=(temp_dir / file_name).absolute().__str__())
+
+                group_layer.setFirstColumnSpanned(True)
+                file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.path.name])
+                file_name_layer.setFirstColumnSpanned(True)
+
+                item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.path.resolve().parent.__str__()])
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
+                statistics = new_fits.stats
+                for key, value in statistics.items():
+                    item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
+                    item.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                progress.setValue(iteration)
+            except Exception as e:
+                self.parent.logger.warning(e)
+
+        progress.close()
+        if group_layer.childCount() == 0:
+            self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
+
+
+class DisplayForm(QWidget, Ui_FormDisplay):
+    def __init__(self, parent, fits_array):
+        super(DisplayForm, self).__init__(parent)
+        self.parent = parent
+        self.fits_array = fits_array
+        self.setupUi(self)
+
+        self.canvas = CanvasView(render='widget')
+        self.canvas.enable_autocuts('on')
+        self.canvas.set_autocut_params('zscale')
+        self.canvas.enable_autozoom('on')
+        self.canvas.set_bg(0.2, 0.2, 0.2)
+        self.canvas.ui_set_active(True)
+
+        group_box_layout = QVBoxLayout()
+        self.ginga_widget = self.canvas.get_widget()
+        group_box_layout.addWidget(self.ginga_widget)
+        self.groupBox.setLayout(group_box_layout)
+        self.img = AstroImage(logger=self.parent.logger)
+        self.img.load_data(self.fits_array[0].data)
+        self.canvas.set_image(self.img)
+
+        self.labelFile.setText(self.fits_array[0].path.name)
+        self.labelObject.setText(self.fits_array[0].header.get("OBJECT", None))
+
+        self.ginga_widget.installEventFilter(self)
+
+        self.iteration = 0
+        self.current_angle = 0
+
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.animate)
+        if len(self.fits_array) > 1:
+            self.timer.start(self.parent.settings.settings["display"]["interval"])
+
+    def animate(self):
+        fits = self.fits_array[self.iteration]
+        self.labelFile.setText(fits.path.name)
+        self.labelObject.setText(fits.header.get("OBJECT", None))
+        self.img.load_data(fits.data)
+        self.iteration += 1
+        if self.iteration >= len(self.fits_array):
+            self.iteration = 0
+
+    def info_update(self, x, y):
+        fits = self.fits_array[self.iteration]
+        if self.canvas.check_cursor_location():
+            the_x, the_y = self.canvas.get_data_xy(x, y)
+            w, h = self.canvas.get_data_size()
+            if not 0 < the_x < w or not 0 < the_y < h:
+                x_to_show, y_to_show = "---", "---"
+                ra, dec = "---", "---"
+            else:
+                x_to_show, y_to_show = int(the_x), int(the_y)
+                try:
+                    sky = fits.pixels_to_skys(x_to_show, y_to_show)
+                    ra = sky[0]["ra"].degree
+                    dec = sky[0]["dec"].degree
+
+                except (ValueError, Unsolvable):
+                    ra, dec = "---", "---"
+
+            if x_to_show != "---":
+                value = self.canvas.get_data(x_to_show, y_to_show)
+            else:
+                value = "---"
+
+            self.labelX.setText(x_to_show.__str__())
+            self.labelY.setText(y_to_show.__str__())
+            self.labelRa.setText(ra.__str__())
+            self.labelDec.setText(dec.__str__())
+            self.labelValue.setText(value.__str__())
+
+    def rotate(self):
+        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        if ok:
+            try:
+                numeric_angle = float(angle)
+                self.canvas.rotate(numeric_angle)
+            except Exception as e:
+                self.logger.warning(e)
+
+    def reset_transform(self):
+        x, y, swap = self.canvas.get_transforms()
+        if x:
+            self.canvas.flip_x()
+        if y:
+            self.canvas.flip_y()
+        if swap:
+            self.canvas.swap_xy()
+
+    def set_contrast(self):
+        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        if ok:
+            self.canvas.set_contrast(number / 100)
+
+    def reset(self):
+        self.reset_transform()
+        self.canvas.rotate(0)
+        self.canvas.zoom_fit()
+        self.canvas.set_color_algorithm('linear')
+        self.canvas.restore_cmap()
+        self.canvas.set_color_map('gray')
+        self.canvas.restore_contrast()
+        self.canvas.set_intensity_map('ramp')
+
+    def copy_xy(self, x, y):
+        the_x, the_y = self.canvas.get_data_xy(x, y)
+        pd.DataFrame([f'{the_x} {the_y}']).to_clipboard(index=False, header=False)
+
+    def copy_wcs(self, fits: Fits, x, y):
+        try:
+            the_x, the_y = self.canvas.get_data_xy(x, y)
+            sky = fits.pixels_to_skys(the_x, the_y)
+            pd.DataFrame([f'{sky[0]["ra"].degree} {sky[0]["dec"].degree}']).to_clipboard(index=False, header=False)
+        except (ValueError, Unsolvable):
+            pd.DataFrame([f'']).to_clipboard(index=False, header=False)
+
+    def copy_value(self, x, y):
+        try:
+            the_x, the_y = self.canvas.get_data_xy(x, y)
+            value = self.canvas.get_data(the_x, the_y)
+            pd.DataFrame([f'{value}']).to_clipboard(index=False, header=False)
+        except (ValueError, Unsolvable):
+            pd.DataFrame([f'']).to_clipboard(index=False, header=False)
+
+    def eventFilter(self, source, event):
+        fits = self.fits_array[self.iteration]
+        if event.type() == QtCore.QEvent.MouseMove:
+            self.info_update(event.x(), event.y())
+            return True
+
+        if event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.MiddleButton:
+                the_x, the_y = self.canvas.get_data_xy(event.x(), event.y())
+                self.canvas.set_pan(the_x, the_y)
+            return True
+
+        if event.type() == QtCore.QEvent.Wheel:
+            modifiers = QtWidgets.QApplication.keyboardModifiers()
+            if modifiers == QtCore.Qt.ControlModifier:
+                if event.angleDelta().y() > 0:
+                    self.current_angle += 1
+                else:
+                    self.current_angle -= 1
+
+                self.current_angle %= 360
+                self.canvas.rotate(self.current_angle)
+
+                return True
+            self.canvas.zoom_in(event.angleDelta().y() // 120)
+            return True
+
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.ginga_widget:
+            menu = QtWidgets.QMenu()
+            # menu.addAction('Transform')
+
+            copy_menu = QtWidgets.QMenu('Copy')
+            copy_menu.addAction('WCS', lambda: self.copy_wcs(fits, event.x(), event.y()))
+            copy_menu.addAction('Physical', lambda: self.copy_xy(event.x(), event.y()))
+            copy_menu.addAction('Value', lambda: self.copy_value(event.x(), event.y()))
+
+            transform_menu = QtWidgets.QMenu('Transform')
+            transform_menu.addAction('Reset', lambda: (
+                self.reset_transform(),
+                self.canvas.rotate(0),
+                self.canvas.zoom_fit()
+            ))
+            transform_menu.addSeparator()
+            transform_flip_menu = QtWidgets.QMenu('Flip')
+            transform_flip_menu.addAction('Reset', lambda: self.reset_transform())
+            transform_flip_menu.addSeparator()
+            transform_flip_menu.addAction('X', lambda: self.canvas.flip_x())
+            transform_flip_menu.addAction('Y', lambda: self.canvas.flip_y())
+            transform_flip_menu.addAction('Swap XY', lambda: self.canvas.swap_xy())
+
+            transform_rotate_menu = QtWidgets.QMenu('Rotate')
+            transform_rotate_menu.addAction('Reset', lambda: self.canvas.rotate(0))
+            transform_rotate_menu.addSeparator()
+            transform_rotate_menu.addAction('90', lambda: self.canvas.rotate(90))
+            transform_rotate_menu.addAction('180', lambda: self.canvas.rotate(180))
+            transform_rotate_menu.addAction('270', lambda: self.canvas.rotate(270))
+            transform_rotate_menu.addAction('Custom', lambda: self.rotate())
+
+            display_menu = QtWidgets.QMenu('Display')
+            display_menu.addAction('Reset', lambda: (
+                self.canvas.set_color_algorithm('linear'),
+                self.canvas.restore_cmap(),
+                self.canvas.set_color_map('gray'),
+                self.canvas.restore_contrast(),
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_menu.addSeparator()
+            display_scale_menu = QtWidgets.QMenu('Scale')
+            display_scale_menu.addAction('Reset', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addSeparator()
+            display_scale_menu.addAction('Linear', lambda: self.canvas.set_color_algorithm('linear'))
+            display_scale_menu.addAction('Log', lambda: self.canvas.set_color_algorithm('log'))
+            display_scale_menu.addAction('Power', lambda: self.canvas.set_color_algorithm('power'))
+            display_scale_menu.addAction('Square Root', lambda: self.canvas.set_color_algorithm('sqrt'))
+            display_scale_menu.addAction('Squared', lambda: self.canvas.set_color_algorithm('squared'))
+            display_scale_menu.addAction('Inverse Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('asinh'))
+            display_scale_menu.addAction('Hyperbolic Sine', lambda: self.canvas.set_color_algorithm('sinh'))
+            display_scale_menu.addAction('Histogram Equalization', lambda: self.canvas.set_color_algorithm('histeq'))
+
+            display_cmap_menu = QtWidgets.QMenu('Map')
+            display_cmap_menu.addAction('Reset', lambda: (
+                self.canvas.restore_cmap(), self.canvas.set_color_map('gray')
+            ))
+            display_cmap_menu.addAction('Reverse', lambda: self.canvas.invert_cmap())
+            display_cmap_menu.addSeparator()
+            display_cmap_menu.addAction('Accent', lambda: self.canvas.set_color_map('Accent'))
+            display_cmap_menu.addAction('Autumn', lambda: self.canvas.set_color_map('autumn'))
+            display_cmap_menu.addAction('Blue', lambda: self.canvas.set_color_map('blue'))
+            display_cmap_menu.addAction('Blues', lambda: self.canvas.set_color_map('Blues'))
+            display_cmap_menu.addAction('Bone', lambda: self.canvas.set_color_map('bone'))
+            display_cmap_menu.addAction('Color', lambda: self.canvas.set_color_map('color'))
+            display_cmap_menu.addAction('Cool', lambda: self.canvas.set_color_map('cool'))
+            display_cmap_menu.addAction('Cool Warm', lambda: self.canvas.set_color_map('coolwarm'))
+            display_cmap_menu.addAction('Copper', lambda: self.canvas.set_color_map('copper'))
+            display_cmap_menu.addAction('Cube Helix', lambda: self.canvas.set_color_map('cubehelix'))
+            display_cmap_menu.addAction('Dark', lambda: self.canvas.set_color_map('Dark2'))
+            display_cmap_menu.addAction('DS9', lambda: self.canvas.set_color_map('ds9_a'))
+            display_cmap_menu.addAction('DS9 Cool', lambda: self.canvas.set_color_map('ds9_cool'))
+            display_cmap_menu.addAction('DS9 He', lambda: self.canvas.set_color_map('ds9_he'))
+            display_cmap_menu.addAction('Flag', lambda: self.canvas.set_color_map('flag'))
+            display_cmap_menu.addAction('Gist Earth', lambda: self.canvas.set_color_map('gist_earth'))
+            display_cmap_menu.addAction('Gist Gray', lambda: self.canvas.set_color_map('gist_gray'))
+            display_cmap_menu.addAction('Gist Heat', lambda: self.canvas.set_color_map('gist_heat'))
+            display_cmap_menu.addAction('Gist Ncar', lambda: self.canvas.set_color_map('gist_ncar'))
+            display_cmap_menu.addAction('Gist Rainbow', lambda: self.canvas.set_color_map('gist_rainbow'))
+            display_cmap_menu.addAction('Gist Stern', lambda: self.canvas.set_color_map('gist_stern'))
+            display_cmap_menu.addAction('Gist Yarg', lambda: self.canvas.set_color_map('gist_yarg'))
+            display_cmap_menu.addAction('GnBu', lambda: self.canvas.set_color_map('GnBu'))
+            display_cmap_menu.addAction('Gnuplot', lambda: self.canvas.set_color_map('gnuplot'))
+            display_cmap_menu.addAction('Gray Clip', lambda: self.canvas.set_color_map('grayclip'))
+            display_cmap_menu.addAction('Gray', lambda: self.canvas.set_color_map('gray'))
+            display_cmap_menu.addAction('Green', lambda: self.canvas.set_color_map('green'))
+            display_cmap_menu.addAction('Greens', lambda: self.canvas.set_color_map('Greens'))
+            display_cmap_menu.addAction('Light', lambda: self.canvas.set_color_map('light'))
+            display_cmap_menu.addAction('Magma', lambda: self.canvas.set_color_map('magma'))
+            display_cmap_menu.addAction('Nipy Spectral', lambda: self.canvas.set_color_map('nipy_spectral'))
+            display_cmap_menu.addAction('Ocean', lambda: self.canvas.set_color_map('ocean'))
+            display_cmap_menu.addAction('Oranges', lambda: self.canvas.set_color_map('Oranges'))
+            display_cmap_menu.addAction('Paired', lambda: self.canvas.set_color_map('Paired'))
+            display_cmap_menu.addAction('Pastel', lambda: self.canvas.set_color_map('pastel'))
+            display_cmap_menu.addAction('Random', lambda: self.canvas.set_color_map('random'))
+            display_cmap_menu.addAction('Winter', lambda: self.canvas.set_color_map('winter'))
+
+            display_imap_menu = QtWidgets.QMenu('Intensity')
+            display_imap_menu.addAction('Reset', lambda: (
+                self.canvas.set_intensity_map('ramp')
+            ))
+            display_imap_menu.addSeparator()
+            display_imap_menu.addAction('Equa', lambda: self.canvas.set_intensity_map('equa'))
+            display_imap_menu.addAction('Expo', lambda: self.canvas.set_intensity_map('expo'))
+            display_imap_menu.addAction('Gamma', lambda: self.canvas.set_intensity_map('gamma'))
+            display_imap_menu.addAction('Jigsaw', lambda: self.canvas.set_intensity_map('jigsaw'))
+            display_imap_menu.addAction('Lasritt', lambda: self.canvas.set_intensity_map('lasritt'))
+            display_imap_menu.addAction('Log', lambda: self.canvas.set_intensity_map('log'))
+            display_imap_menu.addAction('Neg', lambda: self.canvas.set_intensity_map('neg'))
+            display_imap_menu.addAction('NegLog', lambda: self.canvas.set_intensity_map('neglog'))
+            display_imap_menu.addAction('Null', lambda: self.canvas.set_intensity_map('null'))
+            display_imap_menu.addAction('Ramp', lambda: self.canvas.set_intensity_map('ramp'))
+            display_imap_menu.addAction('Stairs', lambda: self.canvas.set_intensity_map('stairs'))
+            display_imap_menu.addAction('UltraSmooth', lambda: self.canvas.set_intensity_map('ultrasmooth'))
+
+            transform_menu.addMenu(transform_flip_menu)
+            transform_menu.addMenu(transform_rotate_menu)
+
+            display_menu.addMenu(display_scale_menu)
+            display_menu.addMenu(display_cmap_menu)
+            display_menu.addMenu(display_imap_menu)
+            display_menu.addAction('Contrast', lambda: self.set_contrast())
+
+            menu.addMenu(copy_menu)
+            menu.addSeparator()
+
+            menu.addMenu(display_menu)
+            menu.addMenu(transform_menu)
+
+            menu.exec_(event.globalPos())
+            return True
+
+        return super().eventFilter(source, event)
+
+
+class ObservatoriesForm(QWidget, Ui_FormObservatory):
+    def __init__(self, parent):
+        super(ObservatoriesForm, self).__init__(parent)
+        self.parent = parent
+        self.setupUi(self)
+
+        self.astropy_observatories = EarthLocation.get_site_names()
+        self.my_observatories = []
+
+        self.load()
+
+        self.comboBoxObservatory.currentIndexChanged.connect(self.show_observatory)
+        self.pushButtonSave.clicked.connect(self.save_observatory)
+        self.pushButtonRremove.clicked.connect(self.remove)
+
+    @staticmethod
+    def get(name):
+
+        observatory_file = database_dir() / "settings.json"
+        if observatory_file.exists():
+            with open(observatory_file, "r") as f:
+                local_observatories = json.load(f)
+        else:
+            local_observatories = DEFAULT_OBSERVATORIES
+
+        if name in local_observatories:
+            values = local_observatories[name]
+            return EarthLocation(
+                lat=values["lat"],
+                lon=values["lon"],
+                height=values["height"]
+            )
+
+        observatory = EarthLocation.of_site(name)
+        return observatory
+
+    def remove(self):
+        name = self.comboBoxObservatory.currentText()
+        self.observatory_remove(name)
+
+    def save_observatory(self):
+        name = self.lineEditName.text()
+        lat = self.doubleSpinBoxLatitude.value()
+        lon = self.doubleSpinBoxLongitude.value()
+        height = self.doubleSpinBoxAltitude.value()
+
+        if name == "":
+            self.parent.logger.warning("No observatory name")
+            self.parent.gui_functions.error(self, "No observatory name was given")
+            return
+
+        if name == "NEW":
+            self.parent.logger.warning("Are you serious?\n`NEW` is reserved...")
+            self.parent.gui_functions.error(self, "Are you serious?\n`NEW` is reserved...")
+            return
+
+        if name in self.astropy_observatories:
+            self.parent.logger.warning("Observatory with this name already exists. And it cannot be updated")
+            self.parent.gui_functions.error(self, "Observatory with this name already exists. And it cannot be updated")
+            return
+
+        self.observatories = {
+            name: {
+                "lat": lat,
+                "lon": lon,
+                "height": height
+            }
+        }
+
+        self.load()
+        self.comboBoxObservatory.setCurrentText(name)
+
+    def load(self):
+        added_observatories = list(self.observatories)
+        self.comboBoxObservatory.clear()
+        self.parent.gui_functions.add_to_combo(
+            self.comboBoxObservatory, added_observatories + self.astropy_observatories
+        )
+
+    def show_observatory(self):
+        self.pushButtonSave.setEnabled(False)
+        self.pushButtonRremove.setEnabled(False)
+
+        if self.comboBoxObservatory.currentIndex() == 0:
+            self.lineEditName.setText("")
+            self.doubleSpinBoxLatitude.setValue(0)
+            self.doubleSpinBoxLongitude.setValue(0)
+            self.doubleSpinBoxAltitude.setValue(0)
+            self.pushButtonSave.setEnabled(True)
+            self.pushButtonRremove.setEnabled(False)
+            return
+
+        name = self.comboBoxObservatory.currentText()
+
+        if name == "":
+            return
+
+        observatories = self.observatories
+
+        if name in observatories:
+            obs = observatories[name]
+            self.lineEditName.setText(name)
+            self.doubleSpinBoxLatitude.setValue(obs["lat"])
+            self.doubleSpinBoxLongitude.setValue(obs["lon"])
+            self.doubleSpinBoxAltitude.setValue(obs["height"])
+            self.pushButtonSave.setEnabled(True)
+            self.pushButtonRremove.setEnabled(True)
+            return
+
+        observatory = EarthLocation.of_site(name)
+        self.lineEditName.setText(name)
+        self.doubleSpinBoxLatitude.setValue(observatory.lat.degree)
+        self.doubleSpinBoxLongitude.setValue(observatory.lon.degree)
+        self.doubleSpinBoxAltitude.setValue(observatory.height.value)
+
+    @classmethod
+    def observatory_file(cls) -> Path:
+        return database_dir() / "observatories.json"
+
+    @property
+    def observatories(self) -> dict:
+        observatory_file = self.observatory_file()
+        if not observatory_file.exists():
+            with open(observatory_file, "w") as f:
+                json.dump(DEFAULT_OBSERVATORIES, f)
+
+        try:
+            with open(observatory_file, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            self.parent.logger.warning(e)
+            return DEFAULT_OBSERVATORIES
+
+    @observatories.setter
+    def observatories(self, obs):
+        observatories = self.observatories
+        observatory_file = self.observatory_file()
+        with open(observatory_file, "w") as f:
+            observatories.update(obs)
+            json.dump(observatories, f)
+
+    def observatory_remove(self, name):
+        if not self.parent.gui_functions.ask(self, "Delete Observatory", "Are you sure?"):
+            return
+
+        observatories = self.observatories
+        observatories.pop(name)
+        observatory_file = self.observatory_file()
+        with open(observatory_file, "w") as f:
+            json.dump(observatories, f)
+
+        self.load()
+
+
+class LogForm(QWidget, Ui_FormLog):
+    def __init__(self, parent):
+        super(LogForm, self).__init__(parent)
+        self.parent = parent
+        self.setupUi(self)
+        self.refresh()
+
+        self.pushButtonRefresh.clicked.connect(self.refresh)
+        self.pushButtonSave.clicked.connect(self.save)
+
+    def refresh(self):
+        if self.parent.log_file is not None:
+            with open(self.parent.log_file, 'r') as f:
+                self.listWidget.clear()
+                self.parent.gui_functions.add_to_list(self.listWidget, list(map(str.strip, f.readlines())))
+                self.listWidget.scrollToBottom()
+
+    def save(self):
+        file = self.parent.gui_functions.save_file(self, "Save", "log (*.log);")
+        if file:
+            dest = Path(file)
+            src = Path(self.parent.log_file)
+            dest.write_text(src.read_text())
+
+
+class AboutForm(QWidget, Ui_FormAbout):
+    def __init__(self, parent):
+        super(AboutForm, self).__init__(parent)
+        self.parent = parent
+        self.setupUi(self)
+
+        pixmap = QPixmap('myraf.png')
+        scaled_pixmap = pixmap.scaled(90, 90, Qt.KeepAspectRatio)
+        self.labelLogo.setPixmap(scaled_pixmap)
+
+
+class SettingsForm(QWidget, Ui_FormSettings):
+    def __init__(self, parent):
+        super(SettingsForm, self).__init__(parent)
+        self.parent = parent
+        self.setupUi(self)
+
+        self.spinBoxDisplayInterval.valueChanged.connect(self.save_settings)
+        self.doubleSpinBoxZMag.valueChanged.connect(self.save_settings)
+        self.load_settings()
+
+    def load_settings(self):
+        settings = self.parent.settings.settings
+        self.spinBoxDisplayInterval.setValue(settings["display"]["interval"])
+        self.doubleSpinBoxZMag.setValue(settings["ZMag"])
+
+    def save_settings(self):
+        settings = self.parent.settings.settings
+        settings["display"]["interval"] = self.spinBoxDisplayInterval.value()
+        settings["ZMag"] = self.doubleSpinBoxZMag.value()
+
+        self.parent.settings.settings = settings
+
+
+class Setting:
+    def __init__(self, logger):
+        self.logger = logger
+
+    @classmethod
+    def settings_file(cls):
+        return database_dir() / "settings.json"
+
+    @property
+    def settings(self) -> dict:
+        settings_file = self.settings_file()
+        if not settings_file.exists():
+            with open(settings_file, "w") as f:
+                json.dump(DEFAULT_SETTINGS, f)
+        try:
+            with open(settings_file, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            self.logger.warning(e)
+            return DEFAULT_SETTINGS
+
+    @settings.setter
+    def settings(self, setting):
+        observatory_file = self.settings_file()
+        with open(observatory_file, "w") as f:
+            json.dump(setting, f)
+
 
 def main():
     parser = argparse.ArgumentParser(description='MYRaf V3 Beta')
     parser.add_argument("--logger", "-ll", default=50, type=int,
                         help="Logger level: CRITICAL=50, ERROR=40, WARNING=30, INFO=20, DEBUG=10, NOTSET=0")
-    # help="An integer of Logger level: CRITICAL=50, ERROR=40, WARNING=30, INFO=20, DEBUG=10, NOTSET=0"
     parser.add_argument("--logfile", "-lf", default=None, type=str, help="Path to log file")
-    args = parser.parse_args()
 
     app = QtWidgets.QApplication(argv)
-    window = MainWindow(logger_level=args.logger, log_file=args.logfile)
+    qdarktheme.setup_theme(custom_colors=SCHEMA, corner_shape="sharp")
+    # window = MainWindow(logger_level=args.logger, log_file=args.logfile)
+    window = MainWindow(logger_level="DEBUG", log_file="myraf.log")
     window.show()
     app.exec()
 
