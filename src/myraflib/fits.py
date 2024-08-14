@@ -5,6 +5,7 @@ from logging import Logger, getLogger
 from pathlib import Path
 
 from typing import Optional, Dict, Any, Union, List, Literal, Tuple, Callable
+
 from typing_extensions import Self
 
 import numpy as np
@@ -20,7 +21,7 @@ from astropy import units
 from astropy.units import Quantity
 from astropy.visualization import ZScaleInterval
 from astropy.stats import sigma_clipped_stats
-from astropy.table import QTable, vstack
+from astropy.table import QTable, vstack, Column
 from astropy.wcs import WCS
 from astropy.wcs.utils import fit_wcs_from_points
 from astropy.io import fits as fts
@@ -275,7 +276,7 @@ class Fits(Data):
 
             if len(keys_to_use) != len(values_to_use):
                 self.logger.error("List of keys and values must be equal in length")
-                raise ValueError("List of keys and values must be equal in length")
+                raise NumberOfElementError("List of keys and values must be equal in length")
 
             for key, value, comment in zip(keys_to_use, values_to_use, comment_to_use):
                 if value_is_key:
@@ -423,9 +424,13 @@ class Fits(Data):
         sources = sep_extract(self.data - bkg.back(), thresh, minarea=min_area)
         sources.sort(order="flux")
 
-        if len(sources) < 0:
+        if sources is None:
             self.logger.error("No source was found")
-            raise NumberOfElementError("No source was found")
+            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
+
+        if len(sources) == 0:
+            self.logger.error("No source was found")
+            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
 
         table = QTable(sources)[["x", "y"]]
         table['x'].unit = units.pix
@@ -438,9 +443,13 @@ class Fits(Data):
         daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold * std)
         sources = daofind(self.data - median)
 
-        if len(sources) < 0:
+        if sources is None:
             self.logger.error("No source was found")
-            raise NumberOfElementError("No source was found")
+            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
+
+        if len(sources) == 0:
+            self.logger.error("No source was found")
+            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
 
         table = QTable(sources)[["xcentroid", "ycentroid"]]
 

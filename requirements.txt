@@ -1,6 +1,7 @@
 astroalign==2.5.1
 astropy==6.1.1
 ccdproc==2.4.2
+ginga
 auto_mix_prep==0.2.0
 matplotlib==3.9.1
 mpl_point_clicker==0.4.1

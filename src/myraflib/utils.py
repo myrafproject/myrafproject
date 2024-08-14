@@ -119,6 +119,9 @@ class Fixer:
         values_to_use = values if isinstance(values, list) else [values]
         comments_to_use = comments if isinstance(comments, list) else [comments]
 
+        if len(comments_to_use) < len(values_to_use):
+            comments_to_use += [None] * (len(values_to_use) - len(comments_to_use))
+
         return keys_to_use, values_to_use, comments_to_use
 
     @staticmethod
