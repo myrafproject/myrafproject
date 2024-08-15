@@ -1,139 +1,168 @@
-import itertools
+from __future__ import annotations
+
 import math
-from copy import copy
-from logging import Logger, getLogger
+import shutil
+from logging import getLogger, Logger
 from pathlib import Path
-
-from typing import Optional, Dict, Any, Union, List, Literal, Tuple, Callable
-
-from typing_extensions import Self
-
-import numpy as np
-from scipy import ndimage
-
-from matplotlib import pyplot as plt
-from mpl_point_clicker import clicker
+from typing import Optional, Union, List, Any, Tuple, Callable
 
 import astroalign
-
-from astropy.coordinates import SkyCoord
+import numpy as np
+import pandas as pd
 from astropy import units
-from astropy.units import Quantity
-from astropy.visualization import ZScaleInterval
+from astropy.coordinates import SkyCoord
+from astropy.io import fits as fts
+from astropy.io.fits.header import Header
+from astropy.nddata import CCDData, block_reduce
 from astropy.stats import sigma_clipped_stats
-from astropy.table import QTable, vstack, Column
+from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from astropy.wcs.utils import fit_wcs_from_points
-from astropy.io import fits as fts
-from astropy.io.fits import Header
-from astropy.nddata import CCDData, block_reduce
-
-from sep import extract as sep_extract, Background, sum_circle
-
+from astroquery.astrometry_net import AstrometryNet
 from ccdproc import cosmicray_lacosmic, subtract_bias, subtract_dark, flat_correct
-
-from photutils.detection import DAOStarFinder
+from matplotlib import pyplot as plt
+from mpl_point_clicker import clicker
 from photutils.aperture import CircularAperture, aperture_photometry
+from photutils.detection import DAOStarFinder
 from photutils.utils import calc_total_error
+from scipy import ndimage
+from sep import extract as sep_extract, Background, sum_circle
+from typing_extensions import Self
 
-from myraflib.data_model import Data
-from myraflib.error import NothingToDo, OperatorError, NumberOfElementError, Unsolvable, AlignError, OverCorrection, \
-    CardNotFound
-from myraflib.utils import Fixer, NUMERIC, HEADER_ANY, NUMERICS
+from .error import NothingToDo, AlignError, NumberOfElementError, OverCorrection, CardNotFound, Unsolvable
+from .models import Data, NUMERICS
+from .utils import Fixer, Check
+
+__all__ = ["Fits"]
 
 
 class Fits(Data):
-    ZMag = 25
+    high_precision = False
 
-    def __init__(self, path: Path, logger: Optional[Logger] = None) -> None:
+    def __init__(self, file: Path, logger: Optional[Logger] = None) -> None:
 
-        if logger is None:
-            self.logger = getLogger(__file__)
-        else:
-            self.logger = logger
-
-        if not path.exists():
-            self.logger.error("File does not exist")
-            raise FileNotFoundError("File does not exist")
+        self.logger = getLogger(f"{self.__class__.__name__}") if logger is None else logger
 
         self.is_temp = False
-        self.path = path
-        self.hdu = fts.open(self.path.absolute(), mode="update")
+        self.file = file
 
-        if self.data.ndim != 2:
-            self.logger.error("Data must be 2D")
-            raise ValueError("Data must be 2D")
+        if not file.exists():
+            self.logger.error(f"The File ({self.file}) does not exist.")
+            raise FileNotFoundError("File does not exist")
+
+        self.ZMag = 25
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}({self.path})"
+        return f"{self.__class__.__name__}(@: '{id(self)}', path:'{self.file}')"
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}.from_path({self.path.absolute()})"
+        return self.__str__()
+        # return f"{self.__class__.__name__}.from_path('{self.file}')"
 
-    def __del__(self):
-        try:
-            if self.is_temp:
-                if self.path.exists():
-                    self.path.unlink()
-        except Exception as e:
-            self.logger.warning(e)
+    def __del__(self) -> None:
+        if self.is_temp:
+            self.logger.info("Deleting the temporary file")
+            self.file.unlink()
 
-    def __abs__(self) -> Self:
-        return self.abs()
+    def __abs__(self) -> str:
+        return str(self.file.absolute())
 
-    def __add__(self, other: Union[Self, NUMERIC]) -> Self:
+    def __add__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
+
         return self.add(other)
 
-    def __iadd__(self, other: Union[Self, NUMERIC]) -> Self:
+    def __radd__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
+
         return self.add(other)
 
-    def __sub__(self, other: Union[Self, NUMERIC]) -> Self:
+    def __sub__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
+
         return self.sub(other)
 
-    def __isub__(self, other: Union[Self, NUMERIC]) -> Self:
-        return self.sub(other)
+    def __rsub__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
 
-    def __mul__(self, other: Union[Self, NUMERIC]) -> Self:
+        return self.mul(-1).add(other)
+
+    def __mul__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
+
         return self.mul(other)
 
-    def __imul__(self, other: Union[Self, NUMERIC]) -> Self:
+    def __rmul__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
+
         return self.mul(other)
 
-    def __truediv__(self, other: Union[Self, NUMERIC]) -> Self:
+    def __truediv__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
+
         return self.div(other)
 
-    def __idiv__(self, other: Union[Self, NUMERIC]) -> Self:
-        return self.div(other)
+    def __rtruediv__(self, other: Union[Self, float, int]) -> Self:
+        if not isinstance(other, (self.__class__, float, int)):
+            self.logger.error(f"Other must be either {self.__class__.__name__}, float or int")
+            raise NotImplementedError
 
-    def __pow__(self, power: Union[Self, NUMERIC], modulo=None) -> Self:
-        return self.pow(power)
-
-    def __ipow__(self, other: Union[Self, NUMERIC]) -> Self:
-        return self.pow(other)
-
-    def __mod__(self, other: Union[Self, NUMERIC], modulo=None) -> Self:
-        return self.mod(other)
-
-    def __imod__(self, other: Union[Self, NUMERIC]) -> Self:
-        return self.mod(other)
-
-    def __eq__(self, other: Self) -> bool:
-        return self.is_same(other)
-
-    def __ne__(self, other: Self) -> bool:
-        return not self.is_same(other)
-
-    def __neg__(self) -> Self:
-        return self.mul(-1)
-
-    def __pos__(self) -> Self:
-        return self
+        return self.div(other).pow(-1)
 
     def flux_to_mag(self, flux: Union[int, float],
                     flux_error: Union[int, float],
                     exptime: Union[int, float]
                     ) -> Tuple[Union[int, float], Union[int, float]]:
-        self.logger.info("Converting flux to mag")
+        r"""
+        Converts flux and flux error to magnitude and magnitude error
+
+        Notes
+        -----
+        We use an approximation to calculate mag and merr
+        see: https://github.com/spacetelescope/wfc3_photometry/blob/71a40892d665118d161da27465474778b4cf9f1f/photometry_tools/photometry_with_errors.py#L127
+
+        .. math::
+            mag = -2.5 * log(f) + 2.5 * log(t_e)
+
+            m_{err} = 1.0857 \times \frac{f}{f_e}
+
+        Where :math:`f` is flux, :math:`t_e` is exposure time, and :math:`f_e` is flux error.
+
+        Parameters
+        ----------
+        flux : Union[int, float]
+            measured flux
+        flux_error : Union[int, float]
+            measured flux error
+        exptime : Union[int, float]
+            exposure time
+
+        Returns
+        -------
+        Tuple[Union[int, float], Union[int, float]]
+            calculated magnitude and magnitude error.
+
+        Raises
+        ------
+        ZeroDivisionError
+            when the `flux` is `0`
+        """
+        self.logger.info("Calculating Flux to Magnitude")
+
         mag = -2.5 * np.log10(flux)
         if exptime != 0:
             mag += 2.5 * np.log10(exptime)
@@ -148,15 +177,64 @@ class Fits(Data):
 
         return mag + self.ZMag, mag_err
 
-    @property
-    def file(self) -> str:
-        self.logger.info("Getting file path")
-        return self.path.absolute().__str__()
+    @classmethod
+    def from_path(cls, path: str) -> Self:
+        """
+        Creates a `Fits` object from the given file `path` as string
+
+        Parameters
+        ----------
+        path : str
+            path of the file as string
+
+        Returns
+        -------
+        Self
+            a `Fits` object.
+
+        Raises
+        ------
+        FileNotFoundError
+            when the file does not exist
+        """
+        return cls(Path(path))
 
     @classmethod
-    def from_data_header(cls, data: np.ndarray, header: Optional[Header] = None,
-                         output: Optional[str] = None, override: bool = False) -> Self:
+    def from_data_header(cls, data: Any,
+                         header: Optional[Header] = None,
+                         output: Optional[str] = None,
+                         override: bool = False) -> Self:
+        """
+        Creates a `Fits` object th give `data` and `header`
+
+        Parameters
+        ----------
+        data : Any
+            the data as `np.ndarray`
+        header : Header
+            the header as `Header`
+        output : str, optional
+            the wanted file path.
+            a temporary file will be created if it's `None`
+        override : bool, default=False
+            delete already existing file if `true`
+
+        Returns
+        -------
+        Self
+            a `Fits` object.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
         new_output = Fixer.output(output=output, override=override)
+
+        if not cls.high_precision:
+            data_type = Fixer.smallest_data_type(data)
+            data = data.astype(data_type)
+
         fts.writeto(new_output, data, header=header, output_verify="silentfix")
         fits = cls.from_path(new_output)
 
@@ -164,311 +242,696 @@ class Fits(Data):
         return fits
 
     @classmethod
-    def from_path(cls, path: str) -> Self:
-        return cls(Path(path))
-
-    @classmethod
     def sample(cls) -> Self:
+        """
+        Creates a sample `Fits` object
+        see: https://www.astropy.org/astropy-data/tutorials/FITS-images/HorseHead.fits
+
+
+        Returns
+        -------
+        Self
+            a `Fits` object.
+        """
         file = str(Path(__file__).parent / "sample.fits")
         data = fts.getdata(file)
         header = fts.getheader(file)
         return cls.from_data_header(data, header=header)
 
-    def is_same(self, other: Self) -> bool:
-        self.logger.info("Checking if two Fits are the same")
-        return np.array_equal(
-            self.data, other.data
-        )
+    def reset_zmag(self) -> None:
+        """
+        Resets Zmag value to 25
 
-    @property
-    def ccd(self) -> CCDData:
-        self.logger.info("Creating CCDData of the fits file")
-        return CCDData(self.data, unit="adu")
+        Notes
+        -----
+        ZMag is the value added to calculated magnitude from flux.
 
-    @property
-    def data(self) -> np.ndarray:
-        self.logger.info("Getting data")
-        return self.hdu[0].data
+        .. math::
+            mag = ZMag + mag_c
 
-    def value(self, x: int, y: int) -> NUMERIC:
-        self.logger.info("Getting value from fits file")
-        value = float(self.data[x][y])
+        Where :math:`ZMag` is Zero Magnitude, :math:`mag_c` is calculated magnitude
+        """
+        self.logger.info("Resetting ZMag to 25")
+        self.ZMag = 25
 
-        if value.is_integer():
-            return int(value)
+    def header(self) -> pd.DataFrame:
+        """
+        Returns headers of the fits file
 
-        return value
-
-    @property
-    def header(self) -> Dict[str, Any]:
+        Returns
+        -------
+        pd.DataFrame
+            the headers as dataframe
+        """
         self.logger.info("Getting header")
-        header = self.hdu[0].header
-        return {
-            card: header[card]
-            for card in header
-            if card not in ['COMMENT', 'HISTORY']
-        }
 
-    @property
-    def stats(self) -> Dict[str, Any]:
-        self.logger.info("Getting stats")
-        data = self.data
-        w, h = data.shape
-        return {
-            "size": data.size,
-            "width": w,
-            "height": h,
-            "min": data.min(),
-            "mean": data.mean(),
-            "std": data.std(),
-            "max": data.max(),
-        }
+        header = fts.getheader(abs(self))
 
-    def background(self) -> Background:
-        self.logger.info("Getting background")
-        return Background(self.data.astype(float))
+        return pd.DataFrame(
+            {i: header[i] for i in header if isinstance(header[i], (bool, int, float, str))}, index=[0]).assign(
+            image=[abs(self)]
+        ).set_index("image")
 
-    def cosmic_cleaner(self, sigclip: float = 4.5, sigfrac: float = 0.3, objlim: float = 5.0, gain: float = 1.0,
-                       readnoise: float = 6.5, satlevel: float = 65535.0, pssl: float = 0.0, niter: int = 4,
-                       sepmed: bool = True, cleantype: Literal["median", "medmask", "meanmask", "idw"] = 'meanmask',
-                       fsmode: Literal["median", "convolve"] = 'median',
-                       psfmodel: Literal["gauss", "moffat", "gaussx", "gaussy"] = 'gauss',
-                       psffwhm: float = 2.5, psfsize: int = 7, psfk: np.ndarray = None, psfbeta: float = 4.765,
-                       gain_apply: bool = True, output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Cleaning data")
+    def data(self) -> Any:
+        """
+        returns the data of fits file
+
+        Returns
+        -------
+        Any
+            the data as `np.ndarray`
+
+        Raises
+        ------
+        ValueError
+            if the fits file is not an image
+        """
+        self.logger.info("Getting data")
+
+        data = fts.getdata(abs(self))
+        if not isinstance(data, np.ndarray):
+            self.logger.error("Unknown Fits type")
+            raise ValueError("Unknown Fits type.  Maybe its a fits table and not an image.")
+
+        return data.astype(float)
+
+    def value(self, x: int, y: int) -> float:
+        """
+        Returns a value of asked coordinate
+
+        Parameters
+        ----------
+        x : int
+            x coordinate of asked pixel
+        y: int
+            y coordinate of asked pixel
+        Returns
+        -------
+        float
+            value of the x and y
+
+        Raises
+        ------
+        IndexError
+            when the x, y coordinate is out of boundaries
+        """
+        return float(self.data()[x][y])
+
+    def pure_header(self) -> Header:
+        """
+        Returns the `Header` of the file
+
+        Returns
+        -------
+        Header
+            the Header object of the file
+        """
+        self.logger.info("Getting header (as an astropy header object)")
+
+        return fts.getheader(abs(self))
+
+    def ccd(self) -> CCDData:
+        """
+        Returns the CCDData of the given file
+
+        Returns
+        -------
+        CDDData
+            the CCDData of the file
+        """
+        self.logger.info("Getting CCDData")
+
+        return CCDData.read(self.file, unit="adu")
+
+    def imstat(self) -> pd.DataFrame:
+        """
+        Returns statistics of the data
+
+        Notes
+        -----
+        Stats are calculated using numpy and are:
+
+        - number of pixels
+        - mean
+        - standard deviation
+        - min
+        - max
+
+        Returns
+        -------
+        pd.DataFrame
+            the statistics as dataframe
+        """
+        self.logger.info("Calculating image statistics")
+
+        data = self.data()
+        return pd.DataFrame(
+            [
+                [
+                    abs(self), data.size, np.mean(data), np.std(data),
+                    np.min(data), np.max(data)
+                ]
+            ],
+            columns=["image", "npix", "mean", "stddev", "min", "max"]
+        ).set_index("image")
+
+    def cosmic_clean(self, output: Optional[str] = None,
+                     override: bool = False, sigclip: float = 4.5,
+                     sigfrac: float = 0.3, objlim: int = 5, gain: float = 1.0,
+                     readnoise: float = 6.5, satlevel: float = 65535.0,
+                     niter: int = 4, sepmed: bool = True,
+                     cleantype: str = 'meanmask', fsmode: str = 'median',
+                     psfmodel: str = 'gauss', psffwhm: float = 2.5,
+                     psfsize: int = 7, psfk: Optional[Any] = None,
+                     psfbeta: float = 4.765, gain_apply: bool = True) -> Self:
+        """
+        Clears cosmic rays from the fits file
+
+        [1]: https://ccdproc.readthedocs.io/en/latest/api/ccdproc.cosmicray_lacosmic.html
+
+        Parameters
+        ----------
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+        sigclip: float, default=4.5
+            Laplacian-to-noise limit for cosmic ray detection.
+            Lower values will flag more pixels as cosmic rays.
+            Default: 4.5. see [1]
+        sigfrac: float, default=0.3
+            Fractional detection limit for neighboring pixels.
+            For cosmic ray neighbor pixels, a Laplacian-to-noise
+            detection limit of sigfrac * sigclip will be used.
+            Default: 0.3. see [1]
+        objlim: int, default=5
+            Minimum contrast between Laplacian image
+            and the fine structure image.
+            Increase this value if cores of bright stars are
+            flagged as cosmic rays.
+            Default: 5.0. see [1]
+        gain: float, default=1.5
+            Gain of the image (electrons / ADU).
+            We always need to work in electrons for cosmic ray detection.
+            Default: 1.0 see [1]
+        readnoise: float, default=6.5
+            Read noise of the image (electrons).
+            Used to generate the noise model of the image.
+            Default: 6.5. see [1]
+        satlevel: float, default=65535.0
+            Saturation level of the image (electrons).
+            This value is used to detect saturated stars and pixels at or
+            above this level are added to the mask.
+            Default: 65535.0. see [1]
+        niter: int, default=4
+            Number of iterations of the LA Cosmic algorithm to perform.
+            Default: 4. see [1]
+        sepmed: bool, default=True
+            Use the separable median filter instead of the full median filter.
+            The separable median is not identical to the full median filter,
+            but they are approximately the same,
+            the separable median filter is significantly faster,
+            and still detects cosmic rays well.
+            Note, this is a performance feature,
+            and not part of the original L.A. Cosmic.
+            Default: True. see [1]
+        cleantype: str, default='meanmask'
+            Set which clean algorithm is used:
+            1) "median": An unmasked 5x5 median filter.
+            2) "medmask": A masked 5x5 median filter.
+            3) "meanmask": A masked 5x5 mean filter.
+            4) "idw": A masked 5x5 inverse distance weighted interpolation.
+            Default: "meanmask". see [1]
+        fsmode: float, default='median'
+            Method to build the fine structure image:
+            1) "median": Use the median filter in the standard LA
+            Cosmic algorithm.
+            2) "convolve": Convolve the image with the psf kernel to
+            calculate the fine structure image.
+            Default: "median". see [1]
+        psfmodel: str, default='gauss'
+            Model to use to generate the psf kernel if fsmode == ‘convolve’
+            and psfk is None.
+            The current choices are Gaussian and Moffat profiles:
+            - "gauss" and "moffat" produce circular PSF kernels.
+            - The "gaussx" and "gaussy" produce Gaussian kernels in the x
+            and y directions respectively.
+            Default: "gauss". see [1]
+        psffwhm: float, default=2.5
+            Full Width Half Maximum of the PSF to use to generate the kernel.
+            Default: 2.5. see [1]
+        psfsize: int, default=7
+            Size of the kernel to calculate.
+            Returned kernel will have size psfsize x psfsize.
+            psfsize should be odd.
+            Default: 7. see [1]
+        psfk: Any, optional
+            PSF kernel array to use for the fine structure image
+            if fsmode == 'convolve'. If None and fsmode == 'convolve',
+            we calculate the psf kernel using psfmodel.
+            Default: None. see [1]
+        psfbeta: float, default=4.765
+            Moffat beta parameter. Only used if fsmode=='convolve' and
+            psfmodel=='moffat'.
+            Default: 4.765.
+        gain_apply: bool, default=True
+            If True, return gain-corrected data, with correct units,
+            otherwise do not gain-correct the data.
+            Default is True to preserve backwards compatibility. see [1]
+
+        Returns
+        -------
+        Self
+            Cleaned fits
+        """
+        self.logger.info("Cleaning the data")
 
         cleaned_data, _ = cosmicray_lacosmic(
-            self.data, sigclip=sigclip, sigfrac=sigfrac, objlim=objlim, gain=gain, readnoise=readnoise,
-            satlevel=satlevel, niter=niter, sepmed=sepmed, cleantype=cleantype, fsmode=fsmode, psfmodel=psfmodel,
-            psffwhm=psffwhm, psfsize=psfsize, psfk=psfk, psfbeta=psfbeta, gain_apply=gain_apply
+            self.ccd(), sigclip=sigclip,
+            sigfrac=sigfrac, objlim=objlim,
+            gain=gain, readnoise=readnoise, satlevel=satlevel,
+            niter=niter, sepmed=sepmed, cleantype=cleantype.lower(), fsmode=fsmode.lower(),
+            psfmodel=psfmodel.lower(), psffwhm=psffwhm, psfsize=psfsize, psfk=psfk,
+            psfbeta=psfbeta, gain_apply=gain_apply
         )
 
-        if output is None:
-            self.hdu[0].data = cleaned_data.astype(int).value
-            self.hdu.flush()
-            return self
+        return self.from_data_header(cleaned_data.value, header=self.pure_header(), output=output, override=override)
 
-        return self.from_data_header(cleaned_data.value, header=self.hdu[0].header, output=output, override=override)
+    def hedit(self, keys: Union[str, List[str]],
+              values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]] = None,
+              comments: Optional[Union[str, List[str]]] = None, delete: bool = False, value_is_key: bool = False
+              ) -> Self:
+        """
+        Edits header of the given file.
 
-    def hedit(self, keys: Union[str, List[str]], values: Optional[Union[HEADER_ANY, List[HEADER_ANY]]] = None,
-              comments: Optional[Union[HEADER_ANY, List[HEADER_ANY]]] = None, delete: bool = False,
-              value_is_key: bool = False, output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Editing the header")
+        Parameters
+        ----------
+        keys: str or List[str]
+            Keys to be altered.
+        values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]], optional
+            Values to be added.
+            Would be ignored if delete is True.
+        comments: Optional[ste, List[str]], optional
+            Comments to be added.
+            Would be ignored if delete is True.
+        delete: bool, optional
+            Deletes the key from header if True.
+        value_is_key: bool, optional
+            Adds value of the key given in values if True. Would be ignored if
+            delete is True.
 
-        header = copy(self.hdu[0].header)
+        Returns
+        -------
+        Self
+            The `Fits` object
+        """
+        self.logger.info("Editing header")
 
         if delete:
             if isinstance(keys, str):
                 keys = [keys]
 
-            for key in keys:
-                if key in header:
-                    del header[key]
-                else:
-                    self.logger.warning("Key does not exist")
+            with fts.open(abs(self), "update") as hdu:
+                for key in keys:
+                    if key in hdu[0].header:
+                        del hdu[0].header[key]
+                    else:
+                        self.logger.info("Key does not exist")
 
         else:
             if values is None:
                 self.logger.error("Delete is False and Value is not given")
                 raise NothingToDo("Delete is False and Value is not given")
 
-            keys_to_use, values_to_use, comment_to_use = Fixer.key_value_pair(keys, values, comments)
+            keys_to_use, values_to_use, comments_to_use = Fixer.key_value_pair(keys, values, comments)
 
             if len(keys_to_use) != len(values_to_use):
                 self.logger.error("List of keys and values must be equal in length")
-                raise NumberOfElementError("List of keys and values must be equal in length")
+                raise ValueError("List of keys and values must be equal in length")
 
-            for key, value, comment in zip(keys_to_use, values_to_use, comment_to_use):
-                if value_is_key:
-                    header[key] = header[value]
-                else:
-                    header[key] = value
+            with fts.open(abs(self), "update") as hdu:
+                for key, value, comment in zip(keys_to_use, values_to_use, comments_to_use):
+                    if value_is_key:
+                        hdu[0].header[key] = hdu[0].header[value]
+                    else:
+                        hdu[0].header[key] = value
+                    hdu[0].header.comments[key] = comment
 
-                header.comments[key] = comment
+        return self
 
-        if output is None:
-            self.hdu[0].header = header
-            self.hdu.flush()
-            return self
+    def save_as(self, output: str, override: bool = False) -> Self:
+        """
+        Saves the `Fits` file as output.
 
-        return self.from_data_header(self.data, header=header, output=output, override=override)
+        Parameters
+        ----------
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
 
-    def save(self, path: Union[str, Path], overwrite: bool = False) -> Self:
-        self.logger.info("Saving the fits file")
-        if isinstance(path, str):
-            new_path = path
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
+        self.logger.info("Saving the fits to as")
+
+        new_output = Fixer.output(output=output, override=override)
+        shutil.copy(self.file, new_output)
+        return self.__class__.from_path(new_output)
+
+    def add(self, other: Union[Self, float, int], output: Optional[str] = None, override: bool = False) -> Self:
+        r"""
+        Does Addition operation on the `Fits` object
+
+        Notes
+        -----
+        It is able to add numeric values as other `Fits`
+
+        - If other is numeric each element of the matrix will be added to the number.
+        - If other is another `Fits` elementwise summation will be done.
+
+        Parameters
+        ----------
+        other: Union[Self, float, int]
+            Either a `Fits` object, float, or integer
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
+        self.logger.info("Making addition operation")
+
+        if not isinstance(other, (float, int, self.__class__)):
+            self.logger.error(f"Please provide either a {self.__class__} Object or a numeric value")
+            raise ValueError(f"Please provide either a {self.__class__} Object or a numeric value")
+
+        if isinstance(other, (float, int)):
+            new_data = self.data() + other
         else:
-            new_path = path.absolute().__str__()
+            new_data = self.data() + other.data()
 
-        return self.from_data_header(self.data, header=self.hdu[0].header, output=new_path, override=overwrite)
+        return self.__class__.from_data_header(
+            new_data, header=self.pure_header(),
+            output=output, override=override
+        )
 
-    def abs(self, output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Getting the absolute value of the fits file")
-        new_data = abs(self.data)
+    def sub(self, other: Union[Self, float, int], output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Does Subtraction operation on the `Fits` object
 
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
+        Notes
+        -----
+        It is able to subtract numeric values as other `Fits`
 
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
+        - If other is numeric each element of the matrix will be subtracted by the number.
+        - If other is another `Fits` elementwise subtraction will be done.
 
-    def add(self, other: Union[Self, NUMERIC], output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Adding the value to the fits file")
-        if isinstance(other, self.__class__):
-            new_data = self.data + other.data
+
+        Parameters
+        ----------
+        other: Union[Self, float, int]
+            Either a `Fits` object, float, or integer
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
+        self.logger.info("Making subtraction operation")
+
+        if not isinstance(other, (float, int, self.__class__)):
+            self.logger.error(f"Please provide either a {self.__class__} Object or a numeric value")
+            raise ValueError(f"Please provide either a {self.__class__} Object or a numeric value")
+
+        if isinstance(other, (float, int)):
+            new_data = self.data() - other
         else:
-            new_data = self.data + other
+            new_data = self.data() - other.data()
 
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
+        return self.__class__.from_data_header(
+            new_data, header=self.pure_header(),
+            output=output, override=override
+        )
 
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
+    def mul(self, other: Union[Self, float, int], output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Does Multiplication operation on the `Fits` object
 
-    def sub(self, other: Union[Self, NUMERIC], output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Subtracting the value from the fits file")
-        if isinstance(other, self.__class__):
-            new_data = self.data - other.data
+        Notes
+        -----
+        It is able to multiply numeric values as other `Fits`
+
+        - If other is numeric each element of the matrix will be multiplied by the number.
+        - If other is another `Fits` elementwise multiplication will be done.
+
+
+        Parameters
+        ----------
+        other: Union[Self, float, int]
+            Either a `Fits` object, float, or integer
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
+        self.logger.info("Making multiplication operation")
+
+        if not isinstance(other, (float, int, self.__class__)):
+            self.logger.error(f"Please provide either a {self.__class__} Object or a numeric value")
+            raise ValueError(f"Please provide either a {self.__class__} Object or a numeric value")
+
+        if isinstance(other, (float, int)):
+            new_data = self.data() * other
         else:
-            new_data = self.data - other
+            new_data = self.data() * other.data()
 
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
+        return self.__class__.from_data_header(
+            new_data, header=self.pure_header(),
+            output=output, override=override
+        )
 
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
+    def div(self, other: Union[Self, float, int], output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Does Division operation on the `Fits` object
 
-    def mul(self, other: Union[Self, NUMERIC], output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Multiplying the value with the fits file")
-        if isinstance(other, self.__class__):
-            new_data = self.data * other.data
+        Notes
+        -----
+        It is able to divide numeric values as other `Fits`
+
+        - If other is numeric each element of the matrix will be divided by the number.
+        - If other is another `Fits` elementwise division will be done.
+
+
+        Parameters
+        ----------
+        other: Union[Self, float, int]
+            Either a `Fits` object, float, or integer
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
+        self.logger.info("Making division operation")
+
+        if not isinstance(other, (float, int, self.__class__)):
+            self.logger.error(f"Please provide either a {self.__class__} Object or a numeric value")
+            raise ValueError(f"Please provide either a {self.__class__} Object or a numeric value")
+
+        if isinstance(other, (float, int)):
+            new_data = self.data() / other
         else:
-            new_data = self.data * other
+            new_data = self.data() / other.data()
 
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
+        return self.__class__.from_data_header(
+            new_data, header=self.pure_header(),
+            output=output, override=override
+        )
 
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
+    def pow(self, other: Union[Self, float, int], output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Does Power operation on the `Fits` object
 
-    def div(self, other: Union[Self, NUMERIC], output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Dividing the value with the fits file")
+        Notes
+        -----
+        It is able to power to numeric values as other `Fits`
 
-        if isinstance(other, self.__class__):
-            new_data = self.data / other.data
+        - If other is numeric each element of the matrix will be raised by the number.
+        - If other is another `Fits` elementwise power will be done.
+
+
+        Parameters
+        ----------
+        other: Union[Self, float, int]
+            Either a `Fits` object, float, or integer
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        FileExistsError
+            when the file does exist and `override` is `False`
+        """
+        self.logger.info("Making power operation")
+
+        if not isinstance(other, (float, int, self.__class__)):
+            self.logger.error(f"Please provide either a {self.__class__} Object or a numeric value")
+            raise ValueError(f"Please provide either a {self.__class__} Object or a numeric value")
+
+        if isinstance(other, (float, int)):
+            new_data = self.data() ** other
         else:
-            new_data = self.data / other
+            new_data = self.data() ** other.data()
 
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
+        return self.__class__.from_data_header(
+            new_data, header=self.pure_header(),
+            output=output, override=override
+        )
 
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
-
-    def pow(self, other: Union[Self, NUMERIC], output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Getting the power of the fits with given value")
-        if isinstance(other, self.__class__):
-            new_data = self.data ** other.data
-        else:
-            new_data = self.data ** other
-
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
-
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
-
-    def mod(self, other: Union[Self, NUMERIC], output: Optional[str] = None, override: bool = False):
-        self.logger.info("Getting the mod of the fits with given value")
-        if isinstance(other, self.__class__):
-            new_data = self.data % other.data
-        else:
-            new_data = self.data % other
-
-        if output is None:
-            self.hdu[0].data = new_data.astype(int)
-            self.hdu.flush()
-            return self
-
-        return self.from_data_header(new_data.astype(int), header=self.hdu[0].header, output=output, override=override)
-
-    def imarith(self, other: Union[Self, NUMERIC], operator: Literal["+", "-", "*", "/", "**", "^", "%"],
+    def imarith(self, other: Union[Self, float, int], operand: str,
                 output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Arithmetic operation")
-        if operator == "+":
+        """
+        Does Arithmetic operation on the `Fits` object
+
+        Notes
+        -----
+        It is able to do operation with numeric values as other `Fits`
+
+        - If other is numeric each element of the matrix will be processed by the number.
+        - If other is another `Fits` elementwise operation will be done.
+
+
+        Parameters
+        ----------
+        other: Union[Self, float, int]
+            Either a `Fits`, `float`, or `int`
+        operand: str
+            operation as string. One of `["+", "-", "*", "/"]`
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
+
+        Returns
+        -------
+        Self
+            New `Fits` object of saved fits file.
+
+        Raises
+        ------
+        ValueError
+            when the given value is not `Fits`, `float`, or `int`
+        ValueError
+            when operand is not one of `["+", "-", "*", "/", "**", "^"]`
+        """
+        self.logger.info("Making an arithmetic operation")
+
+        if not isinstance(other, (float, int, self.__class__)):
+            self.logger.error(f"Please provide either a {self.__class__} Object or a numeric value")
+            raise ValueError(f"Please provide either a {self.__class__} Object or a numeric value")
+
+        Check.operand(operand)
+
+        if operand == "+":
             return self.add(other, output=output, override=override)
-        elif operator == "-":
+        elif operand == "-":
             return self.sub(other, output=output, override=override)
-        elif operator == "*":
+        elif operand == "*":
             return self.mul(other, output=output, override=override)
-        elif operator == "/":
-            return self.div(other, output=output, override=override)
-        elif operator == "^" or operator == "**":
+        elif operand in ("**", "^"):
             return self.pow(other, output=output, override=override)
-        elif operator == "%":
-            return self.mod(other, output=output, override=override)
         else:
-            self.logger.error(f"Unknown operator ({operator})")
-            raise OperatorError(f"Unknown operator ({operator})")
+            return self.div(other, output=output, override=override)
 
-    def extract(self, detection_sigma: float = 5.0, min_area: float = 5.0) -> QTable:
-        self.logger.info("Extracting sources from fits (sep)")
-        bkg = self.background()
-        thresh = detection_sigma * bkg.globalrms
-        sources = sep_extract(self.data - bkg.back(), thresh, minarea=min_area)
-        sources.sort(order="flux")
+    def align(self, reference: Self, output: Optional[str] = None,
+              max_control_points: int = 50, min_area: int = 5,
+              override: bool = False) -> Self:
+        """
+        Aligns the fits file with the given reference
 
-        if sources is None:
-            self.logger.error("No source was found")
-            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
+        [1]: https://astroalign.quatrope.org/en/latest/api.html#astroalign.register
 
-        if len(sources) == 0:
-            self.logger.error("No source was found")
-            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
+        Parameters
+        ----------
+        reference: Self
+            The reference Image to be aligned as a Fits object.
+        output: str, optional
+            Path of the new fits file.
+        max_control_points: int, default=50
+            The maximum number of control point-sources to
+            find the transformation. [1]
+        min_area: int, default=5
+            Minimum number of connected pixels to be considered a source. [1]
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
 
-        table = QTable(sources)[["x", "y"]]
-        table['x'].unit = units.pix
-        table['y'].unit = units.pix
-        return table
+        Returns
+        -------
+        Self
+            `Fits` object of aligned image.
+        """
+        self.logger.info("Aligning the image")
 
-    def daofind(self, sigma: float = 3.0, fwhm: float = 3.0, threshold: float = 5.0) -> QTable:
-        self.logger.info("Extracting sources from fits (daofind)")
-        mean, median, std = sigma_clipped_stats(self.data, sigma=sigma)
-        daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold * std)
-        sources = daofind(self.data - median)
-
-        if sources is None:
-            self.logger.error("No source was found")
-            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
-
-        if len(sources) == 0:
-            self.logger.error("No source was found")
-            return QTable([Column(name='X', unit="pix"), Column(name='Y', unit="pix")])
-
-        table = QTable(sources)[["xcentroid", "ycentroid"]]
-
-        table.rename_column('xcentroid', 'x')
-        table.rename_column('ycentroid', 'y')
-
-        table['x'].unit = units.pix
-        table['y'].unit = units.pix
-
-        return table
-
-    def align(self, reference: Self, max_control_points: int = 50, detection_sigma: float = 5.0, min_area: int = 5,
-              output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Aligning the fits with given fits")
+        if not isinstance(reference, self.__class__):
+            self.logger.error(f"Other must be a {self.__class__}")
+            raise ValueError(f"Other must be a {self.__class__}")
 
         try:
-            data = self.data.astype(float)
-            reference_data = reference.data.astype(float)
-            w = WCS(self.hdu[0].header)
+            data = self.data()
+            reference_data = reference.data()
+            w = WCS(self.pure_header())
 
             t, (source_list, target_list) = astroalign.find_transform(
                 source=data,
@@ -499,366 +962,453 @@ class Fits(Data):
             temp_header = Header()
             # temp_header.extend(self.pure_header(), unique=True, update=True)
             temp_header.extend(w.to_header(), unique=True, update=True)
-
-            if output is None:
-                self.hdu[0].data = registered_image.astype(int)
-                self.hdu.header = temp_header
-                self.hdu.flush()
-                return self
-
-            return self.from_data_header(registered_image.astype(int), header=temp_header,
-                                         output=output, override=override)
-
-
-        except Exception as e:
-            print(e)
+            return self.__class__.from_data_header(
+                registered_image, header=temp_header,
+                output=output, override=override
+            )
+        except ValueError:
             self.logger.error("Cannot align two images")
             raise AlignError("Cannot align two images")
 
-    def show(self, ax: plt.Axes = None, sources: QTable = None, scale: bool = True) -> None:
-        self.logger.info("Showing fits")
+    def show(self, scale: bool = True, sources: Optional[pd.DataFrame] = None) -> None:
+        """
+        Shows the Image using matplotlib.
+
+        Parameters
+        ----------
+        scale: bool, optional
+            Scales the Image if True.
+        sources: pd.DataFrame, optional
+            Draws points on image if a list is given.
+        """
+        self.logger.info("Showing the image")
 
         zscale = ZScaleInterval() if scale else lambda x: x
 
-        if ax is not None:
-            ax.imshow(zscale(self.data), cmap="Greys_r")
-            return
-
-        plt.imshow(zscale(self.data), cmap="Greys_r")
+        plt.imshow(zscale(self.data()), cmap="Greys_r")
 
         if sources is not None:
-            plt.scatter(sources["x"].value, sources["y"].value)
+            plt.scatter(sources["xcentroid"], sources["ycentroid"])
 
         plt.xticks([])
         plt.yticks([])
         plt.show()
 
-    def solve_field(self, api_key: str, output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Solving plate")
-        if output is None:
-            return self
+    def coordinate_picker(self, scale: bool = True) -> pd.DataFrame:
+        """
+        Shows the Image using matplotlib and returns a list of
+        coordinates picked by user.
 
-        return self.save(output, overwrite=override)
+        Parameters
+        ----------
+        scale: bool, optional
+            Scales the Image if True.
 
-    def coordinate_picker(self, scale: bool = True) -> QTable:
-        self.logger.info("Coordinate picker")
+        Returns
+        -------
+        pd.DataFrame
+            List of coordinates selected.
+        """
+        self.logger.info("Showing the image to pick some coordinates")
+
         zscale = ZScaleInterval() if scale else lambda x: x
 
         fig, ax = plt.subplots(constrained_layout=True)
-
-        ax.imshow(zscale(self.data), cmap="Greys_r")
+        ax.imshow(zscale(self.data()), cmap="Greys_r")
         klkr = clicker(ax, ["source"], markers=["o"])
         plt.show()
-
         if len(klkr.get_positions()["source"]) == 0:
-            empty_table = QTable()
-            empty_table['x'] = Quantity([], unit='pix')  # An empty column with unit meters
-            empty_table['y'] = Quantity([], unit='pix')  # An empty column with unit seconds
-            return empty_table
+            return pd.DataFrame([], columns=["xcentroid", "ycentroid"])
 
-        return QTable(
-            Quantity(klkr.get_positions()["source"], unit='pix'),
-            names=["x", "y"]
-        )
+        return pd.DataFrame(
+            klkr.get_positions()["source"], columns=[
+                "xcentroid", "ycentroid"])
 
-    def shift(self, x: NUMERIC, y: NUMERIC, output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Shifting fits")
-        fill_val = np.median(self.data)
-        shifted_data = np.roll(self.data, x, axis=1)
-        if x < 0:
-            shifted_data[:, x:] = fill_val
-        elif x > 0:
-            shifted_data[:, 0:x] = fill_val
+    def solve_field(self, api_key: str, solve_timeout: int = 120,
+                    force_image_upload: bool = False,
+                    output: Optional[str] = None, override: bool = False
+                    ) -> Self:
+        """
+        Solves filed for the given file.
 
-        shifted_data = np.roll(shifted_data, y, axis=0)
-        if y < 0:
-            shifted_data[y:, :] = fill_val
-        elif y > 0:
-            shifted_data[0:y, :] = fill_val
+        [1]: https://astroquery.readthedocs.io/en/latest/api/astroquery.astrometry_net.AstrometryNetClass.html
+            #astroquery.astrometry_net.AstrometryNetClass.solve_from_image
 
-        w = WCS(self.hdu[0].header)
+        Parameters
+        ----------
+        api_key: str
+            api_key of astrometry.net (https://nova.astrometry.net/api_help)
+        solve_timeout: int, default=120
+            solve timeout as seconds
+        force_image_upload: bool, default=False
+            If True, upload the image to astrometry.net even if it is possible to detect sources in the image locally.
+            This option will almost always take longer than finding sources locally.
+            It will even take longer than installing photutils and then rerunning this.
+            Even if this is False the image will be uploaded unless photutils is installed.
+            see: [1]
+        output: str
+            New path to save the file.
+        override: bool, default=False
+            If True will overwrite the new_path if a file is already exists.
 
+        Returns
+        -------
+        Self
+            `Fits` object of aligned image.
+
+        Raises
+        ------
+        Unsolvable
+            when the data is unsolvable or timeout
+        """
         try:
-            highest = min(self.data.shape)
-            xs = np.random.randint(0, highest, 20)
-            ys = np.random.randint(0, highest, 20)
+            self.logger.info("Solving field")
+            ast = AstrometryNet()
+            print(api_key)
+            ast.api_key = api_key
+            wcs_header = ast.solve_from_image(abs(self), force_image_upload=force_image_upload)
+            return self.__class__.from_data_header(self.data(), header=wcs_header, output=output, override=override)
+        except Exception as error:
+            self.logger.error(error)
+            raise Unsolvable("Cannot solve")
 
-            skys = w.pixel_to_world(xs.tolist(), ys.tolist())
-            w = fit_wcs_from_points([xs + x, ys + y], skys)
-        except:
-            self.logger.error("No WCS found in header")
-            raise Unsolvable("No WCS found in header")
+    def zero_correction(self, master_zero: Self, output: Optional[str] = None,
+                        override: bool = False, force: bool = False) -> Self:
+        """
+        Does zero correction of the data
 
-        temp_header = Header()
-        # temp_header.extend(self.pure_header(), unique=True, update=True)
-        temp_header.extend(w.to_header(), unique=True, update=True)
+        Parameters
+        ----------
+        master_zero : Self
+            Zero file to be used for correction
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+        force: bool, default=False
+            Overcorrection flag
 
-        if output is None:
-            self.hdu[0].data = shifted_data.astype(int)
-            self.hdu[0].header = temp_header
-            self.hdu.flush()
-            return self
+        Returns
+        -------
+        Self
+            Zero corrected `Fits` object
 
-        return self.from_data_header(shifted_data.astype(int), header=temp_header, output=output, override=override)
+        Raises
+        ------
+        OverCorrection
+            when the `Fits` object is already
+            zero corrected and `force` is `False`
+        """
+        self.logger.info("Making zero correction on the image")
 
-    def rotate(self, angle: NUMERIC, output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Rotating fits")
-        fill_val = np.median(self.data)
-        angle_degree = angle * 180 / math.pi
-        rotated_data = ndimage.rotate(self.data, angle_degree, reshape=False, cval=fill_val)
+        if "MY-ZERO" not in self.header() or force:
+            zero_corrected = subtract_bias(self.ccd(), master_zero.ccd())
+            header = self.pure_header()
+            header["MY-ZERO"] = master_zero.file.name
 
-        w = WCS(self.hdu[0].header)
-        try:
-            # cd_matrix = w.wcs.cd
-            shape = self.data.shape
-            highest = min(self.data.shape)
-            xs = np.random.randint(0, highest, 20)
-            ys = np.random.randint(0, highest, 20)
-
-            skys = w.pixel_to_world(xs.tolist(), ys.tolist())
-
-            center = np.array(shape) / 2.0
-            rotation_matrix = np.array([[np.cos(-angle), -np.sin(-angle)],
-                                        [np.sin(-angle), np.cos(-angle)]])
-            translated_coords = np.array([xs, ys]) - center[:, np.newaxis]
-            new_coords = np.dot(rotation_matrix, translated_coords) + center[:, np.newaxis]
-            new_coords = np.round(new_coords).astype(int)
-            new_coords[0] = np.clip(new_coords[0], 0, rotated_data.shape[0] - 1)
-            new_coords[1] = np.clip(new_coords[1], 0, rotated_data.shape[1] - 1)
-
-            w = fit_wcs_from_points([new_coords[0], new_coords[1]], skys)
-
-        except:
-            self.logger.error("No WCS found in header")
-            raise Unsolvable("No WCS found in header")
-
-        temp_header = Header()
-        # temp_header.extend(self.pure_header(), unique=True, update=True)
-        temp_header.extend(w.to_header(), unique=True, update=True)
-
-        if output is None:
-            self.hdu[0].data = rotated_data.astype(int)
-            self.hdu[0].header = temp_header
-            self.hdu.flush()
-            return self
-
-        return self.from_data_header(rotated_data.astype(int), header=temp_header, output=output, override=override)
-
-    def crop(self, x: int, y: int, width: int, height: int, output: Optional[str] = None,
-             override: bool = False) -> Self:
-        self.logger.info("Cropping fits")
-        print(y, y + height, x, x + width)
-        cropped_data = self.data[y:y + height, x:x + width]
-
-        w = WCS(self.hdu[0].header)
-
-        if cropped_data.size == 0:
-            self.logger.error("Out of boundaries")
-            raise IndexError("Out of boundaries")
-
-        try:
-            w = w[y:y + height, x:x + width]
-        except:
-            self.logger.error("No WCS found in header")
-            raise Unsolvable("No WCS found in header")
-
-        temp_header = Header()
-        # temp_header.extend(self.pure_header(), unique=True, update=True)
-        temp_header.extend(w.to_header(), unique=True, update=True)
-
-        if output is None:
-            self.hdu[0].data = cropped_data.astype(int)
-            self.hdu[0].header = temp_header
-            self.hdu.flush()
-            return self
-
-        return self.from_data_header(cropped_data.astype(int), header=temp_header, output=output, override=override)
-
-    def bin(self, binning_factor: Union[int, Tuple[int, int]], func: Callable[..., float] = np.mean,
-            output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Binning fits")
-
-        if isinstance(binning_factor, int):
-            binning_factor_to_use = [binning_factor] * 2
-        else:
-            if len(binning_factor) != 2:
-                self.logger.error("Binning Factor must be a list of 2 integers")
-                raise ValueError("Binning Factor must be a list of 2 integers")
-            binning_factor_to_use = binning_factor
-        try:
-            binned_data = block_reduce(self.data, tuple(binning_factor_to_use), func=func)
-            w = WCS(self.hdu[0].header)
-        except ValueError:
-            self.logger.error("Bad value")
-            raise ValueError("Bad value")
-
-        try:
-            highest = min(self.data.shape)
-            xs = np.random.randint(0, highest, 20)
-            ys = np.random.randint(0, highest, 20)
-
-            skys = w.pixel_to_world(xs.tolist(), ys.tolist())
-
-            new_coords = [
-                xs // binning_factor_to_use[0],
-                ys // binning_factor_to_use[1]
-            ]
-
-            w = fit_wcs_from_points([new_coords[0], new_coords[1]], skys)
-        except:
-            self.logger.error("No WCS found in header")
-            raise Unsolvable("No WCS found in header")
-
-        temp_header = Header()
-        # temp_header.extend(self.pure_header(), unique=True, update=True)
-        temp_header.extend(w.to_header(), unique=True, update=True)
-
-        if output is None:
-            self.hdu[0].data = binned_data.astype(int)
-            self.hdu[0].header = temp_header
-            self.hdu.flush()
-            return self
-
-        return self.from_data_header(binned_data.astype(int), header=temp_header, output=output, override=override)
-
-    def zero_correction(self, master_zero: Self, force: bool = False,
-                        output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Zero correction")
-
-        if "MY-ZERO" not in self.hdu[0].header or force:
-            zero_corrected = subtract_bias(self.ccd, master_zero.ccd).data.astype(int)
-            header = self.hdu[0].header
-            header["MY-ZERO"] = master_zero.path.absolute().__str__()
-
-            if output is None:
-                self.hdu[0].data = zero_corrected
-                self.hdu[0].header = header
-                self.hdu.flush()
-                return self
-
-            return self.from_data_header(zero_corrected, header=header, output=output, override=override)
+            return self.__class__.from_data_header(
+                zero_corrected.data, header=header,
+                output=output, override=override
+            )
 
         self.logger.error("This Data is already zero corrected")
         raise OverCorrection("This Data is already zero corrected")
 
-    def dark_correction(self, master_dark: Self, exposure: Optional[str] = None, force: bool = False,
-                        output: Optional[str] = None, override: bool = False) -> Self:
-        self.logger.info("Dark correction")
+    def dark_correction(self, master_dark: Self, exposure: Optional[str] = None, output: Optional[str] = None,
+                        override: bool = False, force: bool = False) -> Self:
+        """
+        Does dark correction of the data
 
-        if "MY-DARK" not in self.hdu[0].header or force:
+        Parameters
+        ----------
+        master_dark : Self
+            Dark file to be used for correction
+        exposure : str, optional
+            header card containing exptime
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+        force: bool, default=False
+            Overcorrection flag
+
+        Returns
+        -------
+        Self
+            Dark corrected `Fits` object
+
+        Raises
+        ------
+        OverCorrection
+            when the `Fits` object is already
+            dark corrected and `force` is `False`
+        """
+        self.logger.info("Making dark correction on the image")
+
+        if "MY-DARK" not in self.header() or force:
             if exposure is None:
                 options = {"dark_exposure": 1 * units.s,
                            "data_exposure": 1 * units.s}
             else:
-                if exposure not in self.hdu[0].header or exposure not in master_dark.header():
+                if exposure not in self.header() or \
+                        exposure not in master_dark.header():
+                    self.logger.error(f"Key {exposure} not found in file, master_dark or both")
                     raise CardNotFound(f"Key {exposure} not found in file, master_dark or both")
 
                 options = {
                     "dark_exposure": float(
-                        float(master_dark.header()[exposure].values[0])) * units.s,
+                        master_dark.header()[exposure].values[0]) * units.s,
                     "data_exposure": float(
-                        float(self.hdu[0].header[exposure].values[0])) * units.s
+                        self.header()[exposure].values[0]) * units.s
                 }
 
             dark_corrected = subtract_dark(
-                self.ccd, master_dark.ccd,
+                self.ccd(), master_dark.ccd(),
                 **options, scale=True
             )
-            header = self.hdu[0].header
-            header["MY-DARK"] = master_dark.path.absolute().__str__()
+            header = self.pure_header()
+            header["MY-DARK"] = master_dark.file.name
 
-            if output is None:
-                self.hdu[0].data = dark_corrected.data.astype(int)
-                self.hdu[0].header = header
-                self.hdu.flush()
-                return self
-
-            return self.__class__.from_data_header(dark_corrected.data.astype(int), header=header,
-                                                   output=output, override=override)
+            return self.__class__.from_data_header(
+                dark_corrected.data, header=header,
+                output=output, override=override
+            )
 
         self.logger.error("This Data is already dark corrected")
         raise OverCorrection("This Data is already dark corrected")
 
-    def flat_correction(self, master_flat: Self, force: bool = False, output: Optional[str] = None,
-                        override: bool = False) -> Self:
-        self.logger.info("Flat correction")
+    def flat_correction(self, master_flat: Self, output: Optional[str] = None,
+                        override: bool = False, force: bool = False) -> Self:
+        """
+        Does flat correction of the data
 
-        if "MY-FLAT" not in self.hdu[0].header or force:
-            flat_corrected = flat_correct(self.ccd, master_flat.ccd)
-            header = self.hdu[0].header
-            header["MY-FLAT"] = master_flat.path.absolute().__str__()
+        Parameters
+        ----------
+        master_flat : Self
+            Flat file to be used for correction
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+        force: bool, default=False
+            Overcorrection flag
 
-            if output is None:
-                self.hdu[0].data = flat_corrected.data.astype(int)
-                self.hdu[0].header = header
-                self.hdu.flush()
-                return self
+        Returns
+        -------
+        Self
+            Flat corrected `Fits` object
 
-            return self.__class__.from_data_header(flat_corrected.data.data.astype(int), header=header,
-                                                   output=output, override=override)
+        Raises
+        ------
+        OverCorrection
+            when the `Fits` object is already
+            flat corrected and `force` is `False`
+        """
+        self.logger.info("Making flat correction on the image")
+
+        if "MY-FLAT" not in self.header() or force:
+            flat_corrected = flat_correct(self.ccd(), master_flat.ccd())
+            header = self.pure_header()
+            header["MY-FLAT"] = master_flat.file.name
+
+            return self.__class__.from_data_header(
+                flat_corrected.data, header=header,
+                output=output, override=override
+            )
 
         self.logger.error("This Data is already flat corrected")
         raise OverCorrection("This Data is already flat corrected")
 
-    def pixels_to_skys(self, xs: Union[List[Union[int, float]], int, float],
-                       ys: Union[List[Union[int, float]], int, float]) -> QTable:
-        self.logger.info("Pixels to Skys")
+    def ccdproc(self, master_zero: Optional[Self] = None, master_dark: Optional[Self] = None,
+                master_flat: Optional[Self] = None, exposure: Optional[str] = None, output: Optional[str] = None,
+                override: bool = False, force: bool = False) -> Self:
+        """
+        Does ccdproc correction of the data. can be zero, dark, or flat in any combination
 
-        xs_to_use = xs if isinstance(xs, list) else [xs]
-        ys_to_use = ys if isinstance(ys, list) else [ys]
+        Parameters
+        ----------
+        master_zero : Optional[Self]
+            Zero file to be used for correction
+        master_dark : Optional[Self]
+            Dark file to be used for correction
+        master_flat : Optional[Self]
+            Flat file to be used for correction
+        exposure : str, optional
+            header card containing exptime
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+        force: bool, default=False
+            Overcorrection flag
 
-        if len(xs_to_use) != len(ys_to_use):
-            self.logger.error("xs and ys must be equal in length")
-            raise ValueError("xs and ys must be equal in length")
+        Returns
+        -------
+        Self
+            ccd corrected `Fits` object
+        """
+        self.logger.info("Making ccd correction on the image")
 
-        data = []
+        if all(each is None for each in [master_zero, master_dark, master_flat]):
+            raise NothingToDo("None of master Zero, Dark, or Flat is not provided")
 
-        w = WCS(self.hdu[0].header)
+        corrected = self.ccd()
+        header = self.pure_header()
+        if master_zero:
+            if "MY-ZERO" not in self.header() or force:
+                corrected = subtract_bias(corrected, master_zero.ccd())
+                header["MY-ZERO"] = master_zero.file.name
 
-        for x, y in zip(xs_to_use, ys_to_use):
-            sky = w.pixel_to_world(x, y)
-            if not isinstance(sky, SkyCoord):
-                self.logger.error("Plate is not solved")
-                raise Unsolvable("Plate is not solved")
+        if master_dark:
+            if "MY-DARK" not in self.header() or force:
+                if exposure is None:
+                    options = {"dark_exposure": 1 * units.s,
+                               "data_exposure": 1 * units.s}
+                else:
+                    if exposure not in self.header() or \
+                            exposure not in master_dark.header():
+                        self.logger.error(f"Key {exposure} not found in file, master_dark or both")
+                        raise CardNotFound(f"Key {exposure} not found in file, master_dark or both")
 
-            data.append([x * units.pix, y * units.pix, sky.ra, sky.dec])
+                    options = {
+                        "dark_exposure": float(
+                            master_dark.header()[exposure].values[0]) * units.s,
+                        "data_exposure": float(
+                            self.header()[exposure].values[0]) * units.s
+                    }
+                corrected = subtract_dark(
+                    corrected, master_dark.ccd(),
+                    **options, scale=True
+                )
+                header["MY-DARK"] = master_dark.file.name
 
-        return QTable(
-            list(map(list, itertools.zip_longest(*data, fillvalue=None))),
-            names=["x", "y", "ra", "dec"]
+        if master_flat:
+            if "MY-FLAT" not in self.header() or force:
+                corrected = flat_correct(corrected, master_flat.ccd())
+                header["MY-FLAT"] = master_flat.file.name
+
+        return self.__class__.from_data_header(
+            corrected.data, header=header,
+            output=output, override=override
         )
 
-    def skys_to_pixels(self, skys: SkyCoord) -> QTable:
-        self.logger.info("Skys to Pixels")
+    def background(self) -> Background:
+        """
+        Returns a `Background` object of the fits file.
+        """
+        self.logger.info("Getting background")
 
-        data = []
+        return Background(self.data())
 
-        w = WCS(self.hdu[0].header)
+    def daofind(self, sigma: float = 3.0, fwhm: float = 3.0, threshold: float = 5.0) -> pd.DataFrame:
+        """
+        Runs daofind to detect sources on the image.
 
-        for sky in skys:
-            try:
-                pixels = w.world_to_pixel(sky)
-                data.append([sky.ra, sky.dec, float(pixels[0]) * units.pix, float(pixels[1]) * units.pix])
-            except ValueError:
-                self.logger.error("Plate is not solved")
-                raise Unsolvable("Plate is not solved")
-            if np.isnan(pixels).any():
-                self.logger.error("Plate is not solved")
-                raise Unsolvable("Plate is not solved")
+        [1]: https://docs.astropy.org/en/stable/api/astropy.stats.sigma_clipped_stats.html
 
-        return QTable(
-            list(map(list, itertools.zip_longest(*data, fillvalue=None))),
-            names=["ra", "dec", "x", "y"]
+        [2]: https://photutils.readthedocs.io/en/stable/api/photutils.detection.DAOStarFinder.html
+
+        Parameters
+        ----------
+        sigma: float, default=3
+            The number of standard deviations to use for both the lower and
+            upper clipping limit. These limits are overridden by sigma_lower
+            and sigma_upper, if input.
+            The default is 3. [1]
+        fwhm: float, default=3
+            The full-width half-maximum (FWHM) of the major axis of the
+            Gaussian kernel in units of pixels. [2]
+        threshold: float, default=5
+            The absolute image value above which to select sources. [2]
+
+        Returns
+        -------
+        pd.DataFrame
+            List of sources found on the image.
+        """
+        self.logger.info("Extracting sources (daofind) from images")
+
+        mean, median, std = sigma_clipped_stats(self.data(), sigma=sigma)
+        daofind = DAOStarFinder(fwhm=fwhm, threshold=threshold * std)
+        sources = daofind(self.data() - median)
+
+        if sources is not None:
+            return sources.to_pandas()
+
+        return pd.DataFrame(
+            [],
+            columns=[
+                "id", "xcentroid", "ycentroid", "sharpness", "roundness1",
+                "roundness2", "npix", "sky", "peak", "flux", "mag"
+            ]
         )
 
-    def photometry_sep(self, xs: Union[NUMERIC, NUMERICS], ys: Union[NUMERIC, NUMERICS], rs: Union[NUMERIC, NUMERICS],
-                       headers: Optional[Union[str, List[str]]] = None,
-                       exposure: Optional[Union[str, float, int]] = None) -> QTable:
-        self.logger.info("Photometry sep")
+    def extract(self, detection_sigma: float = 5.0, min_area: float = 5.0) -> pd.DataFrame:
+        """
+        Runs astroalign._find_sources to detect sources on the image.
+
+        Parameters
+        ----------
+        detection_sigma: float, default=5
+            `thresh = detection_sigma * bkg.globalrms`
+        min_area: float, default=5
+            Minimum area
+
+        Returns
+        -------
+        pd.DataFrame
+            List of sources found on the image.
+        """
+        self.logger.info("Extracting sources (sep_extract) from images")
+
+        bkg = self.background()
+        thresh = detection_sigma * bkg.globalrms
+        sources = sep_extract(self.data() - bkg.back(), thresh,
+                              minarea=min_area)
+        sources.sort(order="flux")
+        if len(sources) < 0:
+            self.logger.error("No source was found")
+            raise NumberOfElementError("No source was found")
+
+        return pd.DataFrame(
+            sources,
+        ).rename(columns={"x": "xcentroid", "y": "ycentroid"})
+
+    def photometry_sep(self, xs: NUMERICS, ys: NUMERICS, rs: NUMERICS,
+                       headers: Optional[Union[str, list[str]]] = None,
+                       exposure: Optional[Union[str, float, int]] = None
+                       ) -> pd.DataFrame:
+        """
+        Does a photometry using sep
+
+        Parameters
+        ----------
+        xs: Union[float, int, List[Union[float, int]]]
+            x coordinate(s)
+        ys: Union[float, int, List[Union[float, int]]]
+            y coordinate(s)
+        rs: Union[float, int, List[Union[float, int]]]
+            aperture(s)
+        headers: Union[str, list[str]], optional
+            Header keys to be extracted after photometry
+        exposure: Union[str, float, int], optional
+            Header key that contains or a numeric value of exposure time
+
+        Returns
+        -------
+        pd.DataFrame
+            photometric data as dataframe
+
+        Raises
+        ------
+        NumberOfElementError
+            when `x` and `y` coordinates does not have the same length
+        """
+        self.logger.info("Doing photometry (sep) on the image")
 
         table = []
 
-        the_header = self.header
+        the_header = self.header()
 
         if exposure is None:
             exposure_to_use = 0.0
@@ -877,29 +1427,30 @@ class Fits(Data):
         for new_header in new_headers:
             keys_.append(new_header)
             try:
-                headers_.append(the_header[new_header])
+                headers_.append(the_header[new_header].iloc[0])
             except KeyError:
-                self.logger.warning("Couldn't find header key")
                 headers_.append(None)
 
-        data = self.data.astype(float)
+        data = self.data()
         background = self.background()
 
         clean_d = data - background.rms()
         error = calc_total_error(
-            data, background, exposure_to_use
+            self.data(), background, exposure_to_use
         )
         for new_r in new_rs:
-            fluxes, flux_errs, flags = sum_circle(data, new_xs, new_ys, new_r, err=error)
-
+            fluxes, flux_errs, flags = sum_circle(
+                data,
+                new_xs, new_ys, new_r,
+                err=error
+            )
             for x, y, flux, flux_err, flag in zip(new_xs, new_ys, fluxes,
                                                   flux_errs, flags):
                 try:
                     sky = self.pixels_to_skys(x, y).iloc[0].sky
-                    ra, dec = sky.ra, sky.dec
                 except Exception as e:
-                    self.logger.warning(f"Could not get ra, dec. {e}")
-                    ra, dec = None, None
+                    self.logger.info(f"Could not get ra, dec. {e}")
+                    sky = None
 
                 value = clean_d[int(x)][int(y)]
                 snr = np.nan if value < 0 else math.sqrt(value)
@@ -907,27 +1458,53 @@ class Fits(Data):
                                                 exposure_to_use)
                 table.append(
                     [
-                        self.file, "sep", x * units.pix, y * units.pix, ra, dec,
-                                          new_r * units.pix, flux * units.adu,
-                                          flux_err * units.adu, flag, snr, mag * units.mag,
-                                          mag_err * units.mag, *headers_
+                        abs(self), "sep", x, y, sky, new_r, flux, flux_err,
+                        flag, snr, mag, mag_err, *headers_
                     ]
                 )
-        return QTable(
-            list(map(list, itertools.zip_longest(*table, fillvalue=None))),
-            names=["image", "package", "x", "y", "ra", "dec", "aperture", "flux",
-                   "flux_error", "flag", "snr", "mag", "merr", *keys_]
-        )
+        return pd.DataFrame(
+            table,
+            columns=[
+                "image", "package", "xcentroid", "ycentroid", "sky", "aperture",
+                "flux", "flux_error", "flag", "snr", "mag", "merr", *keys_
+            ]
+        ).set_index("image")
 
-    def photometry_phu(self, xs: Union[NUMERIC, NUMERICS], ys: Union[NUMERIC, NUMERICS], rs: Union[NUMERIC, NUMERICS],
-                       headers: Optional[Union[str, List[str]]] = None,
-                       exposure: Optional[Union[str, float, int]] = None) -> QTable:
-        self.logger.info("Photometry photutils")
+    def photometry_phu(self, xs: NUMERICS, ys: NUMERICS, rs: NUMERICS,
+                       headers: Optional[Union[str, list[str]]] = None,
+                       exposure: Optional[Union[str, float, int]] = None
+                       ) -> pd.DataFrame:
+        """
+        Does a photometry using photutils
+
+        Parameters
+        ----------
+        xs: Union[float, int, List[Union[float, int]]]
+            x coordinate(s)
+        ys: Union[float, int, List[Union[float, int]]]
+            y coordinate(s)
+        rs: Union[float, int, List[Union[float, int]]]
+            aperture(s)
+        headers: Union[str, list[str]], optional
+            Header keys to be extracted after photometry
+        exposure: Union[str, float, int], optional
+            Header key that contains or a numeric value of exposure time
+
+        Returns
+        -------
+        pd.DataFrame
+            photometric data as dataframe
+
+        Raises
+        ------
+        NumberOfElementError
+            when `x` and `y` coordinates does not have the same length
+        """
+        self.logger.info("Doing photometry (photutils) on the image")
 
         table = []
 
-        the_header = self.header
-        data = self.data.astype(float)
+        the_header = self.header()
 
         if exposure is None:
             exposure_to_use = 0.0
@@ -946,11 +1523,11 @@ class Fits(Data):
         for new_header in new_headers:
             keys_.append(new_header)
             try:
-                headers_.append(the_header[new_header])
+                headers_.append(the_header[new_header].iloc[0])
             except KeyError:
-                self.logger.warning("Couldn't find header key")
                 headers_.append(None)
 
+        data = self.data()
         background = self.background()
 
         clean_d = data - background.rms()
@@ -960,7 +1537,7 @@ class Fits(Data):
                 [new_x, new_y] for new_x, new_y in zip(new_xs, new_ys)
             ], r=new_r)
             error = calc_total_error(
-                data, self.background(), exposure_to_use
+                self.data(), self.background(), exposure_to_use
             )
             phot_table = aperture_photometry(data, apertures, error=error)
 
@@ -979,31 +1556,383 @@ class Fits(Data):
 
                 try:
                     sky = self.pixels_to_skys(phot_line["xcenter"].value, phot_line["ycenter"].value).iloc[0].sky
-                    ra, dec = sky.ra, sky.dec
                 except Exception as e:
-                    self.logger.warning(f"Could not get ra, dec. {e}")
-                    ra, dec = None, None
+                    self.logger.info(f"Could not get ra, dec. {e}")
+                    sky = None
 
                 table.append(
                     [
-                        self.file, "phu",
-                        phot_line["xcenter"].value * units.pix, phot_line["ycenter"].value * units.pix,
-                        ra, dec, new_r * units.pix,
-                        phot_line["aperture_sum"] * units.adu, phot_line["aperture_sum_err"] * units.adu,
-                        np.nan, snr, mag * units.mag, mag_err * units.mag, *headers_]
+                        abs(self), "phu",
+                        phot_line["xcenter"].value,
+                        phot_line["ycenter"].value,
+                        sky,
+                        new_r,
+                        phot_line["aperture_sum"],
+                        phot_line["aperture_sum_err"],
+                        None, snr, mag, mag_err, *headers_
+                    ]
                 )
 
-        return QTable(
-            list(map(list, itertools.zip_longest(*table, fillvalue=None))),
-            names=["image", "package", "x", "y", "ra", "dec", "aperture",
-                   "flux", "flux_error", "flag", "snr", "mag", "merr", *keys_]
+        return pd.DataFrame(
+            table,
+            columns=[
+                "image", "package", "xcentroid", "ycentroid", "sky", "aperture",
+                "flux", "flux_error", "flag", "snr", "mag", "merr", *keys_
+            ]
+        ).set_index("image")
+
+    def photometry(self, xs: NUMERICS, ys: NUMERICS, rs: NUMERICS,
+                   headers: Optional[Union[str, list[str]]] = None,
+                   exposure: Optional[Union[str, float, int]] = None
+                   ) -> pd.DataFrame:
+        """
+        Does a photometry using both sep and photutils
+
+        Parameters
+        ----------
+        xs: Union[float, int, List[Union[float, int]]]
+            x coordinate(s)
+        ys: Union[float, int, List[Union[float, int]]]
+            y coordinate(s)
+        rs: Union[float, int, List[Union[float, int]]]
+            aperture(s)
+        headers: Union[str, list[str]], optional
+            Header keys to be extracted after photometry
+        exposure: Union[str, float, int], optional
+            Header key that contains or a numeric value of exposure time
+
+        Returns
+        -------
+        pd.DataFrame
+            photometric data as dataframe
+
+        Raises
+        ------
+        NumberOfElementError
+            when `x` and `y` coordinates does not have the same length
+        """
+        return pd.concat(
+            (self.photometry_sep(
+                xs, ys, rs, headers=headers, exposure=exposure
+            ),
+             self.photometry_phu(
+                 xs, ys, rs, headers=headers, exposure=exposure
+             ))
         )
 
-    def photometry(self, xs: Union[NUMERIC, NUMERICS], ys: Union[NUMERIC, NUMERICS], rs: Union[NUMERIC, NUMERICS],
-                   headers: Optional[Union[str, List[str]]] = None,
-                   exposure: Optional[Union[str, float, int]] = None
-                   ) -> QTable:
-        self.logger.info("Photometry")
-        table_sep = self.photometry_sep(xs, ys, rs, headers=headers, exposure=exposure)
-        table_phu = self.photometry_phu(xs, ys, rs, headers=headers, exposure=exposure)
-        return vstack([table_sep, table_phu])
+    def shift(self, x: int, y: int, output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Shifts the data of `Fits` object
+
+        Parameters
+        ----------
+        x: int
+            x coordinate
+        y: int
+            y coordinate
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+
+        Returns
+        -------
+        Self
+            shifted `Fits` object
+        """
+        self.logger.info("Shifting the image")
+        set_value = np.median(self.data())
+        shifted_data = np.roll(self.data(), x, axis=1)
+        if x < 0:
+            shifted_data[:, x:] = set_value
+        elif x > 0:
+            shifted_data[:, 0:x] = set_value
+
+        shifted_data = np.roll(shifted_data, y, axis=0)
+        if y < 0:
+            shifted_data[y:, :] = set_value
+        elif y > 0:
+            shifted_data[0:y, :] = set_value
+
+        w = WCS(self.pure_header())
+
+        try:
+            highest = min(self.data().shape)
+            xs = np.random.randint(0, highest, 20)
+            ys = np.random.randint(0, highest, 20)
+
+            skys = w.pixel_to_world(xs.tolist(), ys.tolist())
+            w = fit_wcs_from_points([xs + x, ys + y], skys)
+        except Unsolvable:
+            self.logger.info("No WCS found in header")
+        except AttributeError as e:
+            self.logger.info(e)
+
+        temp_header = Header()
+        # temp_header.extend(self.pure_header(), unique=True, update=True)
+        temp_header.extend(w.to_header(), unique=True, update=True)
+        return self.from_data_header(shifted_data, header=temp_header,
+                                     output=output, override=override)
+
+    def rotate(self, angle: Union[float, int],
+               output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Rotates the data of `Fits` object
+
+        Parameters
+        ----------
+        angle: float, int
+            rotation angle (radians)
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+
+        Returns
+        -------
+        Self
+            rotated `Fits` object
+        """
+        self.logger.info("Rotating the image")
+        set_value = np.median(self.data())
+
+        angle_degree = angle * 180 / math.pi
+        data = ndimage.rotate(self.data(), angle_degree, reshape=False, cval=set_value)
+
+        w = WCS(self.pure_header())
+        try:
+            # cd_matrix = w.wcs.cd
+            shape = self.data().shape
+            highest = min(self.data().shape)
+            xs = np.random.randint(0, highest, 20)
+            ys = np.random.randint(0, highest, 20)
+
+            skys = w.pixel_to_world(xs.tolist(), ys.tolist())
+
+            center = np.array(shape) / 2.0
+            rotation_matrix = np.array([[np.cos(-angle), -np.sin(-angle)],
+                                        [np.sin(-angle), np.cos(-angle)]])
+            translated_coords = np.array([xs, ys]) - center[:, np.newaxis]
+            new_coords = np.dot(rotation_matrix, translated_coords) + center[:, np.newaxis]
+            new_coords = np.round(new_coords).astype(int)
+            new_coords[0] = np.clip(new_coords[0], 0, data.shape[0] - 1)
+            new_coords[1] = np.clip(new_coords[1], 0, data.shape[1] - 1)
+
+            w = fit_wcs_from_points([new_coords[0], new_coords[1]], skys)
+
+        except Unsolvable:
+            self.logger.info("No WCS found in header")
+        except AttributeError as e:
+            self.logger.info(e)
+
+        temp_header = Header()
+        # temp_header.extend(self.pure_header(), unique=True, update=True)
+        temp_header.extend(w.to_header(), unique=True, update=True)
+        return self.__class__.from_data_header(data, header=temp_header, output=output, override=override)
+
+    def crop(self, x: int, y: int, width: int, height: int,
+             output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Crop the data of `Fits` object
+
+        Parameters
+        ----------
+        x: int
+            x coordinate of top left
+        y: int
+            y coordinate of top left
+        width: int
+            Width of the cropped image
+        height: int
+            Height of the cropped image
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+
+        Returns
+        -------
+        Self
+            cropped `Fits` object
+
+        Raises
+        ------
+        IndexError
+            when the data is empty after cropping
+        """
+        self.logger.info("Cropping the image")
+
+        data = self.data()[y:y + height, x:x + width]
+
+        w = WCS(self.pure_header())
+
+        if data.size == 0:
+            raise IndexError("Out of boundaries")
+
+        try:
+            w = w[y:y + height, x:x + width]
+        except Unsolvable:
+            self.logger.info("No WCS found in header")
+        except AttributeError as e:
+            self.logger.info(e)
+
+        temp_header = Header()
+        # temp_header.extend(self.pure_header(), unique=True, update=True)
+        temp_header.extend(w.to_header(), unique=True, update=True)
+        return self.__class__.from_data_header(data, header=temp_header, output=output, override=override)
+
+    def bin(self, binning_factor: Union[int, List[int]], func: Callable[[Any], float] = np.mean,
+            output: Optional[str] = None, override: bool = False) -> Self:
+        """
+        Bin the data of `Fits` object
+
+        Parameters
+        ----------
+        binning_factor: Union[int, List[int]]
+            binning factor
+        func: Callable[[Any], float], default `np.mean`
+            the function to be used on merge
+        output: str, optional
+            Path of the new fits file.
+        override: bool, default=False
+            If True will overwrite the output if a file is already exists.
+
+        Returns
+        -------
+        Self
+            binned `Fits` object
+
+        Raises
+        ------
+        ValueError
+            when the `binning_factor` is wrong
+        ValueError
+            when the `binning_factor` is big
+        """
+        self.logger.info("Binning the image")
+        if isinstance(binning_factor, int):
+            binning_factor_to_use = [binning_factor] * 2
+        else:
+            if len(binning_factor) != 2:
+                raise ValueError("Binning Factor must be a list of 2 integers")
+            binning_factor_to_use = binning_factor
+        try:
+            binned_data = block_reduce(self.data(), tuple(binning_factor_to_use), func=func)
+            w = WCS(self.pure_header())
+        except ValueError:
+            raise ValueError("Big value")
+
+        try:
+            highest = min(self.data().shape)
+            xs = np.random.randint(0, highest, 20)
+            ys = np.random.randint(0, highest, 20)
+
+            skys = w.pixel_to_world(xs.tolist(), ys.tolist())
+
+            new_coords = [
+                xs // binning_factor_to_use[0],
+                ys // binning_factor_to_use[1]
+            ]
+
+            w = fit_wcs_from_points([new_coords[0], new_coords[1]], skys)
+        except Unsolvable:
+            self.logger.info("No WCS found in header")
+        except AttributeError as e:
+            self.logger.info(e)
+
+        temp_header = Header()
+        # temp_header.extend(self.pure_header(), unique=True, update=True)
+        temp_header.extend(w.to_header(), unique=True, update=True)
+        return self.__class__.from_data_header(binned_data, header=temp_header, output=output, override=override)
+
+    def pixels_to_skys(self, xs: Union[List[Union[int, float]], int, float],
+                       ys: Union[List[Union[int, float]], int, float]) -> pd.DataFrame:
+        """
+        Calculate Sky Coordinate of given Pixel
+
+        Parameters
+        ----------
+        xs: Union[List[Union[int, float]], int, float]
+            x coordinate(s) of pixel
+        ys: Union[List[Union[int, float]], int, float]
+            y coordinate(s) of pixel
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataa frame of pixel and sky coordinates
+
+        Raises
+        ------
+        ValueError
+            when the length of xs and ys is not equal
+        Unsolvable
+            when header does not contain WCS solution
+
+        """
+        self.logger.info("Calculating pixels to skys")
+
+        xs_to_use = xs if isinstance(xs, list) else [xs]
+        ys_to_use = ys if isinstance(ys, list) else [ys]
+
+        if len(xs_to_use) != len(ys_to_use):
+            raise ValueError("xs and ys must be equal in length")
+
+        data = []
+
+        w = WCS(self.pure_header())
+
+        for x, y in zip(xs_to_use, ys_to_use):
+            sky = w.pixel_to_world(x, y)
+            if not isinstance(sky, SkyCoord):
+                raise Unsolvable("Plate is not solved")
+
+            data.append([abs(self), x, y, sky])
+
+        return pd.DataFrame(
+            data,
+            columns=["image", "xcentroid", "ycentroid", "sky"]
+        ).set_index("image")
+
+    def skys_to_pixels(self, skys: Union[List[SkyCoord], SkyCoord]) -> pd.DataFrame:
+        """
+        Calculate Pixel Coordinate of given Sky
+
+        Parameters
+        ----------
+        skys: Union[List[SkyCoord], SkyCoord]
+            x coordinate(s) of pixel
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataa frame of pixel and sky coordinates
+
+        Raises
+        ------
+        Unsolvable
+            when header does not contain WCS solution
+
+        """
+        self.logger.info("Calculating skys to pixels")
+
+        skys_to_use = skys if isinstance(skys, list) else [skys]
+
+        data = []
+
+        w = WCS(self.pure_header())
+
+        for sky in skys_to_use:
+            try:
+                pixels = w.world_to_pixel(sky)
+            except ValueError:
+                raise Unsolvable("Plate is not solved")
+            if np.isnan(pixels).any():
+                raise Unsolvable("Plate is not solved")
+
+            data.append([abs(self), sky, float(pixels[0]), float(pixels[1])])
+
+        return pd.DataFrame(
+            data,
+            columns=["image", "sky", "xcentroid", "ycentroid"]
+        ).set_index("image")

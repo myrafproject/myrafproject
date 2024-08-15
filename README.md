@@ -1,73 +1,19 @@
-# What is MYRaf?
+# spy
+Simpler PYraf 
 
-The MYRaf is a practicable astronomical image reduction and photometry software and interfaces for IRAF. For this purpose, MYRaf uses IRAF, PyRAF, and many other python packages with a Qt framework. Also, MYRaf is free software and distributed with a GPLv3 license. You can use it without restrictive licenses, make copies for your friends, school, or institution.
+> [!WARNING]  
+> since `solve_field` requires an `api_key`, it is tested locally only.
 
-# Installation
+![UML](docs/spy.png "spy UML")
 
-- Clone MYRaf v3.0.0 from git.
-  
-  ```bash
-  $ sudo apt install git
-  $ git clone https://github.com/myrafproject/myrafproject.git
-  $ cd myrafproject
-  ```
+[![spy](https://github.com/mshemuni/spy/actions/workflows/python-package.yml/badge.svg)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/coverage-78%25-31c553)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/Win-%E2%9C%93-f5f5f5?logo=windows11)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/Ubuntu-%E2%9C%93-e95420?logo=Ubuntu)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/MacOS-%E2%9C%93-dadada?logo=macos)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/Python-38,%2039,%20310,%20311-3776ab?logo=python)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/LIC-GNU/GPL%20V3-a32d2a?logo=GNU)](https://github.com/mshemuni/spy/blob/main/LICENSE)
 
-- Install IRAF and the required packages with the following series of commands.
-  
-  ```bash
-  $ sudo apt install iraf
-  $ sudo apt install python3-dev libx11-dev x11proto-dev libxcb-xinerama0
-  $ pip install pyqt5 numpy astropy matplotlib ginga sep photutils ccdproc regions astroalign pyraf mplcursors imexam  
-  ```
 
-- If you are using the **bash** terminal;
-  
-  ```bash
-  $ export iraf=/usr/lib/iraf/
-  $ export IRAFARCH=linux
-  ```
 
-- If you are using **fish** terminal;
-  
-  ```bash
-  $ setenv iraf /usr/lib/iraf/
-  $ setenv IRAFARCH linux
-  ```
 
-- Finally, run MYRaf v3,
-  
-  ```bash
-  $ python3 main.py
-  ```
-
-If you have any problems during installation or usage, please contact us or create an [issue](https://github.com/myrafproject/myrafproject/issues/new). Before reporting an issue, please do not forget to run MYRaf v3 with DEBUG mode and share the outputs with us with the command below;
-
-```bash
-$ python3 main.py -ll 10 -lf issue.log
-```
-
-Clear skies!
-
-______
-
-**MYRaf Project Team**
-
-**Yücel KILIÇ** | yucelkilic@myrafproject.org
-
-**Mohammad SHEMUNI** | m.shemuni@myrafproject.org
-
-For academic use, please cite the paper:
-
-> Shameoni Niaei, M.; Kilic, Y.; Özeren, F. F.,
-> 2015, *MYRaf: An Easy Aperture Photometry GUI for IRAF*, **Astronomical Society of the Pacific (Conference Series)**, 496, 299 (2015).
-
-[Bibtex@ADS](https://ui.adsabs.harvard.edu/abs/2015ASPC..496..299N/exportcitation) | [ASP](http://articles.adsabs.harvard.edu/pdf/2015ASPC..496..299N)
-
-------------
-
-> Kilic, Y.; Shameoni Niaei, M.; Özeren, F. F.; Yesilyaprak, C.,
-> 2016,
-> *MYRaf: A new Approach with IRAF for Astronomical Photometric Reduction*,
-> **RevMexAA (Serie de Conferencias)**, 48, 38–39 (2016).
-
-[Bibtex@ADS](http://adsabs.harvard.edu/cgi-bin/nph-bib_query?bibcode=2016RMxAC..48...38K&data_type=BIBTEX&db_key=AST&nocookieset=1) | [RevMexAA](http://www.astroscu.unam.mx/rmaa/RMxAC..48/PDF/RMxAC..48_part-2.2.pdf)

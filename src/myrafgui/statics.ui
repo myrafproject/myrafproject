@@ -38,22 +38,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Size</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Width</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Height</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Min</string>
+       <string>Npix</string>
       </property>
      </column>
      <column>
@@ -63,7 +48,12 @@
      </column>
      <column>
       <property name="text">
-       <string>Std</string>
+       <string>Stddev</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Min</string>
       </property>
      </column>
      <column>

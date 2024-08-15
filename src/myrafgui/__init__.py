@@ -19,3 +19,4 @@ from .rotate import Ui_FormRotate
 from .settings import Ui_FormSettings
 from .shift import Ui_FormShift
 from .statics import Ui_FormStatics
+from .wcs import Ui_FormWCS
