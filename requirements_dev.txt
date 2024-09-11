@@ -4,7 +4,7 @@ astroquery
 ccdproc
 matplotlib
 mpl_point_clicker
-numpy
+numpy==1.26.4
 pandas
 photutils
 python_dateutil

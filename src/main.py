@@ -30,7 +30,6 @@ from dateutil.relativedelta import relativedelta
 from ginga.AstroImage import AstroImage
 from ginga.canvas.types.basic import Circle, Rectangle
 from ginga.qtw.ImageViewQt import CanvasView
-from yaml import warnings
 
 from myraflib import FitsArray, Fits
 from myraflib.error import Unsolvable
@@ -135,6 +134,7 @@ DEFAULT_SETTINGS = {
     }
 }
 
+LOGO = (Path(__file__).parent.parent / 'myraf.png').absolute().__str__()
 
 def database_dir():
     home_dir = Path.home()
@@ -156,7 +156,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         if log_file is None:
             self.log_file = database_dir() / Path("myraf.log")
@@ -594,7 +594,7 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.canvas = CanvasView(render='widget')
         self.canvas.enable_autocuts('on')
@@ -1082,7 +1082,7 @@ class ArithmeticForm(QWidget, Ui_FormArithmetic):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.pushButtonGetFile.clicked.connect(self.get_operand)
         self.pushButtonGO.clicked.connect(self.go)
@@ -1225,7 +1225,7 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.pushButtonZeroFile.clicked.connect(self.set_zero)
         self.pushButtonZeroClear.clicked.connect(lambda: self.labelZeroFile.setText(""))
@@ -1429,7 +1429,7 @@ class HeditForm(QWidget, Ui_FormHedit):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.set_header()
 
@@ -1542,7 +1542,7 @@ class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.pushButtonGO.clicked.connect(self.go)
 
@@ -1695,7 +1695,7 @@ class HSelectForm(QWidget, Ui_FormHSelect):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.load()
 
@@ -1728,7 +1728,7 @@ class HeaderForm(QWidget, Ui_FormHeader):
         self.setupUi(self)
         self.set_files()
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.display_header()
         self.listWidgetFiles.clicked.connect(self.display_header)
@@ -1758,7 +1758,7 @@ class ShiftForm(QWidget, Ui_FormShift):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.canvas = CanvasView(render='widget')
         self.canvas.enable_autocuts('on')
@@ -2085,7 +2085,7 @@ class RotateForm(QWidget, Ui_FormRotate):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.canvas = CanvasView(render='widget')
         self.canvas.enable_autocuts('on')
@@ -2391,7 +2391,7 @@ class CropForm(QWidget, Ui_FormCrop):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.canvas = CanvasView(render='widget')
         self.canvas.enable_autocuts('on')
@@ -2710,7 +2710,7 @@ class BinForm(QWidget, Ui_FormBin):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.are_the_same = True
         self.spinBoxXAmount.valueChanged.connect(self.fallow)
@@ -2788,7 +2788,7 @@ class AlignForm(QWidget, Ui_FormAlign):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.set_reference()
 
@@ -2892,7 +2892,7 @@ class CombineForm(QWidget, Ui_FormCombine):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.combine_type = combine_type
         self.comboBoxWeight.currentIndexChanged.connect(self.set_weights)
@@ -2987,7 +2987,7 @@ class DisplayForm(QWidget, Ui_FormDisplay):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.canvas = CanvasView(render='widget')
         self.canvas.enable_autocuts('on')
@@ -3281,7 +3281,7 @@ class WCSForm(QWidget, Ui_FormWCS):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.canvas = CanvasView(render='widget')
         self.canvas.enable_autocuts('on')
@@ -3666,7 +3666,7 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
         self.fits_array = fits_array
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.load()
 
@@ -3762,7 +3762,7 @@ class ObservatoriesForm(QWidget, Ui_FormObservatory):
         self.parent = parent
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.astropy_observatories = EarthLocation.get_site_names()
         self.my_observatories = []
@@ -3946,7 +3946,7 @@ class SettingsForm(QWidget, Ui_FormSettings):
         self.parent = parent
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
         self.spinBoxDisplayInterval.valueChanged.connect(self.save_settings)
         self.doubleSpinBoxZMag.valueChanged.connect(self.save_settings)
@@ -3979,9 +3979,9 @@ class AboutForm(QWidget, Ui_FormAbout):
         self.parent = parent
         self.setupUi(self)
 
-        self.setWindowIcon(QIcon('../myraf.png'))
+        self.setWindowIcon(QIcon(LOGO))
 
-        pixmap = QPixmap('../myraf.png')
+        pixmap = QPixmap(LOGO)
         scaled_pixmap = pixmap.scaled(90, 90, Qt.KeepAspectRatio)
         self.labelLogo.setPixmap(scaled_pixmap)
 
