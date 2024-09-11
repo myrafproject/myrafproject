@@ -548,7 +548,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 hedit.setEnabled(False)
 
             wcs = menu_editor.addAction("WCS...", lambda: (self.wcs()))
-            if len(selected) != 1:
+            if len(selected) != 1 or True:
                 wcs.setEnabled(False)
 
             menu = QtWidgets.QMenu()

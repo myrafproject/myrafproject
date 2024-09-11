@@ -572,7 +572,6 @@ class Fits(Data):
 
             with fts.open(abs(self), "update") as hdu:
                 for key, value, comment in zip(keys_to_use, values_to_use, comments_to_use):
-                    print(key, value, comment)
                     if value_is_key:
                         hdu[0].header[key] = hdu[0].header[value]
                     else:
