@@ -3,3 +3,5 @@ data/
 tst.py
 .tox
 42.0
+myraf.log
+**/__pycache__/

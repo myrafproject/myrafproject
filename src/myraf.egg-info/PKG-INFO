@@ -1,0 +1,61 @@
+Metadata-Version: 2.1
+Name: myraf
+Version: 3.0
+Summary: MYRaf; an astropy wrapper for astronomical photometry
+Home-page: https://github.com/myrafproject/myrafproject
+Author: Mohammad S.Niaei, Yücel KILIÇ
+Author-email: niaei@pardus.org.tr, ykilic@iaa.es
+License: GNU/GPL V3
+Keywords: Fits,Photometry
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: astroalign
+Requires-Dist: astropy
+Requires-Dist: astroquery
+Requires-Dist: ccdproc
+Requires-Dist: matplotlib
+Requires-Dist: mpl_point_clicker
+Requires-Dist: numpy==1.26.4
+Requires-Dist: pandas
+Requires-Dist: photutils
+Requires-Dist: python_dateutil
+Requires-Dist: sep
+Requires-Dist: typing_extensions
+Requires-Dist: scipy
+Requires-Dist: ginga
+Requires-Dist: PyQt5
+Requires-Dist: pyqtdarktheme
+Provides-Extra: testing
+Requires-Dist: pytest; extra == "testing"
+Requires-Dist: pytest-cov; extra == "testing"
+Requires-Dist: mypy; extra == "testing"
+Requires-Dist: flake8; extra == "testing"
+Requires-Dist: tox; extra == "testing"
+
+# spy
+Simpler PYraf 
+
+> [!WARNING]  
+> since `solve_field` requires an `api_key`, it is tested locally only.
+
+![UML](docs/spy.png "spy UML")
+
+[![spy](https://github.com/mshemuni/spy/actions/workflows/python-package.yml/badge.svg)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/coverage-78%25-31c553)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/Win-%E2%9C%93-f5f5f5?logo=windows11)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/Ubuntu-%E2%9C%93-e95420?logo=Ubuntu)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/MacOS-%E2%9C%93-dadada?logo=macos)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/Python-38,%2039,%20310,%20311-3776ab?logo=python)](https://github.com/mshemuni/spy/actions/workflows/python-package.yml)
+[![spy](https://img.shields.io/badge/LIC-GNU/GPL%20V3-a32d2a?logo=GNU)](https://github.com/mshemuni/spy/blob/main/LICENSE)
+
+
+
+
