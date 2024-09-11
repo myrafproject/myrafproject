@@ -128,7 +128,7 @@ DEFAULT_SETTINGS = {
             "psfbeta": 4.76,
             "gain_apply": True
         },
-        "wcs":{
+        "wcs": {
             "astrometry_apikey": '',
             "save": False
         }
@@ -208,7 +208,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
         fits_array = FitsArray.from_paths(fits)
 
-        directory = Path(self.gui_functions.get_directory(self, "Save Folder"))
+        drct = self.gui_functions.get_directory(self, "Save Folder")
+        if not drct:
+            return
+
+        directory = Path(drct)
 
         if not directory:
             return
@@ -667,7 +671,6 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         progress.setAutoClose(True)
 
         photometry = []
-
         for iteration, fits in enumerate(self.fits_array):
             try:
                 progress.setLabelText(f"Operating on {fits.file.name}")
@@ -1146,7 +1149,7 @@ class ArithmeticForm(QWidget, Ui_FormArithmetic):
         save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
 
         if not save_directory:
-            return 
+            return
 
         progress = QtWidgets.QProgressDialog("Adding ...", "Abort", 0, len(self.fits_array), self)
 
@@ -1214,6 +1217,7 @@ class ArithmeticForm(QWidget, Ui_FormArithmetic):
         if warnings > 0:
             self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
 
+
 class CCDProcForm(QWidget, Ui_FormCCDPROC):
     def __init__(self, parent, fits_array):
         super(CCDProcForm, self).__init__(parent)
@@ -1240,7 +1244,6 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         self.pushButtonDarkFile.installEventFilter(self)
         self.pushButtonFlatFile.installEventFilter(self)
 
-        self.reset_exposure_header()
         self.load_settings()
 
         self.comboBoxExposureHeader.currentIndexChanged.connect(self.save_settings)
@@ -1325,7 +1328,7 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
 
         if not save_directory:
-            return 
+            return
 
         progress = QtWidgets.QProgressDialog("Calibrating ...", "Abort", 0, len(self.fits_array), self)
 
@@ -1348,13 +1351,22 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
                 new_fits = Fits.from_data_header(fits.data(), fits.pure_header(), file_name.__str__())
 
                 if master_zero:
-                    new_fits.zero_correction(Fits.from_path(master_zero), force=force)
+                    new_fits = new_fits.zero_correction(
+                        Fits.from_path(master_zero), output=new_fits.file.absolute().__str__(),
+                        override=True, force=force,
+                    )
 
                 if master_dark:
-                    new_fits.dark_correction(Fits.from_path(master_dark), exposure=exposure, force=force)
+                    new_fits = new_fits.dark_correction(
+                        Fits.from_path(master_dark), exposure=exposure,
+                        output=new_fits.file.absolute().__str__(), override=True, force=force
+                    )
 
                 if master_flat:
-                    new_fits.flat_correction(Fits.from_path(master_flat), force=force)
+                    new_fits = new_fits.flat_correction(
+                        Fits.from_path(master_flat), output=new_fits.file.absolute().__str__()
+                        , override=True, force=force
+                    )
 
                 group_layer.setFirstColumnSpanned(True)
                 file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.file.name])
@@ -1661,6 +1673,7 @@ class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
 
         if warnings > 0:
             self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+
 
 class StatisticsForm(QWidget, Ui_FormStatics):
     def __init__(self, parent, stats):
@@ -3644,6 +3657,7 @@ class WCSForm(QWidget, Ui_FormWCS):
             return True
 
         return super().eventFilter(source, event)
+
 
 class HCalcForm(QWidget, Ui_FormHeaderCalculator):
     def __init__(self, parent, fits_array):
