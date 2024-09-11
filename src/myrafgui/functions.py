@@ -1,4 +1,4 @@
-from logging import getLogger
+from logging import getLogger, Logger
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QMessageBox, QTreeWidgetItem, QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
 
@@ -8,6 +8,7 @@ SCHEMA = {"primary": "#F5AE71"}
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 import sys
+
 
 class QToaster(QtWidgets.QFrame):
     closed = QtCore.pyqtSignal()
@@ -27,9 +28,6 @@ class QToaster(QtWidgets.QFrame):
                 background-color: rgb(57, 66, 81);
             }
         ''')
-        # alternatively:
-        # self.setAutoFillBackground(True)
-        # self.setFrameShape(self.Box)
 
         self.timer = QtCore.QTimer(singleShot=True, timeout=self.hide)
 
@@ -37,13 +35,8 @@ class QToaster(QtWidgets.QFrame):
             self.opacityEffect = QtWidgets.QGraphicsOpacityEffect(opacity=0)
             self.setGraphicsEffect(self.opacityEffect)
             self.opacityAni = QtCore.QPropertyAnimation(self.opacityEffect, b'opacity')
-            # we have a parent, install an eventFilter so that when it's resized
-            # the notification will be correctly moved to the right corner
             self.parent().installEventFilter(self)
         else:
-            # there's no parent, use the window opacity property, assuming that
-            # the window manager supports it; if it doesn't, this won'd do
-            # anything (besides making the hiding a bit longer by half a second)
             self.opacityAni = QtCore.QPropertyAnimation(self, b'windowOpacity')
         self.opacityAni.setStartValue(0.)
         self.opacityAni.setEndValue(1.)
@@ -54,25 +47,18 @@ class QToaster(QtWidgets.QFrame):
         self.margin = 10
 
     def checkClosed(self):
-        # if we have been fading out, we're closing the notification
         if self.opacityAni.direction() == self.opacityAni.Backward:
             self.close()
 
     def restore(self):
-        # this is a "helper function", that can be called from mouseEnterEvent
-        # and when the parent widget is resized. We will not close the
-        # notification if the mouse is in or the parent is resized
         self.timer.stop()
-        # also, stop the animation if it's fading out...
         self.opacityAni.stop()
-        # ...and restore the opacity
         if self.parent():
             self.opacityEffect.setOpacity(1)
         else:
             self.setWindowOpacity(1)
 
     def hide(self):
-        # start hiding
         self.opacityAni.setDirection(self.opacityAni.Backward)
         self.opacityAni.setDuration(500)
         self.opacityAni.start()
@@ -106,14 +92,11 @@ class QToaster(QtWidgets.QFrame):
         self.timer.start()
 
     def closeEvent(self, event):
-        # we don't need the notification anymore, delete it!
         self.deleteLater()
 
     def resizeEvent(self, event):
         super(QToaster, self).resizeEvent(event)
-        # if you don't set a stylesheet, you don't need any of the following!
         if not self.parent():
-            # there's no parent, so we need to update the mask
             path = QtGui.QPainterPath()
             path.addRoundedRect(QtCore.QRectF(self.rect()).translated(-.5, -.5), 4, 4)
             self.setMask(QtGui.QRegion(path.toFillPolygon(QtGui.QTransform()).toPolygon()))
@@ -132,25 +115,13 @@ class QToaster(QtWidgets.QFrame):
         if not parent or desktop:
             self = QToaster(None)
             self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint |
-                QtCore.Qt.BypassWindowManagerHint)
-            # This is a dirty hack!
-            # parentless objects are garbage collected, so the widget will be
-            # deleted as soon as the function that calls it returns, but if an
-            # object is referenced to *any* other object it will not, at least
-            # for PyQt (I didn't test it to a deeper level)
+                                QtCore.Qt.BypassWindowManagerHint)
             self.__self = self
 
             currentScreen = QtWidgets.QApplication.primaryScreen()
             if parent and parent.window().geometry().size().isValid():
-                # the notification is to be shown on the desktop, but there is a
-                # parent that is (theoretically) visible and mapped, we'll try to
-                # use its geometry as a reference to guess which desktop shows
-                # most of its area; if the parent is not a top level window, use
-                # that as a reference
                 reference = parent.window().geometry()
             else:
-                # the parent has not been mapped yet, let's use the cursor as a
-                # reference for the screen
                 reference = QtCore.QRect(
                     QtGui.QCursor.pos() - QtCore.QPoint(1, 1),
                     QtCore.QSize(3, 3))
@@ -168,12 +139,11 @@ class QToaster(QtWidgets.QFrame):
 
         self.timer.setInterval(timeout)
 
-
         self.label = QtWidgets.QLabel(message)
         self.label.setStyleSheet("color: rgb(255, 255, 255);")
         font = QtGui.QFont()
-        font.setFamily("IRANYekanWeb")
-        font.setPointSize(10)
+        # font.setFamily("IRANYekanWeb")
+        font.setPointSize(12)
         font.setWeight(100)
         self.label.setFont(font)
         self.layout().addWidget(self.label)
@@ -189,7 +159,6 @@ class QToaster(QtWidgets.QFrame):
 
         self.timer.start()
 
-        # raise the widget and adjust its size to the minimum
         self.raise_()
         self.adjustSize()
 
@@ -197,8 +166,6 @@ class QToaster(QtWidgets.QFrame):
         self.margin = margin
 
         geo = self.geometry()
-        # now the widget should have the correct size hints, let's move it to the
-        # right place
         if corner == QtCore.Qt.TopLeftCorner:
             geo.moveTopLeft(
                 parentRect.topLeft() + QtCore.QPoint(margin, margin))
@@ -247,64 +214,69 @@ class CustomQTreeWidgetItem(QTreeWidgetItem):
 
 
 class GUIFunctions:
-    def __init__(self, logger=None):
+    def __init__(self, parent: QtWidgets.QMainWindow, logger: Logger=None):
 
         if logger is None:
             self.logger = getLogger(__file__)
         else:
             self.logger = logger
 
-    def error(self, parent, text):
-        QMessageBox.critical(parent, "MYRaf", text)
+        self.parent = parent
 
-    def warning(self, parent, text):
-        QMessageBox.warning(parent, "MYRaf", text)
+    def error(self, text):
+        QMessageBox.critical(self.parent, "MYRaf", text)
 
-    def get_file(self, parent, caption, file_type=None):
+    def warning(self, text):
+        QMessageBox.warning(self.parent, "MYRaf", text)
+
+    def get_file(self, caption, file_type=None):
         try:
             if file_type is not None:
                 file_type_to_use = file_type
             else:
                 file_type_to_use = "fits, fit, fts (*.fits *.fit *.fts)"
 
-            file, _ = QtWidgets.QFileDialog.getOpenFileName(parent, caption, '', file_type_to_use)
+            file, _ = QtWidgets.QFileDialog.getOpenFileName(self.parent, caption, '', file_type_to_use)
             return file
         except Exception as e:
             self.logger.error(e)
+            self.parent.gui_functions.toast(self.parent, str(e))
             return ""
 
-    def get_files(self, parent, caption, file_type=None):
+    def get_files(self, caption, file_type=None):
         try:
             if file_type is not None:
                 file_type_to_use = file_type
             else:
                 file_type_to_use = "fits, fit, fts (*.fits *.fit *.fts)"
 
-            files, _ = QtWidgets.QFileDialog.getOpenFileNames(parent, caption, '', file_type_to_use)
+            files, _ = QtWidgets.QFileDialog.getOpenFileNames(self.parent, caption, '', file_type_to_use)
             return files
         except Exception as e:
             self.logger.error(e)
+            self.parent.gui_functions.toast(self.parent, str(e))
             return []
 
-    def get_directory(self, parent, caption):
+    def get_directory(self,  caption):
         try:
-            directory = QtWidgets.QFileDialog.getExistingDirectory(parent, caption)
+            directory = QtWidgets.QFileDialog.getExistingDirectory(self.parent, caption)
             return directory
         except Exception as e:
             self.logger.error(e)
+            self.parent.gui_functions.toast(self.parent, str(e))
             return ""
 
-    def save_file(self, parent, caption, file_type_to_use):
-        file, _ = QtWidgets.QFileDialog.getSaveFileName(parent, caption, filter=file_type_to_use)
+    def save_file(self,  caption, file_type_to_use):
+        file, _ = QtWidgets.QFileDialog.getSaveFileName(self.parent, caption, filter=file_type_to_use)
 
         return file
 
-    def add_to_files(self, parent, images_to_add, device, grp="Group"):
+    def add_to_files(self,  images_to_add, device, grp="Group"):
         if len(images_to_add) == 0:
             return
 
         try:
-            progress = QtWidgets.QProgressDialog("Adding files...", "Abort", 0, len(images_to_add), parent)
+            progress = QtWidgets.QProgressDialog("Adding files...", "Abort", 0, len(images_to_add), self.parent)
 
             progress.setWindowModality(QtCore.Qt.WindowModal)
             progress.setFixedSize(progress.sizeHint() + QSize(400, 0))
@@ -338,6 +310,7 @@ class GUIFunctions:
 
         except Exception as e:
             self.logger.error(e)
+            self.parent.gui_functions.toast(self.parent, str(e))
 
     def get_selected_files(self, tree_widget):
         selected_items_dict = {}
@@ -375,22 +348,22 @@ class GUIFunctions:
             if parent.childCount() == 0:
                 tree_widget.takeTopLevelItem(tree_widget.indexOfTopLevelItem(parent))
 
-    def get_number(self, parent, caption, text, min_val=0, max_val=100, step_val=1, default=0):
+    def get_number(self, caption, text, min_val=0, max_val=100, step_val=1, default=0):
         number, ok = QtWidgets.QInputDialog.getInt(
-            parent, caption, text, min=min_val, max=max_val, step=step_val, value=default
+            self.parent, caption, text, min=min_val, max=max_val, step=step_val, value=default
         )
         return number, ok
 
-    def get_text(self, parent, caption, text, default=None):
-        text, ok = QtWidgets.QInputDialog.getText(parent, caption, text, text=default)
+    def get_text(self,  caption: str, text: str, default: str = None):
+        text, ok = QtWidgets.QInputDialog.getText(self.parent, caption, text, text=default)
         return text, ok
 
-    def get_item(self, parent, caption, label, items):
-        item, ok = QtWidgets.QInputDialog.getItem(parent, caption, label, items)
+    def get_item(self,  caption, label, items):
+        item, ok = QtWidgets.QInputDialog.getItem(self.parent, caption, label, items)
         return item, ok
 
-    def ask(self, parent, caption, question):
-        answer = QtWidgets.QMessageBox.question(parent, caption, question,
+    def ask(self,  caption, question):
+        answer = QtWidgets.QMessageBox.question(self.parent, caption, question,
                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                 QtWidgets.QMessageBox.No)
 
@@ -467,37 +440,25 @@ class GUIFunctions:
         for x in list_widget.selectedItems():
             list_widget.takeItem(list_widget.row(x))
 
-    @staticmethod
-    def toast(parent, message,
-                     icon=QtWidgets.QStyle.SP_MessageBoxInformation,
-                     corner=QtCore.Qt.BottomRightCorner, margin=10, closable=True,
-                     timeout=5000, desktop=False, parentWindow=True):
+    def toast(self, message,
+              icon=QtWidgets.QStyle.SP_MessageBoxInformation,
+              corner=QtCore.Qt.BottomRightCorner, margin=10, closable=True,
+              timeout=5000, desktop=False, parentWindow=True):
 
-        if parent and parentWindow:
-            parent = parent.window()
+        if self.parent and parentWindow:
+            parent = self.parent.window()
 
         if not parent or desktop:
-            self = QToaster(None)
-            self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint |
-                                QtCore.Qt.BypassWindowManagerHint)
-            # This is a dirty hack!
-            # parentless objects are garbage collected, so the widget will be
-            # deleted as soon as the function that calls it returns, but if an
-            # object is referenced to *any* other object it will not, at least
-            # for PyQt (I didn't test it to a deeper level)
-            self.__self = self
+            toaster = QToaster(None)
+            toaster.setWindowFlags(toaster.windowFlags() | QtCore.Qt.FramelessWindowHint |
+                                   QtCore.Qt.BypassWindowManagerHint)
+
+            toaster.__self = toaster
 
             currentScreen = QtWidgets.QApplication.primaryScreen()
             if parent and parent.window().geometry().size().isValid():
-                # the notification is to be shown on the desktop, but there is a
-                # parent that is (theoretically) visible and mapped, we'll try to
-                # use its geometry as a reference to guess which desktop shows
-                # most of its area; if the parent is not a top level window, use
-                # that as a reference
                 reference = parent.window().geometry()
             else:
-                # the parent has not been mapped yet, let's use the cursor as a
-                # reference for the screen
                 reference = QtCore.QRect(
                     QtGui.QCursor.pos() - QtCore.QPoint(1, 1),
                     QtCore.QSize(3, 3))
@@ -510,41 +471,38 @@ class GUIFunctions:
                     currentScreen = screen
             parentRect = currentScreen.availableGeometry()
         else:
-            self = QToaster(parent)
+            toaster = QToaster(parent)
             parentRect = parent.rect()
 
-        self.timer.setInterval(timeout)
+        toaster.timer.setInterval(timeout)
 
-        self.label = QtWidgets.QLabel(message)
-        self.label.setStyleSheet("color: rgb(255, 255, 255);")
+        toaster.label = QtWidgets.QLabel(message)
+        toaster.label.setStyleSheet("color: rgb(255, 255, 255);")
         font = QtGui.QFont()
-        font.setFamily("IRANYekanWeb")
-        font.setPointSize(10)
+        # font.setFamily("IRANYekanWeb")
+        font.setPointSize(12)
         font.setWeight(100)
-        self.label.setFont(font)
-        self.layout().addWidget(self.label)
+        toaster.label.setFont(font)
+        toaster.layout().addWidget(toaster.label)
 
         if closable:
-            self.closeButton = QtWidgets.QToolButton()
-            self.layout().addWidget(self.closeButton)
-            closeIcon = self.style().standardIcon(
+            toaster.closeButton = QtWidgets.QToolButton()
+            toaster.layout().addWidget(toaster.closeButton)
+            closeIcon = toaster.style().standardIcon(
                 QtWidgets.QStyle.SP_TitleBarCloseButton)
-            self.closeButton.setIcon(closeIcon)
-            self.closeButton.setAutoRaise(True)
-            self.closeButton.clicked.connect(self.close)
+            toaster.closeButton.setIcon(closeIcon)
+            toaster.closeButton.setAutoRaise(True)
+            toaster.closeButton.clicked.connect(toaster.close)
 
-        self.timer.start()
+        toaster.timer.start()
 
-        # raise the widget and adjust its size to the minimum
-        self.raise_()
-        self.adjustSize()
+        toaster.raise_()
+        toaster.adjustSize()
 
-        self.corner = corner
-        self.margin = margin
+        toaster.corner = corner
+        toaster.margin = margin
 
-        geo = self.geometry()
-        # now the widget should have the correct size hints, let's move it to the
-        # right place
+        geo = toaster.geometry()
         if corner == QtCore.Qt.TopLeftCorner:
             geo.moveTopLeft(
                 parentRect.topLeft() + QtCore.QPoint(margin, margin))
@@ -558,6 +516,6 @@ class GUIFunctions:
             geo.moveBottomLeft(
                 parentRect.bottomLeft() + QtCore.QPoint(margin, -margin))
 
-        self.setGeometry(geo)
-        self.show()
-        self.opacityAni.start()
+        toaster.setGeometry(geo)
+        toaster.show()
+        toaster.opacityAni.start()

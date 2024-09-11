@@ -4,33 +4,40 @@
 """
 
 import warnings
-from astropy.utils.exceptions import AstropyWarning
 
 import argparse
 import json
-import math
 import platform
-import statistics
 from logging import getLogger, basicConfig
 from pathlib import Path
 from sys import argv
 
-import astroalign
+from typing import List
+from logging import Logger
+
 import pandas as pd
+import math
+import statistics
+
+# noinspection PyUnresolvedReferences
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon, QPixmap
-
-from astropy.coordinates import EarthLocation, SkyCoord, AltAz
-
-import qdarktheme
 from PyQt5.QtCore import QEvent, Qt, QSize
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem
+
+import qdarktheme
+
+from astropy.utils.exceptions import AstropyWarning
+from astropy.coordinates import EarthLocation, SkyCoord, AltAz
 from astropy.io.fits import Header
 from astropy.time import Time
 from astropy.wcs import WCS
 from astropy.wcs.utils import fit_wcs_from_points
+
 from dateutil.relativedelta import relativedelta
+import astroalign
+
 from ginga.AstroImage import AstroImage
 from ginga.canvas.types.basic import Circle, Rectangle
 from ginga.qtw.ImageViewQt import CanvasView
@@ -142,6 +149,7 @@ LOGO = (Path(__file__).parent.parent / 'myraf.png').absolute().__str__()
 
 warnings.filterwarnings('ignore', category=AstropyWarning)
 
+
 def database_dir():
     home_dir = Path.home()
     if platform.system() == "Windows":
@@ -157,6 +165,7 @@ def database_dir():
     return settings_dir
 
 
+# noinspection PyUnresolvedReferences
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, logger_level="DEBUG", log_file=None):
         super(MainWindow, self).__init__(parent)
@@ -179,7 +188,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.settings = Setting(self.logger)
 
-        self.gui_functions = GUIFunctions()
+        self.gui_functions = GUIFunctions(self)
 
         self.treeWidget.installEventFilter(self)
 
@@ -194,9 +203,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         window.show()
 
     def add_files(self):
-        files = self.gui_functions.get_files(self, "Get Files")
+        files = self.gui_functions.get_files("Get Files")
         if files:
-            self.gui_functions.add_to_files(self, files, self.treeWidget)
+            self.gui_functions.add_to_files(files, self.treeWidget)
 
     def remove_files(self):
         self.gui_functions.remove_from_files(self.treeWidget)
@@ -204,17 +213,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def rename(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         group_name = list(files.keys())[0].text(0)
-        new_name, ok = self.gui_functions.get_text(self, "Rename Group", "Provide new group name", group_name)
+        new_name, ok = self.gui_functions.get_text("Rename Group", "Provide new group name", group_name)
         if ok:
             list(files.keys())[0].setText(0, new_name)
 
     def save_as(self):
-        warnings = 0
+        warn = 0
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
         fits_array = FitsArray.from_paths(fits)
 
-        drct = self.gui_functions.get_directory(self, "Save Folder")
+        drct = self.gui_functions.get_directory("Save Folder")
         if not drct:
             return
 
@@ -249,26 +258,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.logger.warning(e)
         progress.close()
         if group_layer.childCount() == 0:
             self.treeWidget.takeTopLevelItem(self.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def merge(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
-        new_name, ok = self.gui_functions.get_text(self, "Group Name", "Merged Group Name", "Group")
+        new_name, ok = self.gui_functions.get_text("Group Name", "Merged Group Name", "Group")
         if ok:
             new_files = sorted(
                 list(set([
@@ -277,7 +286,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     for file in file_list
                 ]))
             )
-            self.gui_functions.add_to_files(self, new_files, self.treeWidget, grp=new_name)
+            self.gui_functions.add_to_files(new_files, self.treeWidget, grp=new_name)
 
     def split(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
@@ -285,11 +294,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
         fits_array = FitsArray.from_paths(fits)
         list_of_header = list(fits_array[0].header().keys())
-        item, ok = self.gui_functions.get_item(self, "Select header(s)", "Headers", list_of_header)
+        item, ok = self.gui_functions.get_item("Select header(s)", "Headers", list_of_header)
         if ok:
             groups = fits_array.group_by(item)
             for group, files in groups.items():
-                self.gui_functions.add_to_files(self, files.files(), self.treeWidget, f"{group_name}_{'_'.join(group)}")
+                self.gui_functions.add_to_files(files.files(), self.treeWidget, f"{group_name}_{'_'.join(group)}")
 
     def display(self):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
@@ -312,9 +321,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
 
         if len(fits) > 10:
-            answer = self.gui_functions.ask(self, "Warning", f"You selected {len(fits)} files. "
-                                                             "This might require too much RAM. "
-                                                             "Do you wish to continue?")
+            answer = self.gui_functions.ask(
+                "Warning",
+                f"You selected {len(fits)} files. This might require too much RAM. Do you wish to continue?"
+            )
             if not answer:
                 return
 
@@ -587,14 +597,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return super(MainWindow, self).eventFilter(source, event)
 
     def closeEvent(self, event):
-        if self.gui_functions.ask(self, "MYRaf", "Are you sure you want to quit?"):
+        if self.gui_functions.ask("MYRaf", "Are you sure you want to quit?"):
             event.accept()
         else:
             event.ignore()
 
 
+# noinspection PyUnresolvedReferences
 class PhotometryForm(QWidget, Ui_FormPhotometry):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(PhotometryForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -643,15 +654,15 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         self.pushButtonGO.clicked.connect(self.go)
 
     def go(self):
-        warnings = 0
+        warn = 0
         coordinates = self.parent.gui_functions.get_from_table(self.tableWidgetCoordinates)
         if not coordinates:
-            self.parent.gui_functions.error(self, "No coordinates were given for aperture")
+            self.parent.gui_functions.error("No coordinates were given for aperture")
             return
 
         radii = self.parent.gui_functions.get_from_list(self.listWidgetApertureRadii)
         if not radii:
-            self.parent.gui_functions.error(self, "No radius were given for aperture")
+            self.parent.gui_functions.error("No radius were given for aperture")
             return
 
         headers = self.parent.gui_functions.get_from_list(self.listWidgetHeadersToExtract)
@@ -664,7 +675,7 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         headers_to_extract = headers if headers else None
         exposure_in_header = None if exposure == "None" else exposure
 
-        save_file = self.parent.gui_functions.save_file(self, "Save File", "Comma Seperated Value (*.csv)")
+        save_file = self.parent.gui_functions.save_file("Save File", "Comma Seperated Value (*.csv)")
 
         if not save_file:
             return
@@ -702,21 +713,21 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
 
         if len(photometry) == 0:
             self.parent.logger.warning("Cloudn't do photometry")
-            self.parent.gui_functions.error(self, "Cloudn't do photometry")
+            self.parent.gui_functions.error("Cloudn't do photometry")
             return
 
         stacked_photometry = pd.concat(photometry, axis=0)
         stacked_photometry.to_csv(save_file)
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def load_settings(self):
         settings = self.parent.settings.settings
@@ -813,7 +824,7 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         self.canvas.set_intensity_map('ramp')
 
     def rotate(self):
-        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        angle, ok = self.parent.gui_functions.get_number("Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
                 self.current_angle = float(angle)
@@ -826,7 +837,7 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         apertures = self.parent.gui_functions.get_from_list(self.listWidgetApertureRadii)
         if str(aperture) in apertures:
             self.parent.logger.error("aperture already exists")
-            if not self.parent.gui_functions.ask(self, "aperture already exists", "Do you want to force add it?"):
+            if not self.parent.gui_functions.ask("aperture already exists", "Do you want to force add it?"):
                 return
 
         self.parent.gui_functions.add_to_list(self.listWidgetApertureRadii, [str(aperture)])
@@ -1081,8 +1092,9 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         return super().eventFilter(source, event)
 
 
+# noinspection PyUnresolvedReferences
 class ArithmeticForm(QWidget, Ui_FormArithmetic):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(ArithmeticForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1120,7 +1132,7 @@ class ArithmeticForm(QWidget, Ui_FormArithmetic):
                     (Path(child.child(0).text(1)) / Path(child.text(0))).absolute().__str__()
                 )
 
-        the_file, ok = self.parent.gui_functions.get_item(self, "Select A File", "File", files_data)
+        the_file, ok = self.parent.gui_functions.get_item("Select A File", "File", files_data)
         if ok:
             file_path_label.setText(the_file)
 
@@ -1136,23 +1148,23 @@ class ArithmeticForm(QWidget, Ui_FormArithmetic):
         return super(ArithmeticForm, self).eventFilter(source, event)
 
     def get_operand(self):
-        file = self.parent.gui_functions.get_file(self, "Get Operand")
+        file = self.parent.gui_functions.get_file("Get Operand")
         if file:
             self.labelFile.setText(file)
 
     def go(self):
-        warnings = 0
+        warn = 0
         if self.tabWidget.currentIndex() == 0:
             other = self.doubleSpinBoxValue.value()
         else:
             other_file = self.labelFile.text()
             if other_file == "":
-                self.parent.gui_functions.error(self, "No operand file was selected")
+                self.parent.gui_functions.error("No operand file was selected")
                 return
             other = Fits.from_path(other_file)
         operator = self.comboOperation.currentText()
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -1206,26 +1218,27 @@ class ArithmeticForm(QWidget, Ui_FormArithmetic):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                 progress.setValue(iteration)
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         if group_layer.childCount() == 0:
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
 
+# noinspection PyUnresolvedReferences
 class CCDProcForm(QWidget, Ui_FormCCDPROC):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(CCDProcForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1285,7 +1298,7 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
                     (Path(child.child(0).text(1)) / Path(child.text(0))).absolute().__str__()
                 )
 
-        the_file, ok = self.parent.gui_functions.get_item(self, "Select A File", "File", files_data)
+        the_file, ok = self.parent.gui_functions.get_item("Select A File", "File", files_data)
         if ok:
             file_path_label.setText(the_file)
             if file_path_label is self.labelDarkFile:
@@ -1313,14 +1326,14 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         return super(CCDProcForm, self).eventFilter(source, event)
 
     def go(self):
-        warnings = 0
+        warn = 0
 
         master_zero = self.labelZeroFile.text()
         master_dark = self.labelDarkFile.text()
         master_flat = self.labelFlatFile.text()
 
         if master_zero == "" and master_dark == "" and master_flat == "":
-            self.parent.gui_functions.error(self, "No action")
+            self.parent.gui_functions.error("No action")
             return
 
         force = self.checkBoxForce.isChecked()
@@ -1331,7 +1344,7 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         else:
             exposure = exposure_header
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -1380,8 +1393,8 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
@@ -1394,25 +1407,25 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         if group_layer.childCount() == 0:
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def show_image(self, file_label):
         file = file_label.text()
         if file == "":
-            self.parent.gui_functions.error(self, "Nothing to show")
+            self.parent.gui_functions.error("Nothing to show")
             return
 
         fits = Fits.from_path(file)
         self.parent.show_window(DisplayForm(self.parent, FitsArray([fits])))
 
     def set_zero(self):
-        file = self.parent.gui_functions.get_file(self, "Zero File")
+        file = self.parent.gui_functions.get_file("Zero File")
         if file:
             self.labelZeroFile.setText(file)
 
     def set_dark(self):
-        file = self.parent.gui_functions.get_file(self, "Dark File")
+        file = self.parent.gui_functions.get_file("Dark File")
         if file:
             self.labelDarkFile.setText(file)
             self.reload_exposure_header(file)
@@ -1423,13 +1436,14 @@ class CCDProcForm(QWidget, Ui_FormCCDPROC):
         self.parent.gui_functions.add_to_combo(self.comboBoxExposureHeader, list(dark_fits.header().columns))
 
     def set_flat(self):
-        file = self.parent.gui_functions.get_file(self, "Flat File")
+        file = self.parent.gui_functions.get_file("Flat File")
         if file:
             self.labelFlatFile.setText(file)
 
 
+# noinspection PyUnresolvedReferences
 class HeditForm(QWidget, Ui_FormHedit):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(HeditForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1458,7 +1472,7 @@ class HeditForm(QWidget, Ui_FormHedit):
                                                [f"{each[0]} = {each[1].__str__()[:12]}" for each in data])
 
     def delete_header(self):
-        warnings = 0
+        warn = 0
         key = self.lineEditKey.text()
 
         progress = QtWidgets.QProgressDialog("Deleting Header ...", "Abort", 0, len(self.fits_array), self)
@@ -1477,17 +1491,17 @@ class HeditForm(QWidget, Ui_FormHedit):
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         self.set_header()
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def save_update(self):
-        warnings = 0
+        warn = 0
         is_key = self.checkBoxUseFromValue.isChecked()
         key = self.lineEditKey.text()
         if is_key:
@@ -1515,14 +1529,14 @@ class HeditForm(QWidget, Ui_FormHedit):
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         self.set_header()
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def toggle(self):
         enabled = self.checkBoxUseFromValue.isChecked()
@@ -1541,8 +1555,9 @@ class HeditForm(QWidget, Ui_FormHedit):
         self.lineEditComment.setText(comment)
 
 
+# noinspection PyUnresolvedReferences
 class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(CosmicCleanerForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1608,7 +1623,7 @@ class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
         self.parent.settings.settings = settings
 
     def go(self):
-        warnings = 0
+        warn = 0
 
         sigclip = self.doubleSpinSigclip.value()
         sigfrac = self.doubleSpinSigfrac.value()
@@ -1626,7 +1641,7 @@ class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
         psfbeta = self.doubleSpinPsfbeta.value()
         gain_apply = self.checkBoxGain_apply.isChecked()
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -1663,26 +1678,27 @@ class CosmicCleanerForm(QWidget, Ui_FormCosmicCleaner):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                 progress.setValue(iteration)
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         if group_layer.childCount() == 0:
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
 
+# noinspection PyUnresolvedReferences
 class StatisticsForm(QWidget, Ui_FormStatics):
-    def __init__(self, parent, stats):
+    def __init__(self, parent: MainWindow, stats: List):
         super(StatisticsForm, self).__init__(parent)
         self.parent = parent
         self.stats = stats
@@ -1694,8 +1710,9 @@ class StatisticsForm(QWidget, Ui_FormStatics):
         self.parent.gui_functions.add_to_table(self.tableWidgetStats, self.stats)
 
 
+# noinspection PyUnresolvedReferences
 class HSelectForm(QWidget, Ui_FormHSelect):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(HSelectForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1708,7 +1725,7 @@ class HSelectForm(QWidget, Ui_FormHSelect):
         self.pushButtonExport.clicked.connect(self.export)
 
     def export(self):
-        file = self.parent.gui_functions.save_file(self, "Export HSelect", "Comma Seperated Values (*.csv)")
+        file = self.parent.gui_functions.save_file("Export HSelect", "Comma Seperated Values (*.csv)")
         if file:
             header = self.parent.gui_functions.get_from_table_selected(self.tableWidgetHeaders)
             table = self.fits_array.hselect([h[0] for h in header])
@@ -1726,8 +1743,9 @@ class HSelectForm(QWidget, Ui_FormHSelect):
         self.parent.gui_functions.add_to_table(self.tableWidgetHeaders, data)
 
 
+# noinspection PyUnresolvedReferences
 class HeaderForm(QWidget, Ui_FormHeader):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(HeaderForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1757,8 +1775,9 @@ class HeaderForm(QWidget, Ui_FormHeader):
         self.listWidgetFiles.item(0).setSelected(True)
 
 
+# noinspection PyUnresolvedReferences
 class ShiftForm(QWidget, Ui_FormShift):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(ShiftForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -1794,7 +1813,7 @@ class ShiftForm(QWidget, Ui_FormShift):
         self.pushButtonGo.clicked.connect(self.go)
 
     def go(self):
-        warnings = 0
+        warn = 0
 
         ref = self.tableWidgetAmount.currentRow()
 
@@ -1803,7 +1822,7 @@ class ShiftForm(QWidget, Ui_FormShift):
 
         amounts = self.parent.gui_functions.get_from_table(self.tableWidgetAmount)
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -1835,23 +1854,23 @@ class ShiftForm(QWidget, Ui_FormShift):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         if group_layer.childCount() == 0:
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def draw_aperture(self):
 
@@ -1883,7 +1902,7 @@ class ShiftForm(QWidget, Ui_FormShift):
 
         if self.iteration == self.tableWidgetAmount.rowCount():
             self.iteration = 0
-            self.parent.gui_functions.warning(self, "End of list")
+            self.parent.gui_functions.warning("End of list")
 
         self.img.load_data(self.fits_array[self.iteration].data())
         self.tableWidgetAmount.selectRow(self.iteration)
@@ -1897,7 +1916,7 @@ class ShiftForm(QWidget, Ui_FormShift):
         )
 
     def rotate(self):
-        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        angle, ok = self.parent.gui_functions.get_number("Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
                 self.current_angle = float(angle)
@@ -1915,7 +1934,7 @@ class ShiftForm(QWidget, Ui_FormShift):
             self.canvas.swap_xy()
 
     def set_contrast(self):
-        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        number, ok = self.parent.gui_functions.get_number("Contrast", "Please provide contrast")
         if ok:
             self.canvas.set_contrast(number / 100)
 
@@ -1942,7 +1961,7 @@ class ShiftForm(QWidget, Ui_FormShift):
                 self.go_next()
                 return True
 
-        if event.type() == QtCore.QEvent.Wheel:
+        if QtCore.QEvent.Wheel == event.type():
             modifiers = QtWidgets.QApplication.keyboardModifiers()
             if modifiers == QtCore.Qt.ControlModifier:
                 if event.angleDelta().y() > 0:
@@ -2084,8 +2103,9 @@ class ShiftForm(QWidget, Ui_FormShift):
         return super().eventFilter(source, event)
 
 
+# noinspection PyUnresolvedReferences
 class RotateForm(QWidget, Ui_FormRotate):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(RotateForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -2121,11 +2141,11 @@ class RotateForm(QWidget, Ui_FormRotate):
         self.pushButtonGo.clicked.connect(self.go)
 
     def go(self):
-        warnings = 0
+        warn = 0
 
         amounts = self.parent.gui_functions.get_from_table(self.tableWidgetAmount)
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -2158,23 +2178,23 @@ class RotateForm(QWidget, Ui_FormRotate):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         if group_layer.childCount() == 0:
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def rerotate(self):
         current_row = self.tableWidgetAmount.currentRow()
@@ -2198,7 +2218,7 @@ class RotateForm(QWidget, Ui_FormRotate):
 
         if self.iteration == self.tableWidgetAmount.rowCount():
             self.iteration = 0
-            self.parent.gui_functions.warning(self, "End of list")
+            self.parent.gui_functions.warning("End of list")
 
         self.img.load_data(self.fits_array[self.iteration].data())
         self.tableWidgetAmount.selectRow(self.iteration)
@@ -2221,7 +2241,7 @@ class RotateForm(QWidget, Ui_FormRotate):
             self.canvas.swap_xy()
 
     def set_contrast(self):
-        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        number, ok = self.parent.gui_functions.get_number("Contrast", "Please provide contrast")
         if ok:
             self.canvas.set_contrast(number / 100)
 
@@ -2390,8 +2410,9 @@ class RotateForm(QWidget, Ui_FormRotate):
         return super().eventFilter(source, event)
 
 
+# noinspection PyUnresolvedReferences
 class CropForm(QWidget, Ui_FormCrop):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(CropForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -2423,14 +2444,14 @@ class CropForm(QWidget, Ui_FormCrop):
         self.pushButtonGO.clicked.connect(self.go)
 
     def go(self):
-        warnings = 0
+        warn = 0
 
         x_amounts = self.spinBoxXAmount.value()
         y_amounts = self.spinBoxYAmount.value()
         w_amounts = self.spinBoxWAmount.value()
         h_amounts = self.spinBoxHAmount.value()
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -2461,23 +2482,23 @@ class CropForm(QWidget, Ui_FormCrop):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = new_fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = new_fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
                 progress.setValue(iteration)
 
             except Exception as e:
-                warnings += 1
+                warn += 1
                 self.parent.logger.warning(e)
 
         progress.close()
         if group_layer.childCount() == 0:
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
-        if warnings > 0:
-            self.gui_functions.toast(self, f"There were problems with {warnings} files.\nCheck logs.")
+        if warn > 0:
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def reset_transform(self):
         x, y, swap = self.canvas.get_transforms()
@@ -2489,7 +2510,7 @@ class CropForm(QWidget, Ui_FormCrop):
             self.canvas.swap_xy()
 
     def set_contrast(self):
-        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        number, ok = self.parent.gui_functions.get_number("Contrast", "Please provide contrast")
         if ok:
             self.canvas.set_contrast(number / 100)
 
@@ -2709,8 +2730,9 @@ class CropForm(QWidget, Ui_FormCrop):
         return super().eventFilter(source, event)
 
 
+# noinspection PyUnresolvedReferences
 class BinForm(QWidget, Ui_FormBin):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(BinForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -2730,7 +2752,7 @@ class BinForm(QWidget, Ui_FormBin):
         x_amounts = self.spinBoxXAmount.value()
         y_amounts = self.spinBoxYAmount.value()
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -2753,7 +2775,7 @@ class BinForm(QWidget, Ui_FormBin):
                     progress.setLabelText("ABORT!")
                     break
 
-                new_fits = fits.bin((x_amounts, y_amounts), output=file_name.absolute().__str__(), override=True)
+                new_fits = fits.bin([x_amounts, y_amounts], output=file_name.absolute().__str__(), override=True)
 
                 group_layer.setFirstColumnSpanned(True)
                 file_name_layer = CustomQTreeWidgetItem(group_layer, [new_fits.file.name])
@@ -2761,8 +2783,8 @@ class BinForm(QWidget, Ui_FormBin):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
@@ -2777,7 +2799,7 @@ class BinForm(QWidget, Ui_FormBin):
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
         if warn > 0:
-            self.gui_functions.toast(self, f"There were problems with {warn} files.\nCheck logs.")
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def fallow(self):
         if self.are_the_same:
@@ -2787,8 +2809,9 @@ class BinForm(QWidget, Ui_FormBin):
         self.are_the_same = self.spinBoxYAmount.value() == self.spinBoxXAmount.value()
 
 
+# noinspection PyUnresolvedReferences
 class AlignForm(QWidget, Ui_FormAlign):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(AlignForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -2829,7 +2852,7 @@ class AlignForm(QWidget, Ui_FormAlign):
         detection_sigma = self.doubleSpinDetectionSigma.value()
         min_area = self.spinBoxMinArea.value()
 
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
@@ -2879,7 +2902,7 @@ class AlignForm(QWidget, Ui_FormAlign):
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
         if warn > 0:
-            self.gui_functions.toast(self, f"There were problems with {warn} files.\nCheck logs.")
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def show_reference(self):
         selected_file = self.fits_array[self.comboBoxReference.currentIndex()]
@@ -2891,8 +2914,9 @@ class AlignForm(QWidget, Ui_FormAlign):
         self.parent.gui_functions.add_to_combo(self.comboBoxReference, files)
 
 
+# noinspection PyUnresolvedReferences
 class CombineForm(QWidget, Ui_FormCombine):
-    def __init__(self, parent, fits_array, combine_type):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray, combine_type: str):
         super(CombineForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -2961,7 +2985,7 @@ class CombineForm(QWidget, Ui_FormCombine):
         self.parent.gui_functions.add_to_table(self.tableWidgetWeights, weights)
 
     def go(self):
-        file = self.parent.gui_functions.save_file(self, "Combine File Name", "fits, fit, fts (*.fits *.fit *.fts)")
+        file = self.parent.gui_functions.save_file("Combine File Name", "fits, fit, fts (*.fits *.fit *.fts)")
 
         if not file:
             return
@@ -2974,7 +2998,7 @@ class CombineForm(QWidget, Ui_FormCombine):
             weights = [float(each[1]) for each in table_content]
         except Exception as e:
             self.parent.logger.warning(e)
-            self.parent.gui_functions.error(self, "Cannot convert at least one of weights to numeric")
+            self.parent.gui_functions.error("Cannot convert at least one of weights to numeric")
             return
 
         combined = self.fits_array.combine(
@@ -2982,12 +3006,13 @@ class CombineForm(QWidget, Ui_FormCombine):
         )
         group = Path(file).stem
         self.parent.gui_functions.add_to_files(
-            self, [combined.file.absolute().__str__()], self.parent.treeWidget, grp=group
+            [combined.file.absolute().__str__()], self.parent.treeWidget, grp=group
         )
 
 
+# noinspection PyUnresolvedReferences
 class DisplayForm(QWidget, Ui_FormDisplay):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(DisplayForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -3065,7 +3090,7 @@ class DisplayForm(QWidget, Ui_FormDisplay):
 
     def rotate(self):
         warn = 0
-        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        angle, ok = self.parent.gui_functions.get_number("Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
                 self.current_angle = float(angle)
@@ -3075,7 +3100,7 @@ class DisplayForm(QWidget, Ui_FormDisplay):
                 self.logger.warning(e)
 
         if warn > 0:
-            self.gui_functions.toast(self, f"Something went wrong with rotating.\nSee log files.")
+            self.parent.gui_functions.toast(f"Something went wrong with rotating.\nSee log files.")
 
     def reset_transform(self):
         x, y, swap = self.canvas.get_transforms()
@@ -3087,7 +3112,7 @@ class DisplayForm(QWidget, Ui_FormDisplay):
             self.canvas.swap_xy()
 
     def set_contrast(self):
-        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        number, ok = self.parent.gui_functions.get_number("Contrast", "Please provide contrast")
         if ok:
             self.canvas.set_contrast(number / 100)
 
@@ -3282,8 +3307,9 @@ class DisplayForm(QWidget, Ui_FormDisplay):
         return super().eventFilter(source, event)
 
 
+# noinspection PyUnresolvedReferences
 class WCSForm(QWidget, Ui_FormWCS):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(WCSForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -3323,15 +3349,17 @@ class WCSForm(QWidget, Ui_FormWCS):
 
         reference = self.fits_array[self.comboBoxFile.currentIndex()]
         api_key = self.parent.settings.settings["edit"]["wcs"]["astrometry_apikey"]
-        save_directory = self.parent.gui_functions.get_directory(self, "Save Directory")
+        save_directory = self.parent.gui_functions.get_directory("Save Directory")
 
         if not save_directory:
             return
 
         if not api_key:
-            ak = self.parent.gui_functions.get_text(self, "API Key", "I need your astrometry.net API Key", defalut="")
+            ak = self.parent.gui_functions.get_text(
+                "API Key", "I need your astrometry.net API Key", defalut=""
+            )
             if not ak:
-                self.parent.gui_functions.error(self, "No API Key available. See: https://nova.astrometry.net/api_help")
+                self.parent.gui_functions.error("No API Key available. See: https://nova.astrometry.net/api_help")
                 self.parent.logger.warning("No API Key available.")
                 return
             api_key = ak
@@ -3348,7 +3376,7 @@ class WCSForm(QWidget, Ui_FormWCS):
         except Exception as e:
 
             progress.close()
-            self.parent.gui_functions.error(self, "Couldn't solve the reference image")
+            self.parent.gui_functions.error("Couldn't solve the reference image")
             self.parent.logger.warning(e)
             return
 
@@ -3389,8 +3417,8 @@ class WCSForm(QWidget, Ui_FormWCS):
 
                 item = CustomQTreeWidgetItem(file_name_layer, ["Path", new_fits.file.resolve().parent.__str__()])
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                statistics = fits.imstat()
-                for key, value in statistics.iloc[0].items():
+                stats = fits.imstat()
+                for key, value in stats.iloc[0].items():
                     item = CustomQTreeWidgetItem(file_name_layer, [key.capitalize(), f"{value:.2f}"])
                     item.setFlags(QtCore.Qt.ItemIsEnabled)
 
@@ -3405,7 +3433,7 @@ class WCSForm(QWidget, Ui_FormWCS):
             self.parent.treeWidget.takeTopLevelItem(self.parent.treeWidget.indexOfTopLevelItem(group_layer))
 
         if warn > 0:
-            self.gui_functions.toast(self, f"There were problems with {warn} files.\nCheck logs.")
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def load_files(self):
         files = [fits.file.name for fits in self.fits_array]
@@ -3450,7 +3478,7 @@ class WCSForm(QWidget, Ui_FormWCS):
 
     def rotate(self):
         warn = 0
-        angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
+        angle, ok = self.parent.gui_functions.get_number("Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
                 self.current_angle = float(angle)
@@ -3460,7 +3488,7 @@ class WCSForm(QWidget, Ui_FormWCS):
                 self.logger.warning(e)
 
         if warn > 0:
-            self.gui_functions.toast(self, f"Something went wrong with rotating.\nSee log files.")
+            self.parent.gui_functions.toast(f"Something went wrong with rotating.\nSee log files.")
 
     def reset_transform(self):
         x, y, swap = self.canvas.get_transforms()
@@ -3472,7 +3500,7 @@ class WCSForm(QWidget, Ui_FormWCS):
             self.canvas.swap_xy()
 
     def set_contrast(self):
-        number, ok = self.parent.gui_functions.get_number(self, "Contrast", "Please provide contrast")
+        number, ok = self.parent.gui_functions.get_number("Contrast", "Please provide contrast")
         if ok:
             self.canvas.set_contrast(number / 100)
 
@@ -3667,8 +3695,9 @@ class WCSForm(QWidget, Ui_FormWCS):
         return super().eventFilter(source, event)
 
 
+# noinspection PyUnresolvedReferences
 class HCalcForm(QWidget, Ui_FormHeaderCalculator):
-    def __init__(self, parent, fits_array):
+    def __init__(self, parent: MainWindow, fits_array: FitsArray):
         super(HCalcForm, self).__init__(parent)
         self.parent = parent
         self.fits_array = fits_array
@@ -3684,7 +3713,7 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
         warn = 0
 
         if not self.groupBoxTime.isChecked() and not self.groupBoxJDAirmass.isChecked():
-            self.parent.gui_functions.error(self, "No action. Nothing to do!")
+            self.parent.gui_functions.error("No action. Nothing to do!")
             return
 
         progress = QtWidgets.QProgressDialog("Calculating ...", "Abort", 0, len(self.fits_array), self)
@@ -3718,7 +3747,7 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
                     elif time_format == "Year":
                         time_delta = relativedelta(years=amount)
                     else:
-                        self.parent.gui_functions.error(self, "Unrecognized time format.")
+                        self.parent.gui_functions.error("Unrecognized time format.")
                         return
                     new_time = Time(current_time.to_datetime() + time_delta)
                     fits.hedit("MY-DATE", new_time.strftime("%Y-%m-%d %H:%M:%S.%f"), comments="Calculated By MYRaf")
@@ -3747,7 +3776,7 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
         progress.close()
 
         if warn > 0:
-            self.parent.gui_functions.toast(self, f"There were problems with {warn} files.\nCheck logs.")
+            self.parent.gui_functions.toast(f"There were problems with {warn} files.\nCheck logs.")
 
     def load(self):
         header = self.fits_array[0].header()
@@ -3762,8 +3791,9 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
         self.parent.gui_functions.add_to_combo(self.comboBoxObservatoryInHeader, list(header.columns))
 
 
+# noinspection PyUnresolvedReferences
 class ObservatoriesForm(QWidget, Ui_FormObservatory):
-    def __init__(self, parent):
+    def __init__(self, parent: MainWindow):
         super(ObservatoriesForm, self).__init__(parent)
         self.parent = parent
         self.setupUi(self)
@@ -3812,17 +3842,17 @@ class ObservatoriesForm(QWidget, Ui_FormObservatory):
 
         if name == "":
             self.parent.logger.warning("No observatory name")
-            self.parent.gui_functions.error(self, "No observatory name was given")
+            self.parent.gui_functions.error("No observatory name was given")
             return
 
         if name == "NEW":
             self.parent.logger.warning("Are you serious?\n`NEW` is reserved...")
-            self.parent.gui_functions.error(self, "Are you serious?\n`NEW` is reserved...")
+            self.parent.gui_functions.error("Are you serious?\n`NEW` is reserved...")
             return
 
         if name in self.astropy_observatories:
             self.parent.logger.warning("Observatory with this name already exists. And it cannot be updated")
-            self.parent.gui_functions.error(self, "Observatory with this name already exists. And it cannot be updated")
+            self.parent.gui_functions.error("Observatory with this name already exists. And it cannot be updated")
             return
 
         self.observatories = {
@@ -3906,7 +3936,7 @@ class ObservatoriesForm(QWidget, Ui_FormObservatory):
             json.dump(observatories, f)
 
     def observatory_remove(self, name):
-        if not self.parent.gui_functions.ask(self, "Delete Observatory", "Are you sure?"):
+        if not self.parent.gui_functions.ask("Delete Observatory", "Are you sure?"):
             return
 
         observatories = self.observatories
@@ -3918,8 +3948,9 @@ class ObservatoriesForm(QWidget, Ui_FormObservatory):
         self.load()
 
 
+# noinspection PyUnresolvedReferences
 class Setting:
-    def __init__(self, logger):
+    def __init__(self, logger: Logger):
         self.logger = logger
 
     @classmethod
@@ -3946,8 +3977,9 @@ class Setting:
             json.dump(setting, f)
 
 
+# noinspection PyUnresolvedReferences
 class SettingsForm(QWidget, Ui_FormSettings):
-    def __init__(self, parent):
+    def __init__(self, parent: MainWindow):
         super(SettingsForm, self).__init__(parent)
         self.parent = parent
         self.setupUi(self)
@@ -3979,8 +4011,9 @@ class SettingsForm(QWidget, Ui_FormSettings):
         self.parent.settings.settings = settings
 
 
+# noinspection PyUnresolvedReferences
 class AboutForm(QWidget, Ui_FormAbout):
-    def __init__(self, parent):
+    def __init__(self, parent: MainWindow):
         super(AboutForm, self).__init__(parent)
         self.parent = parent
         self.setupUi(self)
@@ -3992,8 +4025,9 @@ class AboutForm(QWidget, Ui_FormAbout):
         self.labelLogo.setPixmap(scaled_pixmap)
 
 
+# noinspection PyUnresolvedReferences
 class LogForm(QWidget, Ui_FormLog):
-    def __init__(self, parent):
+    def __init__(self, parent: MainWindow):
         super(LogForm, self).__init__(parent)
         self.parent = parent
         self.setupUi(self)
@@ -4017,13 +4051,14 @@ class LogForm(QWidget, Ui_FormLog):
                 self.listWidget.scrollToBottom()
 
     def save(self):
-        file = self.parent.gui_functions.save_file(self, "Save", "log (*.log);")
+        file = self.parent.gui_functions.save_file("Save", "log (*.log);")
         if file:
             dest = Path(file)
             src = Path(self.parent.log_file)
             dest.write_text(src.read_text())
 
 
+# noinspection PyUnresolvedReferences
 def main():
     parser = argparse.ArgumentParser(description='MYRaf V3 Beta')
     parser.add_argument("--logger", "-ll", default=10, type=int,
