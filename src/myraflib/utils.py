@@ -69,9 +69,6 @@ class Fixer:
         if isinstance(keys, list) and not isinstance(values, list):
             raise ValueError("Keys is list so values must be list")
 
-
-
-
         keys_to_use = keys if isinstance(keys, list) else [keys]
         values_to_use = values if isinstance(values, list) else [values]
 
@@ -79,7 +76,7 @@ class Fixer:
             comments_ = [""] * len(values_to_use)
         else:
             if isinstance(comments, list):
-                comments_ = [""] * (len(values_to_use) - len(comments))
+                comments_ = comments + [""] * (len(values_to_use) - len(comments))
             else:
                 comments_ = [comments] + ([""] * (len(values_to_use) - 1))
 

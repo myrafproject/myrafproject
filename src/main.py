@@ -3716,9 +3716,8 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
                     fits.hedit("MY-DATE", new_time.strftime("%Y-%m-%d %H:%M:%S.%f"), comments="Calculated By MYRaf")
 
                 if self.groupBoxJDAirmass.isChecked():
-                    observatory = fits.header[self.comboBoxObservatoryInHeader.currentText()]
-                    obj = fits.header[self.comboBoxObjectInHeader.currentText()]
-
+                    observatory = fits.pure_header()[self.comboBoxObservatoryInHeader.currentText()]
+                    obj = fits.pure_header()[self.comboBoxObjectInHeader.currentText()]
                     sky_object = SkyCoord.from_name(obj)
                     location = ObservatoriesForm.get(observatory)
 
@@ -3730,7 +3729,6 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
                     altaz_frame = AltAz(obstime=current_time, location=location)
                     altaz = sky_object.transform_to(altaz_frame)
                     airmass = altaz.secz
-
                     fits.hedit(["my_bjd", "my_hjd", "my_armss"], [hjd.jd, bjd.jd, airmass.value],
                                comments=["Calculated By MYRaf", "Calculated By MYRaf", "Calculated By MYRaf"])
             except Exception as e:
@@ -3741,7 +3739,7 @@ class HCalcForm(QWidget, Ui_FormHeaderCalculator):
         progress.close()
 
         if warn > 0:
-            self.gui_functions.toast(self, f"There were problems with {warn} files.\nCheck logs.")
+            self.parent.gui_functions.toast(self, f"There were problems with {warn} files.\nCheck logs.")
 
     def load(self):
         header = self.fits_array[0].header()
