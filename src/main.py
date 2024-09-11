@@ -2,6 +2,10 @@
 """
 @author: msh, yk
 """
+
+import warnings
+from astropy.utils.exceptions import AstropyWarning
+
 import argparse
 import json
 import math
@@ -135,6 +139,8 @@ DEFAULT_SETTINGS = {
 }
 
 LOGO = (Path(__file__).parent.parent / 'myraf.png').absolute().__str__()
+
+warnings.filterwarnings('ignore', category=AstropyWarning)
 
 def database_dir():
     home_dir = Path.home()
@@ -810,8 +816,8 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
-                numeric_angle = float(angle)
-                self.canvas.rotate(numeric_angle)
+                self.current_angle = float(angle)
+                self.canvas.rotate(self.current_angle)
             except Exception as e:
                 self.logger.warning(e)
 
@@ -1894,8 +1900,8 @@ class ShiftForm(QWidget, Ui_FormShift):
         angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
-                numeric_angle = float(angle)
-                self.canvas.rotate(numeric_angle)
+                self.current_angle = float(angle)
+                self.canvas.rotate(self.current_angle)
             except Exception as e:
                 self.logger.warning(e)
 
@@ -3015,7 +3021,9 @@ class DisplayForm(QWidget, Ui_FormDisplay):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.animate)
         if len(self.fits_array) > 1:
-            self.timer.start(100)
+            settings = self.parent.settings.settings
+            interval = settings["display"]["interval"]
+            self.timer.start(interval)
 
     def info_update(self, x, y):
         fits = self.fits_array[self.iteration]
@@ -3060,10 +3068,10 @@ class DisplayForm(QWidget, Ui_FormDisplay):
         angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
-                numeric_angle = float(angle)
-                self.canvas.rotate(numeric_angle)
+                self.current_angle = float(angle)
+                self.canvas.rotate(self.current_angle)
             except Exception as e:
-                warn = 0
+                warn += 1
                 self.logger.warning(e)
 
         if warn > 0:
@@ -3445,8 +3453,8 @@ class WCSForm(QWidget, Ui_FormWCS):
         angle, ok = self.parent.gui_functions.get_number(self, "Angle", "Please provide angle to rotate", 0, 360)
         if ok:
             try:
-                numeric_angle = float(angle)
-                self.canvas.rotate(numeric_angle)
+                self.current_angle = float(angle)
+                self.canvas.rotate(self.current_angle)
             except Exception as e:
                 warn = 0
                 self.logger.warning(e)
