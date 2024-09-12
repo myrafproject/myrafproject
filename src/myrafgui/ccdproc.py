@@ -151,7 +151,7 @@ class Ui_FormCCDPROC(object):
         self.pushButtonFlatFile.setText(_translate("FormCCDPROC", "Open..."))
         self.pushButtonFlatShow.setText(_translate("FormCCDPROC", "Show"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("FormCCDPROC", "Calibration"))
-        self.label.setText(_translate("FormCCDPROC", "Exposure"))
+        self.label.setText(_translate("FormCCDPROC", "Weight"))
         self.checkBoxForce.setText(_translate("FormCCDPROC", "Force"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("FormCCDPROC", "Settings"))
         self.pushButtonGO.setText(_translate("FormCCDPROC", ":go"))

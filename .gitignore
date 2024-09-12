@@ -5,3 +5,4 @@ tst.py
 42.0
 myraf.log
 **/__pycache__/
+/example/.ipynb_checkpoints/

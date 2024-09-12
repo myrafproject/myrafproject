@@ -20,12 +20,9 @@ class Ui_FormAbout(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
-        self.labelLogo = QtWidgets.QLabel(FormAbout)
-        self.labelLogo.setMinimumSize(QtCore.QSize(90, 90))
-        self.labelLogo.setMaximumSize(QtCore.QSize(90, 90))
-        self.labelLogo.setText("")
-        self.labelLogo.setObjectName("labelLogo")
-        self.gridLayout.addWidget(self.labelLogo, 0, 0, 2, 1)
+        self.label_3 = QtWidgets.QLabel(FormAbout)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout.addWidget(self.label_3, 1, 1, 1, 1)
         self.label_2 = QtWidgets.QLabel(FormAbout)
         font = QtGui.QFont()
         font.setPointSize(35)
@@ -34,9 +31,12 @@ class Ui_FormAbout(object):
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
-        self.label_3 = QtWidgets.QLabel(FormAbout)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout.addWidget(self.label_3, 1, 1, 1, 1)
+        self.labelLogo = QtWidgets.QLabel(FormAbout)
+        self.labelLogo.setMinimumSize(QtCore.QSize(90, 90))
+        self.labelLogo.setMaximumSize(QtCore.QSize(90, 90))
+        self.labelLogo.setText("")
+        self.labelLogo.setObjectName("labelLogo")
+        self.gridLayout.addWidget(self.labelLogo, 0, 0, 2, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
         self.tabWidget = QtWidgets.QTabWidget(FormAbout)
         self.tabWidget.setObjectName("tabWidget")
@@ -76,6 +76,14 @@ class Ui_FormAbout(object):
         self.textEdit_3.setObjectName("textEdit_3")
         self.gridLayout_5.addWidget(self.textEdit_3, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_3, "")
+        self.tab_5 = QtWidgets.QWidget()
+        self.tab_5.setObjectName("tab_5")
+        self.gridLayout_7 = QtWidgets.QGridLayout(self.tab_5)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.textEdit_5 = QtWidgets.QTextEdit(self.tab_5)
+        self.textEdit_5.setObjectName("textEdit_5")
+        self.gridLayout_7.addWidget(self.textEdit_5, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_5, "")
         self.gridLayout_2.addWidget(self.tabWidget, 1, 0, 1, 1)
 
         self.retranslateUi(FormAbout)
@@ -85,8 +93,8 @@ class Ui_FormAbout(object):
     def retranslateUi(self, FormAbout):
         _translate = QtCore.QCoreApplication.translate
         FormAbout.setWindowTitle(_translate("FormAbout", "About"))
-        self.label_2.setText(_translate("FormAbout", "MYRaf"))
         self.label_3.setText(_translate("FormAbout", "Version 3.0 B"))
+        self.label_2.setText(_translate("FormAbout", "MYRaf"))
         self.textEdit.setHtml(_translate("FormAbout", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -778,9 +786,8 @@ class Ui_FormAbout(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Noto Sans, \'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">Mohammad S. Niaei (</span><a href=\"mailto: niaei@pardus.org.tr\"><span style=\" font-size:12pt; text-decoration: underline; color:#0000ff;\">niaei@pardus.org.tr</span></a><span style=\" font-size:12pt;\">)</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">Yücel KILIÇ (</span><a href=\"mailto: ykilic@iaa.es\"><span style=\" font-size:12pt; text-decoration: underline; color:#0000ff;\">ykilic@iaa.es</span></a><span style=\" font-size:12pt;\">)</span></p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">Mohammad S. Niaei (</span><a href=\"mailto: niaei@pardus.org.tr\"><span style=\" font-size:12pt; text-decoration: underline; color:#0000ff;\">niaei@pardus.org.tr</span></a><span style=\" font-size:12pt;\">)</span></li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">Yücel KILIÇ (</span><a href=\"mailto: ykilic@iaa.es\"><span style=\" font-size:12pt; text-decoration: underline; color:#0000ff;\">ykilic@iaa.es</span></a><span style=\" font-size:12pt;\">)</span></li></ul></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("FormAbout", "Authors"))
         self.textEdit_3.setHtml(_translate("FormAbout", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
@@ -788,6 +795,19 @@ class Ui_FormAbout(object):
 "</style></head><body style=\" font-family:\'Noto Sans, \'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600;\">MYRaf</span><span style=\" font-size:12pt;\"> is a free, open-source software available on GitHub. If you encounter any bugs or have feature requests, please let us know by posting on our </span><a href=\"https://github.com/myrafproject/myrafproject/issues\"><span style=\" text-decoration: underline; color:#0000ff;\">Issues Page</span></a><span style=\" font-size:12pt;\">.</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("FormAbout", "Help"))
+        self.textEdit_5.setHtml(_translate("FormAbout", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Noto Sans, \'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">We would like to extend our sincere thanks to the following contributors who have been instrumental in the development of MYRaf:</p>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\"\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Astropy</span>: for providing essential core functionalities.</li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Astroquery</span>:  for enabling key core functionalities.</li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Ccdproc</span>: for enabling key core functionalities.</li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Photutils</span>:  for enabling key core functionalities.</li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">SEP</span>:  for enabling key core functionalities.</li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Astroalign</span>:  for enabling key core functionalities.</li>\n"
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Erdem Aytekin</span>: for designing the beautiful logo.</li></ul></body></html>"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("FormAbout", "Thanks"))
 
 
 if __name__ == "__main__":

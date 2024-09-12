@@ -507,7 +507,7 @@ class Fits(Data):
         self.logger.info("Cleaning the data")
 
         cleaned_data, _ = cosmicray_lacosmic(
-            self.ccd(), sigclip=sigclip,
+            self.data(), sigclip=sigclip,
             sigfrac=sigfrac, objlim=objlim,
             gain=gain, readnoise=readnoise, satlevel=satlevel,
             niter=niter, sepmed=sepmed, cleantype=cleantype.lower(), fsmode=fsmode.lower(),
@@ -1705,7 +1705,7 @@ class Fits(Data):
         self.logger.info("Rotating the image")
         set_value = np.median(self.data())
 
-        angle_degree = angle * 180 / math.pi
+        angle_degree = math.degrees(angle)
         data = ndimage.rotate(self.data(), angle_degree, reshape=False, cval=set_value)
 
         w = WCS(self.pure_header())

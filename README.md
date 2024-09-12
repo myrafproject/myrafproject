@@ -44,4 +44,4 @@ For academic use, please cite the paper:
 MYRaf has two base objects. `Fits` and `FitsArray`.
 Both has almost the same features. Let's explore:
 
-see: [myraf as a library](myraf_fits.md)
+see: [myraf as a library](example/fits)

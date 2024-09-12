@@ -221,7 +221,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         warn = 0
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         drct = self.gui_functions.get_directory("Save Folder")
         if not drct:
@@ -292,7 +297,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         group_name = list(files.keys())[0].text(0)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
+
         list_of_header = list(fits_array[0].header().keys())
         item, ok = self.gui_functions.get_item("Select header(s)", "Headers", list_of_header)
         if ok:
@@ -303,16 +314,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def display(self):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         for group, files in selected_files.items():
-            self.show_window(DisplayForm(
-                self,
-                FitsArray([Fits(Path(file.child(0).text(1)) / Path(file.text(0))) for file in files])
-            ))
+            try:
+                self.show_window(DisplayForm(
+                    self,
+                    FitsArray([Fits(Path(file.child(0).text(1)) / Path(file.text(0))) for file in files])
+                ))
+            except Exception as e:
+                self.logger.warning(str(e))
+                self.parent.gui_functions.toast(str(e))
 
     def arithmetic(self):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in
                 list(selected_files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(ArithmeticForm(self, fits_array))
 
@@ -328,7 +348,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if not answer:
                 return
 
-        fits_array = FitsArray.from_paths(fits)
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
+
         combine = CombineForm(self, fits_array, combine_type)
         self.show_window(combine)
 
@@ -336,7 +362,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in
                 list(selected_files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(AlignForm(self, fits_array))
 
@@ -344,7 +376,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in
                 list(selected_files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(BinForm(self, fits_array))
 
@@ -352,7 +390,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in
                 list(selected_files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(CropForm(self, fits_array))
 
@@ -360,7 +404,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in
                 list(selected_files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(RotateForm(self, fits_array))
 
@@ -368,21 +418,39 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in
                 list(selected_files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(ShiftForm(self, fits_array))
 
     def header_show(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(HeaderForm(self, fits_array))
 
     def hselect(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(HSelectForm(self, fits_array))
 
@@ -407,42 +475,78 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def cosmic_clean(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(CosmicCleanerForm(self, fits_array))
 
     def hedit(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(HeditForm(self, fits_array))
 
     def ccdproc(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(CCDProcForm(self, fits_array))
 
     def hcalc(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(HCalcForm(self, fits_array))
 
     def photometry(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(PhotometryForm(self, fits_array))
 
     def wcs(self):
         files = self.gui_functions.get_selected_files(self.treeWidget)
         fits = [(Path(f.child(0).text(1)) / Path(f.text(0))).absolute().__str__() for f in list(files.values())[0]]
-        fits_array = FitsArray.from_paths(fits)
+
+        try:
+            fits_array = FitsArray.from_paths(fits)
+        except Exception as e:
+            self.logger.warning(str(e))
+            self.parent.gui_functions.toast(str(e))
+            return
 
         self.show_window(WCSForm(self, fits_array))
 
@@ -3001,9 +3105,15 @@ class CombineForm(QWidget, Ui_FormCombine):
             self.parent.gui_functions.error("Cannot convert at least one of weights to numeric")
             return
 
-        combined = self.fits_array.combine(
-            method=method.lower(), clipping=clipping_to_use, weights=weights, output=file, override=True
-        )
+        try:
+            combined = self.fits_array.combine(
+                method=method.lower(), clipping=clipping_to_use, weights=weights, output=file, override=True
+            )
+        except Exception as e:
+            self.parent.logger.warning(e)
+            self.parent.gui_functions.error(e)
+            return
+
         group = Path(file).stem
         self.parent.gui_functions.add_to_files(
             [combined.file.absolute().__str__()], self.parent.treeWidget, grp=group
