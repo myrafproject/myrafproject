@@ -805,8 +805,7 @@ class Ui_FormAbout(object):
 "<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Ccdproc</span>: for enabling key core functionalities.</li>\n"
 "<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Photutils</span>:  for enabling key core functionalities.</li>\n"
 "<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">SEP</span>:  for enabling key core functionalities.</li>\n"
-"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Astroalign</span>:  for enabling key core functionalities.</li>\n"
-"<li style=\"\" style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Erdem Aytekin</span>: for designing the beautiful logo.</li></ul></body></html>"))
+"<li style=\"\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Astroalign</span>:  for enabling key core functionalities.</li></ul></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("FormAbout", "Thanks"))
 
 
