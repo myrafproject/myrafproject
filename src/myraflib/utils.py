@@ -136,7 +136,7 @@ class Fixer:
 
     @staticmethod
     def output(output: Optional[str] = None, override: bool = False,
-               prefix: str = "spy_", suffix: str = ".fits",
+               prefix: str = "myraf_", suffix: str = ".fits",
                fitsify: bool = True) -> str:
         """
         Checks for the `output`. If it's `None` creates a temporary file.

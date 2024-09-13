@@ -382,7 +382,8 @@ class FitsArray(DataArray):
 
     def hedit(self, keys: Union[str, List[str]],
               values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]] = None,
-              delete: bool = False, value_is_key: bool = False) -> Self:
+              comments: Optional[Union[str, List[str]]] = None, delete: bool = False, value_is_key: bool = False
+              ) -> Self:
         """
         Edits header of the given files.
 
@@ -392,6 +393,9 @@ class FitsArray(DataArray):
             Keys to be altered.
         values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]], optional
             Values to be added to set be set.
+            Would be ignored if delete is True.
+        comments: Optional[ste, List[str]], optional
+            Comments to be added.
             Would be ignored if delete is True.
         delete: bool, optional
             Deletes the key from header if True.
@@ -403,7 +407,7 @@ class FitsArray(DataArray):
 
         for fits in self:
             try:
-                fits.hedit(keys, values=values, delete=delete, value_is_key=value_is_key)
+                fits.hedit(keys, values=values, comments=comments, delete=delete, value_is_key=value_is_key)
             except Exception as error:
                 self.logger.error(error)
 
@@ -1727,6 +1731,10 @@ class FitsArray(DataArray):
             The interval of the animation
         """
         self.logger.info("Showing all images")
+
+        plt.rcParams["animation.html"] = "jshtml"
+        plt.rcParams['figure.dpi'] = 150
+        plt.ioff()
 
         fig = plt.figure()
 

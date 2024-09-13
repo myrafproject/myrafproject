@@ -42,6 +42,7 @@ src/myraflib/fits.py
 src/myraflib/fitsarray.py
 src/myraflib/models.py
 src/myraflib/py.typed
+src/myraflib/sample.fits
 src/myraflib/utils.py
 tests/test_fits.py
 tests/test_fits_array.py

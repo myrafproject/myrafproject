@@ -1,5 +1,6 @@
 import math
 import unittest
+from unittest import skip
 
 from astropy import units
 from astropy.coordinates import SkyCoord
@@ -518,9 +519,9 @@ class TestFitsArray(unittest.TestCase):
         for each in ["npix", "mean", "stddev", "min", "max"]:
             self.assertIn(each, imstat.columns)
 
-    # def test_cosmic_clean(self):
-    #     cleaned = self.SAMPLE.cosmic_clean()
-    #     self.assertIsInstance(cleaned, FitsArray)
+    def test_cosmic_clean(self):
+        cleaned = self.SAMPLE.cosmic_clean()
+        self.assertIsInstance(cleaned, FitsArray)
 
     def test_hedit(self):
         self.SAMPLE.hedit("MSH", "TEST")
@@ -1334,14 +1335,15 @@ class TestFitsArray(unittest.TestCase):
                 rotated.data(), rotated_data
             )
 
-    # def test_rotate_individual(self):
-    #     angles = list(each * math.pi / 180 for each in range(0, 180, 18))
-    #     new_fits_array = self.SAMPLE.rotate(angles)
-    #     for fits, rotated, angle in zip(self.SAMPLE, new_fits_array, angles):
-    #         rotated_data = rotate(fits.data(), angle * 180 / math.pi, reshape=False)
-    #         np.testing.assert_array_equal(
-    #             rotated.data(), rotated_data
-    #         )
+    @skip("Cannot test because couldn't find a way to do so")
+    def test_rotate_individual(self):
+        angles = list(math.radians(each) for each in range(0, 180, 18))
+        new_fits_array = self.SAMPLE.rotate(angles)
+        for fits, rotated, angle in zip(self.SAMPLE, new_fits_array, angles):
+            rotated_data = rotate(fits.data(), math.degrees(angle), reshape=False)
+            np.testing.assert_array_equal(
+                rotated.data(), rotated_data
+            )
 
     def test_rotate_number_of_elements(self):
         angles = list(each * math.pi / 180 for each in range(0, 180))
@@ -2038,6 +2040,10 @@ class TestFitsArray(unittest.TestCase):
             self.assertEqual(
                 fits.data().shape[1] // 10, binned.data().shape[1]
             )
+
+    @skip("Cannot test since it requires an API key")
+    def test_solve_field(self):
+        """Cannot test"""
 
 
 if __name__ == '__main__':

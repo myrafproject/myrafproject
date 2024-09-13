@@ -1,5 +1,6 @@
 import math
 import unittest
+from unittest import skip
 
 from astropy import units
 from astropy.coordinates import SkyCoord
@@ -220,9 +221,9 @@ class TestFits(unittest.TestCase):
         for each in ["npix", "mean", "stddev", "min", "max"]:
             self.assertIn(each, imstat.columns)
 
-    # def test_cosmic_clean(self):
-    #     cleaned = self.SAMPLE.cosmic_clean()
-    #     self.assertIsInstance(cleaned, Fits)
+    def test_cosmic_clean(self):
+        cleaned = self.SAMPLE.cosmic_clean()
+        self.assertIsInstance(cleaned, Fits)
 
     def test_hedit(self):
         self.SAMPLE.hedit("MSH", "TEST")
@@ -984,6 +985,10 @@ class TestFits(unittest.TestCase):
     def test_ccdproc_nothing_to_do(self):
         with self.assertRaises(NothingToDo):
             _ = self.SAMPLE.ccdproc()
+
+    @skip("Cannot test since it requires an API key")
+    def test_solve_field(self):
+        """Cannot test"""
 
 
 if __name__ == '__main__':

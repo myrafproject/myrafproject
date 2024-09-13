@@ -290,8 +290,8 @@ class DataArray(ABC):
     @abstractmethod
     def hedit(self, keys: Union[str, List[str]],
               values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]] = None,
-              delete: bool = False,
-              value_is_key: bool = False) -> Self:
+              comments: Optional[Union[str, List[str]]] = None, delete: bool = False, value_is_key: bool = False
+              ) -> Self:
         ...
 
     @abstractmethod

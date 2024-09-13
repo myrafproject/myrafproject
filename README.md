@@ -44,4 +44,27 @@ For academic use, please cite the paper:
 MYRaf has two base objects. `Fits` and `FitsArray`.
 Both has almost the same features. Let's explore:
 
-see: [myraf as a library](example/fits)
+
+- Fits object
+  - [Creation](example/fits/create.ipynb)
+  - [Visualization](example/fits/visualize.ipynb)
+  - [Header](example/fits/header.ipynb)
+  - [Data](example/fits/data.ipynb)
+  - [Transformation](example/fits/transformation.ipynb)
+  - [Arithmetic](example/fits/arithmetic.ipynb)
+  - [Calibration](example/fits/calibration.ipynb)
+  - [Source Extraction](example/fits/source_extraction.ipynb)
+  - [Photometry](example/fits/photometry.ipynb)
+  - [Other](example/fits/other.ipynb)
+- FitsArray object
+  - [Creation](example/fits_array/create.ipynb)
+  - [Visualization](example/fits_array/visualize.ipynb)
+  - [Header](example/fits_array/header.ipynb)
+  - [Data](example/fits_array/data.ipynb)
+  - [Transformation](example/fits_array/transformation.ipynb)
+  - [Arithmetic](example/fits_array/arithmetic.ipynb)
+  - [Combine](example/fits_array/combine.ipynb)
+  - [Calibration](example/fits_array/calibration.ipynb)
+  - [Source Extraction](example/fits_array/source_extraction.ipynb)
+  - [Photometry](example/fits_array/photometry.ipynb)
+  - [Other](example/fits_array/other.ipynb)
