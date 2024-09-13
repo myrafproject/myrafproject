@@ -191,6 +191,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gui_functions = GUIFunctions(self)
 
         self.treeWidget.installEventFilter(self)
+        self.playGround.installEventFilter(self)
 
         self.actionObservatories.triggered.connect(lambda: self.show_window(ObservatoriesForm(self)))
         self.actionAbout.triggered.connect(lambda: self.show_window(AboutForm(self)))
@@ -551,9 +552,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.show_window(WCSForm(self, fits_array))
 
     def eventFilter(self, source, event):
-        if event.type() == QtCore.QEvent.ContextMenu and source is self.treeWidget:
 
-            selected = self.gui_functions.get_selected_files(self.treeWidget)
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.playGround:
+            menu = QtWidgets.QMenu()
+            menu.addAction("Tile Windows", self.playGround.tileSubWindows)
+            menu.addAction("Stack Windows", self.playGround.cascadeSubWindows)
+
+            menu.exec_(event.globalPos())
+            return True
+
+        selected = self.gui_functions.get_selected_files(self.treeWidget)
+
+        if event.type() == event.KeyPress and source == self.treeWidget:
+            if event.key() == Qt.Key_Delete:
+                self.remove_files()
+                return True
+
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.treeWidget:
 
             menu_file = QtWidgets.QMenu("File")
             menu_file.addAction('Add', lambda: (self.add_files()))
@@ -577,7 +592,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             split = menu_file.addAction('Split', lambda: (self.split()))
             if len(selected) != 1:
                 split.setEnabled(False)
-            #
+
+            menu_file.addSeparator()
+            expand_all = menu_file.addAction("Expand All...", lambda: (self.gui_functions.expand_all_children(self.treeWidget)))
+            if len(selected) < 1:
+                expand_all.setEnabled(False)
+            collapse_all = menu_file.addAction("Collapse All...", lambda: (self.gui_functions.collapse_all_children(self.treeWidget)))
+            if len(selected) < 1:
+                collapse_all.setEnabled(False)
+
+
             menu_operations = QtWidgets.QMenu("Operations")
 
             arithmetic = menu_operations.addAction("Arithmetic...", lambda: (self.arithmetic()))
@@ -694,6 +718,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 photometry.setEnabled(False)
 
             menu.addMenu(menu_operations)
+
+
             menu.exec_(event.globalPos())
             menu.addMenu(menu_editor)
             return True

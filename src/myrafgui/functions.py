@@ -519,3 +519,18 @@ class GUIFunctions:
         toaster.setGeometry(geo)
         toaster.show()
         toaster.opacityAni.start()
+
+    def collapse_all_children(self, tree_widget):
+        top_level_items = self.get_selected_files(tree_widget)
+        for top_level_item in top_level_items.keys():
+            for i in range(top_level_item.childCount()):
+                child_item = top_level_item.child(i)
+                tree_widget.collapseItem(child_item)
+
+    def expand_all_children(self, tree_widget):
+        top_level_items = self.get_selected_files(tree_widget)
+        for top_level_item in top_level_items.keys():
+            for i in range(top_level_item.childCount()):
+                child_item = top_level_item.child(i)
+                tree_widget.collapseItem(child_item)
+                tree_widget.expandItem(child_item)
