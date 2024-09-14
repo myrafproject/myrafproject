@@ -1,5 +1,8 @@
 data/
 .idea
 tst.py
-__pycache__/
-*.pyc
+.tox
+42.0
+myraf.log
+**/__pycache__/
+/example/.ipynb_checkpoints/

@@ -1,17 +1,86 @@
 import tempfile
-from pathlib import Path
-from typing import Union, Iterable, Optional, List, Tuple, Any
+from pathlib import Path, PurePath
+from typing import Optional, Union, List, Tuple, Any
 
 import numpy as np
 
-from myraflib.error import NumberOfElementError
-
-NUMERIC = Union[int, float]
-NUMERICS = Union[Iterable[NUMERIC], np.ndarray]
-HEADER_ANY = Union[int, float, bool, str]
+from .error import NumberOfElementError
+from .models import NUMERICS
 
 
 class Fixer:
+    @staticmethod
+    def smallest_data_type(data: Any) -> Any:
+        """
+        Returns the smallest data type for the give array without data loss.
+
+        stolen from: https://stackoverflow.com/questions
+
+        Parameters
+        ----------
+        data : Any
+            the data
+
+        Returns
+        -------
+        Any
+            the smallest data type for the give array
+        """
+        arr_min = data.min()
+        arr_max = data.max()
+        for data_type in ["u1", "i1", "u2", "i2", "u4", "i4", "u8", "i8"]:
+            iinfo = np.iinfo(np.dtype(data_type))
+            if arr_min >= int(iinfo.min) and arr_max <= int(iinfo.max):
+                return np.dtype(data_type)
+
+        return np.dtype(np.uint)
+
+    @staticmethod
+    def key_value_pair(keys: Union[str, List[str]],
+                       values: Union[str, int, float, bool, List[Union[str, int, float, bool]]],
+                       comments: Optional[Union[str, List[str]]] = None,
+                       ) -> Tuple[List[str], List[Union[str, float, int, bool]], List[str]]:
+        """
+        Corrects keys, values pair for hedit.
+
+        Parameters
+        ----------
+        keys : Union[str, List[str]]
+            keys to be edited
+        values : Union[str, int, float, bool, List[Union[str, int, float, bool]]]
+            values to added ot/updated on keys
+        comments: Optional[Union[str, List[str]]]
+            cpmments to added ot/updated on keys
+
+        Returns
+        -------
+        Tuple[List[str], List[Union[str, float, int, bool]]]
+            tuple of keys and values
+
+        Raises
+        ------
+        ValueError
+            when keys is and values is not a list and vice versa
+        """
+
+        if isinstance(keys, str) and not isinstance(values, (str, int, float, bool)):
+            raise ValueError("Keys is str so values must be either str, int float, or bool")
+
+        if isinstance(keys, list) and not isinstance(values, list):
+            raise ValueError("Keys is list so values must be list")
+
+        keys_to_use = keys if isinstance(keys, list) else [keys]
+        values_to_use = values if isinstance(values, list) else [values]
+
+        if comments is None:
+            comments_ = [""] * len(values_to_use)
+        else:
+            if isinstance(comments, list):
+                comments_ = comments + [""] * (len(values_to_use) - len(comments))
+            else:
+                comments_ = [comments] + ([""] * (len(values_to_use) - 1))
+
+        return keys_to_use, values_to_use, comments_
 
     @staticmethod
     def fitsify(path: str) -> str:
@@ -33,6 +102,37 @@ class Fixer:
             return f"{path}.fits"
 
         return path
+
+    @staticmethod
+    def outputs(output: Optional[str], fits_array) -> Union[List[None], List[str]]:
+        """
+        Replaces parent directory of the given `fits_array` with the given
+        directory `output`. If output is None it will create a temporary one
+        in the temp directory
+
+        Parameters
+        ----------
+        output : str, optional
+            directory to replace the parent directory of each file in
+            `fits_array`
+        fits_array : FitsArray
+            `FitsArray` object to change parent directory of each file with
+            the given output
+
+        Returns
+        -------
+        list
+            `list` of file paths
+        """
+        if output is None or not Path(output).is_dir():
+            return [None] * len(fits_array)
+
+        to_write = []
+        for fits in fits_array:
+            f = fits.file
+            to_write.append(str(PurePath(output, f.name)))
+
+        return to_write
 
     @staticmethod
     def output(output: Optional[str] = None, override: bool = False,
@@ -81,80 +181,6 @@ class Fixer:
 
         return output
 
-    @staticmethod
-    def key_value_pair(keys: Union[str, List[str]],
-                       values: Union[str, int, float, bool, List[Union[str, int, float, bool]]],
-                       comments: Union[str, int, float, bool, List[Union[str, int, float, bool]]],
-                       ) -> Tuple[List[str], List[Union[str, float, int, bool]], List[str]]:
-        """
-        Corrects keys, values pair for hedit.
-
-        Parameters
-        ----------
-        keys : Union[str, List[str]]
-            keys to be edited
-        values : Union[str, int, float, bool, List[Union[str, int, float, bool]]]
-            values to added ot/updated on keys
-        comments : Union[str, int, float, bool, List[Union[str, int, float, bool]]]
-            comments to added ot/updated on keys
-
-        Returns
-        -------
-        Tuple[List[str], List[Union[str, float, int, bool]], List[str]]
-            tuple of keys, values, comments
-
-        Raises
-        ------
-        ValueError
-            when keys is and values is not a list and vice versa
-        """
-
-        if isinstance(keys, str) and not isinstance(values, (str, int, float, bool)):
-            raise ValueError("Keys is str so values must be either str, int float, or bool")
-
-        if isinstance(keys, list) and not isinstance(values, list):
-            raise ValueError("Keys is list so values must be list")
-
-        keys_to_use = keys if isinstance(keys, list) else [keys]
-        values_to_use = values if isinstance(values, list) else [values]
-        comments_to_use = comments if isinstance(comments, list) else [comments]
-
-        return keys_to_use, values_to_use, comments_to_use
-
-    @staticmethod
-    def coordinate(xs: NUMERICS, ys: NUMERICS) -> Tuple[List[Union[float, int]], List[Union[float, int]]]:
-        """
-        Makes sure the given `x` and `y` coordinate(s) are list of numbers and
-        have the same length
-
-        Parameters
-        ----------
-        xs : NUMERICS
-            x coordinate(s)
-        ys : NUMERICS
-            y coordinate(s)
-
-        Returns
-        -------
-        Tuple[List[Union[float, int]], List[Union[float, int]]]
-            tuple of `xs` and `ys` coordinates
-
-        Raises
-        ------
-        NumberOfElementError
-            when `x` and `y` coordinates does not have the same length
-        """
-        if isinstance(xs, (float, int)):
-            xs = [xs]
-
-        if isinstance(ys, (float, int)):
-            ys = [ys]
-
-        if len(xs) != len(ys):
-            raise NumberOfElementError("The length of Xs and Ys must be equal")
-
-        return [x for x in xs], [y for y in ys]
-
     @classmethod
     def aperture(cls, rs: NUMERICS) -> List[Union[float, int]]:
         """
@@ -197,3 +223,106 @@ class Fixer:
             headers = [headers]
 
         return headers
+
+    @staticmethod
+    def coordinate(xs: NUMERICS, ys: NUMERICS) -> Tuple[List[Union[float, int]], List[Union[float, int]]]:
+        """
+        Makes sure the given `x` and `y` coordinate(s) are list of numbers and
+        have the same length
+
+        Parameters
+        ----------
+        xs : NUMERICS
+            x coordinate(s)
+        ys : NUMERICS
+            y coordinate(s)
+
+        Returns
+        -------
+        Tuple[List[Union[float, int]], List[Union[float, int]]]
+            tuple of `xs` and `ys` coordinates
+
+        Raises
+        ------
+        NumberOfElementError
+            when `x` and `y` coordinates does not have the same length
+        """
+        if isinstance(xs, (float, int)):
+            xs = [xs]
+
+        if isinstance(ys, (float, int)):
+            ys = [ys]
+
+        if len(xs) != len(ys):
+            raise NumberOfElementError("The length of Xs and Ys must be equal")
+
+        return [x for x in xs], [y for y in ys]
+
+
+class Check:
+    @staticmethod
+    def operand(operand: str) -> None:
+        """
+        Checks if the operand is both string and one of `["+", "-", "*", "/", "**", "^"]`
+
+        Parameters
+        ----------
+        operand : str
+            the operand
+        Returns
+        -------
+         None
+
+
+        Raises
+        ------
+        ValueError
+            when operand is not one of `["+", "-", "*", "/", "**", "^"]`
+        """
+        if operand not in ["+", "-", "*", "/", "**", "^"]:
+            raise ValueError("Operand can only be one of these: +, -, *, /, **, ^")
+
+    @staticmethod
+    def method(method: str) -> None:
+        """
+        Checks if the method is both string and one of `["average", "mean", "median", "sum"]`
+
+        Parameters
+        ----------
+        method : str
+            the method
+        Returns
+        -------
+         None
+
+
+        Raises
+        ------
+        ValueError
+            when method is not one of `["average", "mean", "median", "sum"]`
+        """
+        if method not in ["average", "mean", "median", "sum"]:
+            raise ValueError("Method can only be one of these: average, mean, median, sum")
+
+    @staticmethod
+    def clipping(method: Optional[str] = None) -> None:
+        """
+        Checks if the clipping is both string and one of `["sigma", "minmax"]`
+
+        Parameters
+        ----------
+        method : str
+            the method
+        Returns
+        -------
+         None
+
+
+        Raises
+        ------
+        ValueError
+            when method is not one of `["sigma", "minmax"]`
+        """
+        if method is not None:
+            if method not in ["sigma", "minmax"]:
+                raise ValueError("Method can only be one of these: sigma, minmax")

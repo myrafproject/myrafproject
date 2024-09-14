@@ -7,7 +7,7 @@ class AlignError(Exception):
 
 
 class NumberOfElementError(Exception):
-    """Raised when number of elements is a problem"""
+    """Raised when number of elements never met"""
 
 
 class OverCorrection(Exception):
@@ -20,7 +20,3 @@ class CardNotFound(Exception):
 
 class Unsolvable(Exception):
     """Raised when the data is not plate solvable"""
-
-
-class OperatorError(Exception):
-    """Raised when an operand is invalid"""

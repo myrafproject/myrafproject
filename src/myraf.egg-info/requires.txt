@@ -14,3 +14,10 @@ scipy
 ginga
 PyQt5
 pyqtdarktheme
+
+[testing]
+pytest
+pytest-cov
+mypy
+flake8
+tox

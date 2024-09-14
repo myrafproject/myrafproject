@@ -1,3 +1,45 @@
+Metadata-Version: 2.1
+Name: myraf
+Version: 3.0
+Summary: MYRaf; an astropy wrapper for astronomical photometry
+Home-page: https://github.com/myrafproject/myrafproject
+Author: Mohammad S.Niaei, Yücel KILIÇ
+Author-email: niaei@pardus.org.tr, ykilic@iaa.es
+License: GNU/GPL V3
+Keywords: Fits,Photometry
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: astroalign
+Requires-Dist: astropy
+Requires-Dist: astroquery
+Requires-Dist: ccdproc
+Requires-Dist: matplotlib
+Requires-Dist: mpl_point_clicker
+Requires-Dist: numpy==1.24.4
+Requires-Dist: pandas
+Requires-Dist: photutils
+Requires-Dist: python_dateutil
+Requires-Dist: sep
+Requires-Dist: typing_extensions
+Requires-Dist: scipy
+Requires-Dist: ginga
+Requires-Dist: PyQt5
+Requires-Dist: pyqtdarktheme
+Provides-Extra: testing
+Requires-Dist: pytest; extra == "testing"
+Requires-Dist: pytest-cov; extra == "testing"
+Requires-Dist: mypy; extra == "testing"
+Requires-Dist: flake8; extra == "testing"
+Requires-Dist: tox; extra == "testing"
+
 # What is MYRaf?
 
 The MYRaf WAS a practicable astronomical image reduction and photometry software and interfaces for IRAF.
