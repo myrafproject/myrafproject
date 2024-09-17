@@ -7,7 +7,7 @@ on:
     branches: [ 'main' ]
 
 jobs:
-  wnds:
+  Windows:
 
     runs-on: windows-latest
     strategy:
@@ -31,7 +31,7 @@ jobs:
         # stop the build if there are Python syntax errors or undefined names
         tox
 
-  lnx:
+  Linux:
 
     runs-on: ubuntu-latest
     strategy:
@@ -55,7 +55,7 @@ jobs:
         # stop the build if there are Python syntax errors or undefined names
         tox
 
-  mcs:
+  MacOS:
 
     runs-on: macos-latest
     strategy:
