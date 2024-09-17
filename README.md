@@ -1,3 +1,14 @@
+
+
+
+![myraf](https://github.com/myrafproject/myrafproject/actions/workflows/python-package.yml/badge.svg)
+![myraf](https://img.shields.io/badge/coverage-78%25-31c553)
+![myraf](https://img.shields.io/badge/Win-%E2%9C%93-f5f5f5?logo=windows11)
+![myraf](https://img.shields.io/badge/Ubuntu-%E2%9C%93-e95420?logo=Ubuntu)
+![myraf](https://img.shields.io/badge/MacOS-%E2%9C%93-dadada?logo=macos)
+![myraf](https://img.shields.io/badge/Python-%2039,%20310,%20311-3776ab?logo=python)
+![myraf](https://img.shields.io/badge/LIC-GNU/GPL%20V3-a32d2a?logo=GNU)
+
 # What is MYRaf?
 
 The MYRaf WAS a practicable astronomical image reduction and photometry software and interfaces for IRAF.

@@ -20,4 +20,3 @@ mypy
 flake8
 tox
 tox-gh-actions
-tox-conda
