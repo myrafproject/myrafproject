@@ -1,11 +1,11 @@
 astroalign
 astropy
 astroquery
-opencv-python
 ccdproc
 matplotlib
 mpl_point_clicker
 numpy==1.24.4
+opencv-python-headless
 pandas
 photutils
 python_dateutil
