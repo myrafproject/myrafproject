@@ -1,6 +1,7 @@
 astroalign
 astropy
 astroquery
+opencv-python==4.10.0.84
 ccdproc
 matplotlib
 mpl_point_clicker
