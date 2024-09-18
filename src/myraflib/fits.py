@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional, Union, List, Any, Tuple, Callable
 
 import astroalign
+import cv2
 import numpy as np
 import pandas as pd
 from astropy import units
@@ -37,8 +38,6 @@ __all__ = ["Fits"]
 
 
 class Fits(Data):
-    high_precision = False
-
     def __init__(self, file: Path, logger: Optional[Logger] = None) -> None:
 
         self.logger = getLogger(f"{self.__class__.__name__}") if logger is None else logger
@@ -176,6 +175,33 @@ class Fits(Data):
             mag_err = 0
 
         return mag + self.ZMag, mag_err
+
+    @classmethod
+    def from_image(cls, path: str) -> Self:
+        """
+        Creates a `Fits` object from the given image file
+
+        Parameters
+        ----------
+        path : str
+            path of the file as string
+
+        Returns
+        -------
+        Self
+            a `Fits` object.
+
+        Raises
+        ------
+        FileNotFoundError
+            when the file does not exist
+        """
+        if not Path(path).exists():
+            raise FileNotFoundError(f"File {path} does not exist")
+
+        image = cv2.imread(path)
+        gray_frame = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        return cls.from_data_header(gray_frame)
 
     @classmethod
     def from_path(cls, path: str) -> Self:

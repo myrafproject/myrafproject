@@ -6,11 +6,13 @@ from pathlib import Path
 from typing import List, Union, Any, Optional, Iterator, Dict, Callable
 
 import astroalign
+import cv2
 import numpy as np
 import pandas as pd
 from astropy.coordinates import SkyCoord
 from astropy.io.fits.header import Header
 from astropy.nddata import CCDData
+from astropy.time import Time
 from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from astropy.wcs.utils import fit_wcs_from_points
@@ -28,8 +30,6 @@ __all__ = ["FitsArray"]
 
 
 class FitsArray(DataArray):
-    high_precision = False
-
     def __init__(self, fits_list: List[Fits], logger: Optional[Logger] = None) -> None:
 
         self.logger = getLogger(f"{self.__class__.__name__}") if logger is None else logger
@@ -131,6 +131,62 @@ class FitsArray(DataArray):
             raise NotImplementedError
 
         return self.div(other).pow(-1)
+
+    @classmethod
+    def from_video(cls, path: str, start_time: Optional[Union[Time, float]] = None) -> Self:
+        """
+        Creates a `FitsArray` from frames of a video.
+
+        Parameters
+        ----------
+        path : str
+            path of the file as string
+        start_time: Time or float, optional
+            start time of the video
+
+        Returns
+        -------
+        Self
+            a `Fits` object.
+
+        Raises
+        ------
+        FileNotFoundError
+            when the file does not exist
+        """
+        Fits.high_precision = cls.high_precision
+
+        if not Path(path).exists():
+            raise FileNotFoundError(f"{path} does not exist")
+
+        cap = cv2.VideoCapture(path)
+        frames = []
+        success, frame = cap.read()
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        if isinstance(start_time, Time):
+            frame_number = start_time.jd
+        elif isinstance(start_time, float):
+            frame_number = start_time
+        else:
+            frame_number = 0
+
+        while success:
+            try:
+                gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                data = np.array(gray_frame)
+                fits_frame = Fits.from_data_header(data)
+                fits_frame.hedit(["MY-RELJD", "EXPTIME"], [frame_number / (fps * 86400), 1 / fps])
+                frames.append(fits_frame)
+                success, frame = cap.read()
+            except Exception:
+                pass
+
+            frame_number += 1
+
+        cap.release()
+
+        return cls(frames)
 
     @classmethod
     def from_paths(cls, paths: List[str]) -> Self:

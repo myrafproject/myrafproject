@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, List, Union, Any, TYPE_CHECKING, Dict, Callable
 
 import numpy as np
+from astropy.time import Time
 from typing_extensions import Self
 
 if TYPE_CHECKING:
@@ -20,6 +21,12 @@ NUMERICS = Union[float, int, List[Union[float, int]]]
 
 
 class Data(ABC):
+    high_precision = False
+
+    @classmethod
+    @abstractmethod
+    def from_image(cls, path: str) -> Self:
+        ...
 
     @classmethod
     @abstractmethod
@@ -228,6 +235,13 @@ class Data(ABC):
 
 
 class DataArray(ABC):
+    high_precision = False
+
+    @classmethod
+    @abstractmethod
+    def from_video(cls, path: str, start_time: Optional[Union[Time, float]] = None) -> Self:
+        ...
+
     @classmethod
     @abstractmethod
     def from_paths(cls, paths: List[str]) -> Self:
