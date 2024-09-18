@@ -28,6 +28,7 @@ run MYRaf v3 with DEBUG mode and share the outputs with us with the command belo
 
 Clear skies!
 
+GNOME users might get an error. See: https://stackoverflow.com/a/71402854/2681662
 ______
 
 **MYRaf Project Team**
