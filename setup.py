@@ -8,7 +8,7 @@ setup(
     py_modules=['main'],
     entry_points={
         'console_scripts': [
-            'myraf = main:main',
+            'myraf = myraf_gui:main',
         ],
     },
     install_requires=[

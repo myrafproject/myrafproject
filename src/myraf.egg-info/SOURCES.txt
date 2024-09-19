@@ -4,7 +4,6 @@ README.md
 pyproject.toml
 setup.cfg
 setup.py
-src/main.py
 src/myraf.egg-info/PKG-INFO
 src/myraf.egg-info/SOURCES.txt
 src/myraf.egg-info/dependency_links.txt

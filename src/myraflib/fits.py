@@ -995,9 +995,9 @@ class Fits(Data):
                 registered_image, header=temp_header,
                 output=output, override=override
             )
-        except ValueError:
-            self.logger.error("Cannot align two images")
-            raise AlignError("Cannot align two images")
+        except Exception as e:
+            self.logger.error(e)
+            raise AlignError(e)
 
     def show(self, scale: bool = True, sources: Optional[pd.DataFrame] = None) -> None:
         """
