@@ -176,7 +176,7 @@ class FitsArray(DataArray):
                 gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 data = np.array(gray_frame)
                 fits_frame = Fits.from_data_header(data)
-                fits_frame.hedit(["MY-RELJD", "EXPTIME"], [frame_number / (fps * 86400), 1 / fps])
+                fits_frame.hedit(["MY-RELJD", "MY-EXPTM"], [frame_number / (fps * 86400), 1 / fps])
                 frames.append(fits_frame)
                 success, frame = cap.read()
             except Exception:
