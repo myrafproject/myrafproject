@@ -73,7 +73,7 @@ class FitsArray(DataArray):
         return len(self.fits_list)
 
     def __abs__(self) -> List[str]:
-        return [str(fits.file.absolute()) for fits in self.fits_list]
+        return [str(fits.file.absolute()) for fits in self]
 
     def __add__(self, other: Union[Self, Fits, float, int, List[Union[Fits, float, int]]]) -> Self:
         if not isinstance(other, (self.__class__, Fits, float, int, List)):
@@ -2092,3 +2092,37 @@ class FitsArray(DataArray):
             raise Unsolvable("None of images were solvable")
 
         return pd.concat(pixels)
+
+    def map_to_sky(self) -> pd.DataFrame:
+        """
+        Returns sources on the image from Simbad
+
+        Parameters
+        ----------
+        reference: int, default=0
+            index of the Fits in the FitsArray
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataa frame of names, pixel, and sky coordinates
+
+        Raises
+        ------
+        Unsolvable
+            when header does not contain WCS solution
+
+        """
+        data = []
+        for fits in self:
+            try:
+                value = fits.map_to_sky()
+                for each in value[["name", "sky", "xcentroid", "ycentroid"]].values.tolist():
+                    data.append([abs(fits)] + each)
+            except Exception as e:
+                self.logger.warning(e)
+
+        return pd.DataFrame(
+            data,
+            columns=["image", "name", "sky", "xcentroid", "ycentroid"]
+        ).set_index("image")

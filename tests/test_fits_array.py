@@ -2045,6 +2045,13 @@ class TestFitsArray(unittest.TestCase):
     def test_solve_field(self):
         """Cannot test"""
 
+    def test_map_to_sky(self):
+        sky_map = self.SAMPLE.map_to_sky()
+        self.assertListEqual(
+            list(sky_map.columns.to_list()),
+            ['name', 'sky', 'xcentroid', 'ycentroid']
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

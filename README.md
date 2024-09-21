@@ -33,7 +33,7 @@ ______
 
 **MYRaf Project Team**
 
-**Yücel KILIÇ** | mailto:yucelkilic@myrafproject.org
+**Yücel KILIÇ** | mailto:ykilic@iaa.es
 
 **Mohammad SHEMUNI** | mailto:niaei@pardus.org.tr
 
@@ -69,6 +69,7 @@ Both has almost the same features. Let's explore:
     - [Calibration](example/fits/calibration.ipynb)
     - [Source Extraction](example/fits/source_extraction.ipynb)
     - [Photometry](example/fits/photometry.ipynb)
+    - [Mao To Sky](example/fits/map_to_sky.ipynb)
     - [Other](example/fits/other.ipynb)
 - FitsArray object
     - [Creation](example/fits_array/create.ipynb)
