@@ -4,7 +4,7 @@ import math
 import shutil
 from logging import getLogger, Logger
 from pathlib import Path
-from typing import Optional, Union, List, Any, Tuple, Callable
+from typing import Optional, Union, List, Any, Tuple, Callable, Dict
 
 import astroalign
 import cv2
@@ -20,6 +20,7 @@ from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from astropy.wcs.utils import fit_wcs_from_points
 from astroquery.astrometry_net import AstrometryNet
+from astroquery.simbad import Simbad
 from ccdproc import cosmicray_lacosmic, subtract_bias, subtract_dark, flat_correct
 from matplotlib import pyplot as plt
 from mpl_point_clicker import clicker
@@ -1971,3 +1972,45 @@ class Fits(Data):
             data,
             columns=["image", "sky", "xcentroid", "ycentroid"]
         ).set_index("image")
+
+    def map_to_sky(self):
+        """
+        Returns sources on the image from Simbad
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataa frame of names, pixel, and sky coordinates
+
+        Raises
+        ------
+        Unsolvable
+            when header does not contain WCS solution
+
+        """
+        header = self.pure_header()
+        nx = header["NAXIS1"]
+        ny = header["NAXIS2"]
+        polygon = self.pixels_to_skys([0, 0, nx, nx], [0, ny, ny, 0])
+        polygon_sstr = ", ".join(
+            [f"{round(each.ra.deg, 1)}, {round(each.dec.deg, 1)}" for each in polygon.sky.to_list()])
+
+        query = f"SELECT main_id, ra, dec FROM basic WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), POLYGON('ICRS', {polygon_sstr}))"
+        results = Simbad.query_tap(query)
+        data: Dict[str, List[Any]] = {
+            "name": [],
+            "sky": [],
+            "xcentroid": [],
+            "ycentroid": [],
+        }
+        for each in results.to_pandas().to_numpy():
+            sky = SkyCoord(each[1], each[2], unit="deg")
+            x, y = self.skys_to_pixels(sky)[["xcentroid", "ycentroid"]].iloc[0].to_list()
+            if x < 0 or y < 0 or x > nx or y > ny:
+                continue
+            data["name"].append(each[0])
+            data["sky"].append(sky)
+            data["xcentroid"].append(x)
+            data["ycentroid"].append(y)
+
+        return pd.DataFrame(data)

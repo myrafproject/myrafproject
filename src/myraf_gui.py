@@ -39,7 +39,7 @@ from dateutil.relativedelta import relativedelta
 import astroalign
 
 from ginga.AstroImage import AstroImage
-from ginga.canvas.types.basic import Circle, Rectangle
+from ginga.canvas.types.basic import Circle, Rectangle, Text
 from ginga.qtw.ImageViewQt import CanvasView
 
 from myraflib import FitsArray, Fits
@@ -594,13 +594,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 split.setEnabled(False)
 
             menu_file.addSeparator()
-            expand_all = menu_file.addAction("Expand All...", lambda: (self.gui_functions.expand_all_children(self.treeWidget)))
+            expand_all = menu_file.addAction("Expand All...",
+                                             lambda: (self.gui_functions.expand_all_children(self.treeWidget)))
             if len(selected) < 1:
                 expand_all.setEnabled(False)
-            collapse_all = menu_file.addAction("Collapse All...", lambda: (self.gui_functions.collapse_all_children(self.treeWidget)))
+            collapse_all = menu_file.addAction("Collapse All...",
+                                               lambda: (self.gui_functions.collapse_all_children(self.treeWidget)))
             if len(selected) < 1:
                 collapse_all.setEnabled(False)
-
 
             menu_operations = QtWidgets.QMenu("Operations")
 
@@ -719,7 +720,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             menu.addMenu(menu_operations)
 
-
             menu.exec_(event.globalPos())
             menu.addMenu(menu_editor)
             return True
@@ -757,13 +757,10 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         self.img = AstroImage(logger=self.parent.logger)
         self.img.load_data(self.fits_array[0].data())
         self.canvas.set_image(self.img)
+        group_box_layout.addWidget(self.ginga_widget)
 
         self.iteration = 0
         self.current_angle = 0
-
-        self.ginga_widget.installEventFilter(self)
-        self.listWidgetApertureRadii.installEventFilter(self)
-        self.tableWidgetCoordinates.installEventFilter(self)
 
         self.reset_transform()
         self.load_headers()
@@ -782,6 +779,30 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         self.load_settings()
 
         self.pushButtonGO.clicked.connect(self.go)
+
+        self.ginga_widget.installEventFilter(self)
+        self.listWidgetApertureRadii.installEventFilter(self)
+        self.tableWidgetCoordinates.installEventFilter(self)
+
+    def info_update(self, x, y):
+        fits = self.fits_array[self.iteration]
+        if self.canvas.check_cursor_location():
+            the_x, the_y = self.canvas.get_data_xy(x, y)
+            w, h = self.canvas.get_data_size()
+            if not 0 < the_x < w or not 0 < the_y < h:
+                ra, dec = "---", "---"
+            else:
+                x_to_show, y_to_show = int(the_x), int(the_y)
+                try:
+                    sky = fits.pixels_to_skys(x_to_show, y_to_show)
+                    ra = sky["sky"].values[0].ra
+                    dec = sky["sky"].values[0].dec
+
+                except (ValueError, Unsolvable) as e:
+                    ra, dec = "---", "---"
+
+            self.labelRa.setText(ra.__str__())
+            self.labelDec.setText(dec.__str__())
 
     def go(self):
         warn = 0
@@ -1034,6 +1055,9 @@ class PhotometryForm(QWidget, Ui_FormPhotometry):
         self.draw_aperture()
 
     def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.MouseMove:
+            self.info_update(event.x(), event.y())
+            return True
 
         if event.type() == QEvent.MouseButtonPress:
             if event.button() == Qt.MiddleButton:
@@ -3198,8 +3222,8 @@ class DisplayForm(QWidget, Ui_FormDisplay):
                 x_to_show, y_to_show = int(the_x), int(the_y)
                 try:
                     sky = fits.pixels_to_skys(x_to_show, y_to_show)
-                    ra = sky[sky].values[0].ra
-                    dec = sky[sky].values[0].dec
+                    ra = sky["sky"].values[0].ra
+                    dec = sky["sky"].values[0].dec
 
                 except (ValueError, Unsolvable):
                     ra, dec = "---", "---"
@@ -3270,7 +3294,8 @@ class DisplayForm(QWidget, Ui_FormDisplay):
         try:
             the_x, the_y = self.canvas.get_data_xy(x, y)
             sky = fits.pixels_to_skys(the_x, the_y)
-            pd.DataFrame([f'{sky[sky].values[0].ra} {sky[sky].values[0].dec}']).to_clipboard(index=False, header=False)
+            pd.DataFrame([f'{sky["sky"].values[0].ra} {sky["sky"].values[0].dec}']).to_clipboard(index=False,
+                                                                                                 header=False)
         except (ValueError, Unsolvable):
             pd.DataFrame([f'']).to_clipboard(index=False, header=False)
 
@@ -3281,6 +3306,21 @@ class DisplayForm(QWidget, Ui_FormDisplay):
             pd.DataFrame([f'{value}']).to_clipboard(index=False, header=False)
         except (ValueError, Unsolvable):
             pd.DataFrame([f'']).to_clipboard(index=False, header=False)
+
+    def map_sky(self):
+        try:
+            sky_map = self.fits_array[0].map_to_sky()
+        except Exception as e:
+            self.parent.gui_functions.error(str(e))
+            return
+
+        del self.canvas.canvas.objects[1:]
+
+        for name, x, y in sky_map[['name', 'xcentroid', 'ycentroid']].to_numpy():
+            circle = Circle(x, y, 10, "red", 5)
+            text_obj = Text(x=x + 10, y=y + 10, text=name, color='red', fontsize=20)
+            self.canvas.canvas.add(circle)
+            self.canvas.canvas.add(text_obj)
 
     def eventFilter(self, source, event):
         fits = self.fits_array[self.iteration]
@@ -3432,6 +3472,7 @@ class DisplayForm(QWidget, Ui_FormDisplay):
             display_menu.addAction('Contrast', lambda: self.set_contrast())
 
             menu.addMenu(copy_menu)
+            menu.addAction('Map Sky', lambda: self.map_sky())
             menu.addSeparator()
 
             menu.addMenu(display_menu)
@@ -3588,8 +3629,8 @@ class WCSForm(QWidget, Ui_FormWCS):
                 x_to_show, y_to_show = int(the_x), int(the_y)
                 try:
                     sky = fits.pixels_to_skys(x_to_show, y_to_show)
-                    ra = sky[sky].values[0].ra
-                    dec = sky[sky].values[0].dec
+                    ra = sky["sky"].values[0].ra
+                    dec = sky["sky"].values[0].dec
 
                 except (ValueError, Unsolvable):
                     ra, dec = "---", "---"
@@ -3658,7 +3699,8 @@ class WCSForm(QWidget, Ui_FormWCS):
         try:
             the_x, the_y = self.canvas.get_data_xy(x, y)
             sky = fits.pixels_to_skys(the_x, the_y)
-            pd.DataFrame([f'{sky[sky].values[0].ra} {sky[sky].values[0].dec}']).to_clipboard(index=False, header=False)
+            pd.DataFrame([f'{sky["sky"].values[0].ra} {sky["sky"].values[0].dec}']).to_clipboard(index=False,
+                                                                                                 header=False)
         except (ValueError, Unsolvable):
             pd.DataFrame([f'']).to_clipboard(index=False, header=False)
 

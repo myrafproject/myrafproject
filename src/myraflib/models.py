@@ -233,6 +233,10 @@ class Data(ABC):
     def skys_to_pixels(self, skys: Union[List[SkyCoord], SkyCoord]) -> pd.DataFrame:
         ...
 
+    @abstractmethod
+    def map_to_sky(self):
+        ...
+
 
 class DataArray(ABC):
     high_precision = False
@@ -474,4 +478,8 @@ class DataArray(ABC):
 
     @abstractmethod
     def skys_to_pixels(self, skys: Union[List[SkyCoord], SkyCoord]) -> pd.DataFrame:
+        ...
+
+    @abstractmethod
+    def map_to_sky(self) -> pd.DataFrame:
         ...
