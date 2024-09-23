@@ -15,10 +15,11 @@ scipy
 ginga
 PyQt5
 pyqtdarktheme
+tox
 
 [testing]
 pytest
 pytest-cov
 mypy
 flake8
-tox
+tdqm
