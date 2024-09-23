@@ -15,6 +15,7 @@ scipy
 ginga
 PyQt5
 pyqtdarktheme
+tdqm
 pytest
 pytest-cov
 mypy

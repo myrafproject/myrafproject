@@ -34,12 +34,13 @@ Requires-Dist: scipy
 Requires-Dist: ginga
 Requires-Dist: PyQt5
 Requires-Dist: pyqtdarktheme
+Requires-Dist: tox
 Provides-Extra: testing
 Requires-Dist: pytest; extra == "testing"
 Requires-Dist: pytest-cov; extra == "testing"
 Requires-Dist: mypy; extra == "testing"
 Requires-Dist: flake8; extra == "testing"
-Requires-Dist: tox; extra == "testing"
+Requires-Dist: tdqm; extra == "testing"
 
 ![myraf](https://github.com/myrafproject/myrafproject/actions/workflows/python-package.yml/badge.svg)
 ![myraf](https://img.shields.io/badge/coverage-77%25-31c553)
@@ -76,7 +77,7 @@ ______
 
 **MYRaf Project Team**
 
-**Yücel KILIÇ** | mailto:yucelkilic@myrafproject.org
+**Yücel KILIÇ** | mailto:ykilic@iaa.es
 
 **Mohammad SHEMUNI** | mailto:niaei@pardus.org.tr
 
@@ -112,6 +113,7 @@ Both has almost the same features. Let's explore:
     - [Calibration](example/fits/calibration.ipynb)
     - [Source Extraction](example/fits/source_extraction.ipynb)
     - [Photometry](example/fits/photometry.ipynb)
+    - [Mao To Sky](example/fits/map_to_sky.ipynb)
     - [Other](example/fits/other.ipynb)
 - FitsArray object
     - [Creation](example/fits_array/create.ipynb)

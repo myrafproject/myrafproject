@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import inspect
+import warnings
+
+from tqdm import tqdm
+
 from glob import glob
 from logging import getLogger, Logger
 from pathlib import Path
@@ -26,11 +31,13 @@ from .fits import Fits
 from .models import DataArray, NUMERICS
 from .utils import Fixer, Check
 
+warnings.filterwarnings('ignore')
+
 __all__ = ["FitsArray"]
 
 
 class FitsArray(DataArray):
-    def __init__(self, fits_list: List[Fits], logger: Optional[Logger] = None) -> None:
+    def __init__(self, fits_list: List[Fits], logger: Optional[Logger] = None, verbose: bool = False) -> None:
 
         self.logger = getLogger(f"{self.__class__.__name__}") if logger is None else logger
 
@@ -45,6 +52,8 @@ class FitsArray(DataArray):
             raise NumberOfElementError("No image was provided")
 
         self.fits_list = fits_list
+
+        self.verbose = verbose
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(@: '{id(self)}', nof:'{len(self)}')"
@@ -132,8 +141,20 @@ class FitsArray(DataArray):
 
         return self.div(other).pow(-1)
 
+    def __verbosify(self, iterator):
+        stack = inspect.stack()
+        caller_function = stack[1].function
+        if self.verbose:
+            try:
+                return tqdm(iterator, desc=f"{caller_function} - Processing files")
+            except Exception as e:
+                self.logger.warning(e)
+
+        return iterator
+
     @classmethod
-    def from_video(cls, path: str, start_time: Optional[Union[Time, float]] = None) -> Self:
+    def from_video(cls, path: str, start_time: Optional[Union[Time, float]] = None,
+                   logger: Optional[Logger] = None, verbose: bool = False) -> Self:
         """
         Creates a `FitsArray` from frames of a video.
 
@@ -143,6 +164,10 @@ class FitsArray(DataArray):
             path of the file as string
         start_time: Time or float, optional
             start time of the video
+        logger: Logger, optional
+            The logger
+        verbose: bool, default=False
+            Show more
 
         Returns
         -------
@@ -186,10 +211,10 @@ class FitsArray(DataArray):
 
         cap.release()
 
-        return cls(frames)
+        return cls(frames, logger=logger, verbose=verbose)
 
     @classmethod
-    def from_paths(cls, paths: List[str]) -> Self:
+    def from_paths(cls, paths: List[str], logger: Optional[Logger] = None, verbose: bool = False) -> Self:
         """
         Create a `FitsArray` from paths as list of strings
 
@@ -197,6 +222,10 @@ class FitsArray(DataArray):
         ----------
         paths : List[str]
             list of fits file paths
+        logger: Logger, optional
+            The logger
+        verbose: bool, default=False
+            Show more
 
         Returns
         -------
@@ -217,10 +246,10 @@ class FitsArray(DataArray):
             except FileNotFoundError:
                 pass
 
-        return cls(files)
+        return cls(files, logger=logger, verbose=verbose)
 
     @classmethod
-    def from_pattern(cls, pattern: str) -> Self:
+    def from_pattern(cls, pattern: str, logger: Optional[Logger] = None, verbose: bool = False) -> Self:
         """
         Create a `FitsArray` from patterns
 
@@ -228,6 +257,10 @@ class FitsArray(DataArray):
         ----------
         pattern : str
             the pattern that can be interpreted by glob
+        logger: Logger, optional
+            The logger
+        verbose: bool, default=False
+            Show more
 
         Returns
         -------
@@ -239,10 +272,10 @@ class FitsArray(DataArray):
         NumberOfElementError
             when the number of fits files is 0
         """
-        return cls.from_paths(glob(pattern))
+        return cls.from_paths(glob(pattern), logger=logger, verbose=verbose)
 
     @classmethod
-    def sample(cls, numer_of_samples: int = 10) -> Self:
+    def sample(cls, numer_of_samples: int = 10, logger: Optional[Logger] = None, verbose: bool = False) -> Self:
         """
         Creates a sample `FitsArray` object
         see: https://www.astropy.org/astropy-data/tutorials/FITS-images/HorseHead.fits
@@ -251,6 +284,10 @@ class FitsArray(DataArray):
         ----------
         numer_of_samples : int, default=10
             number of `Fits` in `FitsArray`
+        logger: Logger, optional
+            The logger
+        verbose: bool, default=False
+            Show more
 
         Returns
         -------
@@ -266,10 +303,10 @@ class FitsArray(DataArray):
                 fits_objects.append(shifted)
             except Exception as e:
                 _ = e
-        return cls(fits_objects)
+        return cls(fits_objects, logger=logger, verbose=verbose)
 
     def files(self):
-        return [fits.file.absolute().__str__() for fits in self]
+        return [fits.file.absolute().__str__() for fits in self.__verbosify(self)]
 
     def merge(self, other: Self) -> None:
         """
@@ -316,12 +353,15 @@ class FitsArray(DataArray):
         """
         self.logger.info("Getting header")
 
-        return pd.concat(
-            (
-                each.header()
-                for each in self
-            )
-        )
+        headers = []
+
+        for fits in self.__verbosify(self):
+            try:
+                headers.append(fits.header())
+            except Exception as e:
+                self.logger.warning(e)
+
+        return pd.concat(headers)
 
     def data(self) -> List[Any]:
         """
@@ -336,9 +376,9 @@ class FitsArray(DataArray):
 
         data = []
 
-        for each in self:
+        for fits in self.__verbosify(self):
             try:
-                data.append(each.data())
+                data.append(fits.data())
             except ValueError:
                 pass
 
@@ -361,7 +401,7 @@ class FitsArray(DataArray):
         """
 
         data = []
-        for fits in self:
+        for fits in self.__verbosify(self):
             try:
                 value = fits.value(x, y)
                 data.append([abs(fits), value])
@@ -385,8 +425,8 @@ class FitsArray(DataArray):
 
         data = []
 
-        for each in self:
-            data.append(each.pure_header())
+        for fits in self.__verbosify(self):
+            data.append(fits.pure_header())
 
         return data
 
@@ -429,12 +469,11 @@ class FitsArray(DataArray):
         """
         self.logger.info("Calculating image statistics")
 
-        return pd.concat(
-            [
-                each.imstat()
-                for each in self
-            ]
-        )
+        stats = []
+        for fits in self.__verbosify(self):
+            stats.append(fits.imstat())
+
+        return pd.concat(stats)
 
     def hedit(self, keys: Union[str, List[str]],
               values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]] = None,
@@ -461,7 +500,7 @@ class FitsArray(DataArray):
         """
         self.logger.info("Editing header")
 
-        for fits in self:
+        for fits in self.__verbosify(self):
             try:
                 fits.hedit(keys, values=values, comments=comments, delete=delete, value_is_key=value_is_key)
             except Exception as error:
@@ -519,7 +558,7 @@ class FitsArray(DataArray):
 
         output_fits = Fixer.outputs(output, self)
         fits_array = []
-        for fits, output_fit in zip(self, output_fits):
+        for fits, output_fit in zip(self.__verbosify(self), output_fits):
 
             if output_fit is None:
                 continue
@@ -527,7 +566,7 @@ class FitsArray(DataArray):
             copied = fits.save_as(output_fit)
             fits_array.append(copied)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def __prepare_weights(self,
                           weights: Optional[Union[List[str], List[Union[float, int]]]] = None
@@ -540,7 +579,7 @@ class FitsArray(DataArray):
             raise NumberOfElementError("Number of Fits must be equal to number of weights")
 
         weights_to_use = []
-        for fits, weight in zip(self, weights):
+        for fits, weight in zip(self.__verbosify(self), weights):
             if isinstance(weight, str):
                 header = fits.header()
                 if weight in header:
@@ -637,14 +676,14 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, the_other, output_fit in zip(self, other_to_use, outputs):
+        for fits, the_other, output_fit in zip(self.__verbosify(self), other_to_use, outputs):
             try:
                 result = fits.add(the_other, output_fit)
                 fits_array.append(result)
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def sub(self, other: Union[Self, Fits, float, int, List[Union[Fits, float, int]]],
             output: Optional[str] = None) -> Self:
@@ -688,14 +727,14 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, the_other, output_fit in zip(self, other_to_use, outputs):
+        for fits, the_other, output_fit in zip(self.__verbosify(self), other_to_use, outputs):
             try:
                 result = fits.sub(the_other, output_fit)
                 fits_array.append(result)
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def mul(self, other: Union[Self, Fits, float, int, List[Union[Fits, float, int]]],
             output: Optional[str] = None) -> Self:
@@ -739,14 +778,14 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, the_other, output_fit in zip(self, other_to_use, outputs):
+        for fits, the_other, output_fit in zip(self.__verbosify(self), other_to_use, outputs):
             try:
                 result = fits.mul(the_other, output_fit)
                 fits_array.append(result)
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def div(self, other: Union[Self, Fits, float, int, List[Union[Fits, float, int]]],
             output: Optional[str] = None) -> Self:
@@ -790,14 +829,14 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, the_other, output_fit in zip(self, other_to_use, outputs):
+        for fits, the_other, output_fit in zip(self.__verbosify(self), other_to_use, outputs):
             try:
                 result = fits.div(the_other, output_fit)
                 fits_array.append(result)
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def pow(self, other: Union[Self, Fits, float, int, List[Union[Fits, float, int]]],
             output: Optional[str] = None) -> Self:
@@ -848,7 +887,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def imarith(self, other: Union[Self, Fits, float, int, List[Union[Fits, float, int]]],
                 operand: str, output: Optional[str] = None) -> Self:
@@ -894,14 +933,14 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, the_other, output_fit in zip(self, other_to_use, outputs):
+        for fits, the_other, output_fit in zip(self.__verbosify(self), other_to_use, outputs):
             try:
                 result = fits.imarith(the_other, operand, output_fit)
                 fits_array.append(result)
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def shift(self, xs: Union[List[int], int], ys: Union[List[int], int],
               output: Optional[str] = None) -> Self:
@@ -947,7 +986,7 @@ class FitsArray(DataArray):
         fits_array = []
         outputs = Fixer.outputs(output, self)
 
-        for fits, output_fit, x, y in zip(self, outputs, to_x_shift,
+        for fits, output_fit, x, y in zip(self.__verbosify(self), outputs, to_x_shift,
                                           to_y_shift):
             try:
                 shifted = fits.shift(x, y, output_fit)
@@ -955,7 +994,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def rotate(self, angle: Union[List[Union[float, int]], float, int],
                output: Optional[str] = None) -> Self:
@@ -991,7 +1030,7 @@ class FitsArray(DataArray):
         fits_array = []
         outputs = Fixer.outputs(output, self)
 
-        for fits, output_fit, ang in zip(self, outputs, to_rotate):
+        for fits, output_fit, ang in zip(self.__verbosify(self), outputs, to_rotate):
 
             try:
                 rotated = fits.rotate(ang, output=output_fit)
@@ -999,7 +1038,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def crop(self, xs: Union[List[int], int], ys: Union[List[int], int],
              widths: Union[List[int], int], heights: Union[List[int], int],
@@ -1067,7 +1106,9 @@ class FitsArray(DataArray):
         fits_array = []
         outputs = Fixer.outputs(output, self)
 
-        for fits, output_fit, x, y, w, h in zip(self, outputs, to_x_crop, to_y_crop, to_w_crop, to_h_crop):
+        for fits, output_fit, x, y, w, h in zip(
+                self.__verbosify(self), outputs, to_x_crop, to_y_crop, to_w_crop, to_h_crop
+        ):
             try:
                 cropped = fits.crop(x, y, w, h, output_fit)
                 fits_array.append(cropped)
@@ -1076,7 +1117,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def bin(self, binning_factor: Union[int, List[int]], func: Callable[[Any], float] = np.mean,
             output: Optional[str] = None) -> Self:
@@ -1110,7 +1151,7 @@ class FitsArray(DataArray):
         fits_array = []
         outputs = Fixer.outputs(output, self)
 
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             try:
                 binned = fits.bin(binning_factor, func=func, output=output_fit)
                 fits_array.append(binned)
@@ -1119,7 +1160,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def align(self, reference: Union[Fits, int] = 0, output: Optional[str] = None,
               max_control_points: int = 50, min_area: int = 5) -> Self:
@@ -1163,7 +1204,7 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             try:
                 aligned = fits.align(the_reference, output_fit,
                                      max_control_points=max_control_points,
@@ -1173,7 +1214,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def solve_field(self, api_key: str, reference: Union[Fits, int] = 0,
                     solve_timeout: int = 120, force_image_upload: bool = False,
@@ -1243,7 +1284,7 @@ class FitsArray(DataArray):
         fits_array = []
         outputs = Fixer.outputs(output, self)
 
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             t, (source_list, target_list) = astroalign.find_transform(
                 source=fits.data(),
                 target=the_reference.data(),
@@ -1270,7 +1311,7 @@ class FitsArray(DataArray):
             except AttributeError as e:
                 self.logger.info(e)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def zero_correction(self, master_zero: Fits, output: Optional[str] = None,
                         force: bool = False) -> Self:
@@ -1295,7 +1336,7 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             try:
                 zero_corrected = fits.zero_correction(master_zero,
                                                       output=output_fit,
@@ -1306,7 +1347,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def dark_correction(self, master_dark: Fits, exposure: Optional[str] = None,
                         output: Optional[str] = None, force: bool = False) -> Self:
@@ -1334,7 +1375,7 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             try:
                 dark_corrected = fits.dark_correction(master_dark,
                                                       exposure=exposure,
@@ -1346,7 +1387,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def flat_correction(self, master_flat: Fits, output: Optional[str] = None,
                         force: bool = False) -> Self:
@@ -1371,7 +1412,7 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             try:
                 flat_corrected = fits.flat_correction(master_flat,
                                                       output=output_fit,
@@ -1382,7 +1423,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def ccdproc(self, master_zero: Optional[Fits] = None, master_dark: Optional[Fits] = None,
                 master_flat: Optional[Fits] = None, exposure: Optional[str] = None, output: Optional[str] = None,
@@ -1417,7 +1458,7 @@ class FitsArray(DataArray):
 
         fits_array = []
         outputs = Fixer.outputs(output, self)
-        for fits, output_fit in zip(self, outputs):
+        for fits, output_fit in zip(self.__verbosify(self), outputs):
             try:
                 ccd_corrected = fits.ccdproc(
                     master_zero=master_zero, master_dark=master_dark, master_flat=master_flat,
@@ -1429,7 +1470,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(fits_array)
+        return self.__class__(fits_array, logger=self.logger, verbose=self.verbose)
 
     def background(self) -> List[Background]:
         """
@@ -1437,12 +1478,12 @@ class FitsArray(DataArray):
         """
         self.logger.info("Getting background")
 
-        data = []
+        bkg = []
 
-        for fits in self:
-            data.append(fits.background())
+        for fits in self.__verbosify(self):
+            bkg.append(fits.background())
 
-        return data
+        return bkg
 
     def daofind(self, index: int = 0, sigma: float = 3.0, fwhm: float = 3.0,
                 threshold: float = 5.0) -> pd.DataFrame:
@@ -1498,9 +1539,7 @@ class FitsArray(DataArray):
         """
         self.logger.info("Extracting sources (sep_extract) from images")
 
-        return self[index].extract(
-            detection_sigma=detection_sigma, min_area=min_area
-        )
+        return self[index].extract(detection_sigma=detection_sigma, min_area=min_area)
 
     def photometry_sep(self, xs: NUMERICS, ys: NUMERICS, rs: NUMERICS,
                        headers: Optional[Union[str, list[str]]] = None,
@@ -1535,10 +1574,9 @@ class FitsArray(DataArray):
         self.logger.info("Doing photometry (sep) on the image")
 
         photometry = []
-        for fits in self:
+        for fits in self.__verbosify(self):
             try:
-                phot = fits.photometry_sep(xs, ys, rs, headers=headers,
-                                           exposure=exposure)
+                phot = fits.photometry_sep(xs, ys, rs, headers=headers, exposure=exposure)
                 photometry.append(phot)
             except NumberOfElementError:
                 self.logger.error("The length of Xs and Ys must be equal")
@@ -1584,10 +1622,9 @@ class FitsArray(DataArray):
         self.logger.info("Doing photometry (photutils) on the image")
 
         photometry = []
-        for fits in self:
+        for fits in self.__verbosify(self):
             try:
-                phot = fits.photometry_phu(xs, ys, rs, headers=headers,
-                                           exposure=exposure)
+                phot = fits.photometry_phu(xs, ys, rs, headers=headers, exposure=exposure)
                 photometry.append(phot)
             except NumberOfElementError:
                 self.logger.error("The length of Xs and Ys must be equal")
@@ -1631,10 +1668,9 @@ class FitsArray(DataArray):
             when `x` and `y` coordinates does not have the same length
         """
         photometry = []
-        for fits in self:
+        for fits in self.__verbosify(self):
             try:
-                phot = fits.photometry(xs, ys, rs, headers=headers,
-                                       exposure=exposure)
+                phot = fits.photometry(xs, ys, rs, headers=headers, exposure=exposure)
                 photometry.append(phot)
             except Exception as error:
                 self.logger.error(error)
@@ -1757,7 +1793,7 @@ class FitsArray(DataArray):
 
         outputs = Fixer.outputs(output, self)
         clean_fits_array = []
-        for fits, out_fit in zip(self, outputs):
+        for fits, out_fit in zip(self.__verbosify(self), outputs):
             try:
                 clean_fits = fits.cosmic_clean(
                     out_fit,
@@ -1773,7 +1809,7 @@ class FitsArray(DataArray):
             except Exception as error:
                 self.logger.error(error)
 
-        return self.__class__(clean_fits_array)
+        return self.__class__(clean_fits_array, logger=self.logger, verbose=self.verbose)
 
     def show(self, scale: bool = True, interval: float = 1.0) -> None:
         """
@@ -1844,7 +1880,7 @@ class FitsArray(DataArray):
 
         grouped = {}
         for keys, df in headers.fillna("N/A").groupby(groups, dropna=False):
-            grouped[keys] = self.__class__.from_paths(df.index.tolist())
+            grouped[keys] = self.__class__.from_paths(df.index.tolist(), logger=self.logger, verbose=self.verbose)
 
         return grouped
 
@@ -2045,7 +2081,7 @@ class FitsArray(DataArray):
             raise ValueError("xs and ys must be equal in length")
 
         skys = []
-        for each in self:
+        for each in self.__verbosify(self):
             try:
                 skys.append(each.pixels_to_skys(xs_to_use, ys_to_use))
             except ValueError as error:
@@ -2082,7 +2118,7 @@ class FitsArray(DataArray):
 
         pixels = []
 
-        for each in self:
+        for each in self.__verbosify(self):
             try:
                 pixels.append(each.skys_to_pixels(skys))
             except Unsolvable as error:
@@ -2114,7 +2150,7 @@ class FitsArray(DataArray):
 
         """
         data = []
-        for fits in self:
+        for fits in self.__verbosify(self):
             try:
                 value = fits.map_to_sky()
                 for each in value[["name", "sky", "xcentroid", "ycentroid"]].values.tolist():
@@ -2122,7 +2158,4 @@ class FitsArray(DataArray):
             except Exception as e:
                 self.logger.warning(e)
 
-        return pd.DataFrame(
-            data,
-            columns=["image", "name", "sky", "xcentroid", "ycentroid"]
-        ).set_index("image")
+        return pd.DataFrame(data, columns=["image", "name", "sky", "xcentroid", "ycentroid"]).set_index("image")
