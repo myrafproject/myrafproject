@@ -208,6 +208,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if files:
             self.gui_functions.add_to_files(files, self.treeWidget)
 
+    def import_video(self):
+        file = self.gui_functions.get_file(
+            "Import a Video",
+            file_type="Video Files (*.mp4 *.avi *.mov *.flv *.wmv *.mpeg *.mpg *.m4v)"
+        )
+        if file:
+            fits_array = FitsArray.from_video(file)
+            files = []
+            for fits in fits_array:
+                fits.is_temp = False
+                files.append(fits.file.absolute().__str__())
+            self.gui_functions.add_to_files(files, self.treeWidget)
+
+
     def remove_files(self):
         self.gui_functions.remove_from_files(self.treeWidget)
 
@@ -322,7 +336,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 ))
             except Exception as e:
                 self.logger.warning(str(e))
-                self.parent.gui_functions.toast(str(e))
+                self.gui_functions.toast(str(e))
 
     def arithmetic(self):
         selected_files = self.gui_functions.get_selected_files(self.treeWidget)
@@ -572,6 +586,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             menu_file = QtWidgets.QMenu("File")
             menu_file.addAction('Add', lambda: (self.add_files()))
+            menu_file.addAction('Import Video', lambda: (self.import_video()))
 
             remove = menu_file.addAction('Remove', lambda: (self.remove_files()))
             if len(selected) < 1:
