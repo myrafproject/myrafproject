@@ -1,5 +1,5 @@
 # map2sky
-`map2sky` prints sources in the field of view available on Sİmbad
+`map2sky` prints sources in the field of view available on Simbad
 
 usage: im map2sky [-h] file
 
