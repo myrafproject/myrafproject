@@ -9,6 +9,7 @@ setup(
     entry_points={
         'console_scripts': [
             'myraf = myraf_gui:main',
+            'im = commands:main',
         ],
     },
     install_requires=[
