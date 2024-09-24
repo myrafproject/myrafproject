@@ -55,7 +55,7 @@ def imbin(files, x, y, output):
         raise ValueError("Output directory must be an existing directory")
 
     fits_array = FitsArray.from_pattern(files, verbose=True)
-    fits_array.bin(x, y, output=output)
+    fits_array.bin([x, y], output=output)
 
 
 def imcrop(files, x, y, w, h, output):
@@ -93,6 +93,7 @@ def imclean(files, output, sigclip, sigfrac, objlim, gain, readnoise, satlevel, 
         raise ValueError("Output directory must be an existing directory")
 
     fits_array = FitsArray.from_pattern(files, verbose=True)
+
     fits_array.cosmic_clean(
         output=output, sigclip=sigclip, sigfrac=sigfrac, objlim=objlim, gain=gain, readnoise=readnoise,
         satlevel=satlevel, niter=niter, sepmed=sepmed, cleantype=cleantype, fsmode=fsmode, psfmodel=psfmodel,
@@ -118,6 +119,7 @@ def imalign(files, other, output, max_control_points, min_area):
             raise ValueError("Other must be either a path or a number")
 
     fits_array = FitsArray.from_pattern(files, verbose=True)
+
     fits_array.align(reference, max_control_points=max_control_points, min_area=min_area, output=output)
 
 
@@ -233,7 +235,7 @@ def main():
                             'and pixels at or above this level are added to the mask.')
     clean.add_argument('--niter', type=int, default=4,
                        help='Number of iterations of the LA Cosmic algorithm to perform.')
-    clean.add_argument('--sepmed', action='store_true',
+    clean.add_argument('--sepmed', action='store_true', default=True,
                        help='Use the separable median filter instead of the full median filter. The separable median '
                             'is not identical to the full median filter, but they are approximately the same, the '
                             'separable median filter is significantly faster, and still detects cosmic rays well. '
@@ -251,14 +253,14 @@ def main():
                             'The current choices are Gaussian and Moffat profiles. "gauss" and "moffat" produce '
                             'circular PSF kernels. The "gaussx" and "gaussy" produce Gaussian kernels in the x '
                             'and y directions respectively.')
-    clean.add_argument('--psffwhm', type=str, default='median',
-                       help='Full Width Half Maximum of the PSF to use to generate the kernel. ')
+    clean.add_argument('--psffwhm', type=float, default=2.5,
+                       help='Full Width Half Maximum of the PSF to use to generate the kernel.')
     clean.add_argument('--psfsize', type=int, default=7,
                        help='ize of the kernel to calculate. Returned kernel will have size psfsize x psfsize. '
                             'psfsize should be odd.')
     clean.add_argument('--psfbeta', type=float, default=4.765,
                        help='Moffat beta parameter. Only used if fsmode=="convolve" and psfmodel=="moffat"')
-    clean.add_argument('--gain_apply', action='store_true',
+    clean.add_argument('--gain_apply', action='store_true', default=True,
                        help='If True, return gain-corrected data, with correct units, otherwise do not '
                             'gain-correct the data.')
 
@@ -270,7 +272,7 @@ def main():
     align.add_argument('other', help='Fits or index of the reference')
     align.add_argument('output', type=str, help='Output directory')
     align.add_argument('--max-control-points', type=int, help='Maximum number of control points',
-                       default=5)
+                       default=50)
     align.add_argument('--min-area', type=int, help='Minimum area', default=5)
 
     p2s = subparsers.add_parser('p2s', help='Pixel to Sky')

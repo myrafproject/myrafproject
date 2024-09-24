@@ -1094,7 +1094,6 @@ class Fits(Data):
         try:
             self.logger.info("Solving field")
             ast = AstrometryNet()
-            print(api_key)
             ast.api_key = api_key
             wcs_header = ast.solve_from_image(abs(self), force_image_upload=force_image_upload)
             return self.__class__.from_data_header(self.data(), header=wcs_header, output=output, override=override)
