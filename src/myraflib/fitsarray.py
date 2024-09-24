@@ -2133,11 +2133,6 @@ class FitsArray(DataArray):
         """
         Returns sources on the image from Simbad
 
-        Parameters
-        ----------
-        reference: int, default=0
-            index of the Fits in the FitsArray
-
         Returns
         -------
         pd.DataFrame

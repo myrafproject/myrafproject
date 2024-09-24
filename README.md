@@ -84,6 +84,7 @@ Both has almost the same features. Let's explore:
     - [Source Extraction](example/fits_array/source_extraction.ipynb)
     - [Photometry](example/fits_array/photometry.ipynb)
     - [Other](example/fits_array/other.ipynb)
+- [Command Line Tools](example/command_line/im.md)
 
 ## MYRaf Telegram
 
