@@ -34,13 +34,14 @@ Requires-Dist: scipy
 Requires-Dist: ginga
 Requires-Dist: PyQt5
 Requires-Dist: pyqtdarktheme
+Requires-Dist: tdqm
 Requires-Dist: tox
+Requires-Dist: argcomplete
 Provides-Extra: testing
 Requires-Dist: pytest; extra == "testing"
 Requires-Dist: pytest-cov; extra == "testing"
 Requires-Dist: mypy; extra == "testing"
 Requires-Dist: flake8; extra == "testing"
-Requires-Dist: tdqm; extra == "testing"
 
 ![myraf](https://github.com/myrafproject/myrafproject/actions/workflows/python-package.yml/badge.svg)
 ![myraf](https://img.shields.io/badge/coverage-77%25-31c553)
@@ -128,6 +129,7 @@ Both has almost the same features. Let's explore:
     - [Source Extraction](example/fits_array/source_extraction.ipynb)
     - [Photometry](example/fits_array/photometry.ipynb)
     - [Other](example/fits_array/other.ipynb)
+- [Command Line Tools](example/command_line/im.md)
 
 ## MYRaf Telegram
 

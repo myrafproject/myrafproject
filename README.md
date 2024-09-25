@@ -29,6 +29,10 @@ run MYRaf v3 with DEBUG mode and share the outputs with us with the command belo
 Clear skies!
 
 GNOME users might get an error. See: https://stackoverflow.com/a/71402854/2681662
+OpenSuse users might get `ImportError: libgthread-2.0.so.0: cannot open shared object file: No such file or directory`. 
+```bash
+sudo zypper install glib2 glib2-devel python311-devel # If you're using python3.11
+```
 ______
 
 **MYRaf Project Team**
