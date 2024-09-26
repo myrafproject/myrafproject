@@ -32,4 +32,3 @@ For further information, including source code, please visit the project's homep
    example
    gui
    cli
-   modules
