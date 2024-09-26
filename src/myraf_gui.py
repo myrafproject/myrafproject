@@ -156,8 +156,10 @@ def database_dir():
         settings_dir = home_dir / "AppData" / "Local" / "MYRaf"
     elif platform.system() == "Darwin":
         settings_dir = home_dir / "Library" / "Application Support" / "MYRaf"
-    else:
+    elif platform.system() == "Linux":
         settings_dir = home_dir / ".config" / "MYRaf"
+    else:
+        settings_dir = home_dir / "MYRaf"
 
     if not settings_dir.exists():
         settings_dir.mkdir()
@@ -220,7 +222,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 fits.is_temp = False
                 files.append(fits.file.absolute().__str__())
             self.gui_functions.add_to_files(files, self.treeWidget)
-
 
     def remove_files(self):
         self.gui_functions.remove_from_files(self.treeWidget)
