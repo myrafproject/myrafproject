@@ -4,3 +4,16 @@ sphinx-astropy
 sphinx-astropy[confv2]
 sphinxcontrib-napoleon
 numpydoc
+sphinx-automodapi
+sphinx-basic-ng
+sphinx-copybutton
+sphinx-gallery
+sphinx-rtd-theme
+sphinxcontrib-applehelp
+sphinxcontrib-devhelp
+sphinxcontrib-htmlhelp
+sphinxcontrib-jquery
+sphinxcontrib-jsmath
+sphinxcontrib-qthelp
+sphinxcontrib-qthelp
+sphinxcontrib-serializinghtml
