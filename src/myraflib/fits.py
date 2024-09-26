@@ -189,7 +189,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             a `Fits` object.
 
         Raises
@@ -216,7 +216,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             a `Fits` object.
 
         Raises
@@ -248,7 +248,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             a `Fits` object.
 
         Raises
@@ -277,7 +277,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             a `Fits` object.
         """
         file = str(Path(__file__).parent / "sample.fits")
@@ -528,7 +528,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             Cleaned fits
         """
         self.logger.info("Cleaning the data")
@@ -569,8 +569,8 @@ class Fits(Data):
 
         Returns
         -------
-        Self
-            The `Fits` object
+        Fits
+            The same `Fits` object
         """
         self.logger.info("Editing header")
         if delete:
@@ -622,7 +622,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -658,7 +658,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -705,7 +705,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -752,7 +752,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -799,7 +799,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -846,7 +846,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -896,7 +896,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             New `Fits` object of saved fits file.
 
         Raises
@@ -949,7 +949,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             `Fits` object of aligned image.
         """
         self.logger.info("Aligning the image")
@@ -1083,8 +1083,8 @@ class Fits(Data):
 
         Returns
         -------
-        Self
-            `Fits` object of aligned image.
+        Fits
+            `Fits` object of field solved image.
 
         Raises
         ------
@@ -1119,7 +1119,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             Zero corrected `Fits` object
 
         Raises
@@ -1163,7 +1163,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             Dark corrected `Fits` object
 
         Raises
@@ -1224,7 +1224,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             Flat corrected `Fits` object
 
         Raises
@@ -1273,7 +1273,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             ccd corrected `Fits` object
         """
         self.logger.info("Making ccd correction on the image")
@@ -1324,6 +1324,11 @@ class Fits(Data):
     def background(self) -> Background:
         """
         Returns a `Background` object of the fits file.
+
+        Returns
+        -------
+        Background
+            background object of `Fits`
         """
         self.logger.info("Getting background")
 
@@ -1672,7 +1677,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             shifted `Fits` object
         """
         self.logger.info("Shifting the image")
@@ -1725,7 +1730,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             rotated `Fits` object
         """
         self.logger.info("Rotating the image")
@@ -1787,7 +1792,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             cropped `Fits` object
 
         Raises
@@ -1834,7 +1839,7 @@ class Fits(Data):
 
         Returns
         -------
-        Self
+        Fits
             binned `Fits` object
 
         Raises

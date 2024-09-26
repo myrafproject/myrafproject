@@ -171,8 +171,8 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
-            a `Fits` object.
+        FitsArray
+            a `FitsArray` object.
 
         Raises
         ------
@@ -291,7 +291,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             a `FitsArray` object.
         """
         fits_objects = []
@@ -436,7 +436,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        CDDData
+        List[CDDData]
             the list of CCDData of the files
         """
         self.logger.info("Getting CCDData")
@@ -497,6 +497,11 @@ class FitsArray(DataArray):
         value_is_key: bool, optional
             Adds value of the key given in values if True. Would be ignored if
             delete is True.
+
+        Returns
+        -------
+        FitsArray
+            the same `FitsArray` object.
         """
         self.logger.info("Editing header")
 
@@ -546,7 +551,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             New `FitsArray` object of saved `FitsArray`.
 
         Raises
@@ -662,7 +667,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Fits
+        FitsArray
             New `FitsArray` object of saved fits files.
 
         Raises
@@ -713,7 +718,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Fits
+        FitsArray
             New `FitsArray` object of saved fits files.
 
         Raises
@@ -764,7 +769,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Fits
+        FitsArray
             New `FitsArray` object of saved fits files.
 
         Raises
@@ -815,7 +820,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Fits
+        FitsArray
             New `FitsArray` object of saved fits files.
 
         Raises
@@ -866,7 +871,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Fits
+        FitsArray
             New `FitsArray` object of saved fits files.
 
         Raises
@@ -919,7 +924,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Fits
+        FitsArray
             New `FitsArray` object of saved fits files.
 
         Raises
@@ -958,7 +963,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             shifted `FitsArray` object
         """
         self.logger.info("Shifting all images")
@@ -1010,7 +1015,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             rotated `FitsArray` object
         """
         self.logger.info("Rotating all images")
@@ -1061,7 +1066,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             shifted `FitsArray` object
         """
 
@@ -1135,7 +1140,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             binned `FitsArray` object
 
         Raises
@@ -1184,7 +1189,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             `FitsArray` object of aligned images.
         """
         self.logger.info("Aligning all images")
@@ -1252,8 +1257,8 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
-            `Fits` object of aligned image.
+        FitsArray
+            `Fits` object of plate solved image.
 
         Raises
         ------
@@ -1329,7 +1334,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             Zero corrected `FitsArray` object
         """
         self.logger.info("Making zero correction on the image")
@@ -1367,7 +1372,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             Dark corrected `FitsArray` object
 
         """
@@ -1405,7 +1410,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             Flat corrected `FitsArray` object
         """
         self.logger.info("Making flat correction on the image")
@@ -1448,7 +1453,7 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
+        FitsArray
             ccd corrected `FitsArray` object
         """
         self.logger.info("Making ccd correction on the image")
@@ -1475,6 +1480,11 @@ class FitsArray(DataArray):
     def background(self) -> List[Background]:
         """
         Returns a list of `Background` objects of the fits files.
+
+        Returns
+        -------
+        List[Background]
+            Lis of Background objects
         """
         self.logger.info("Getting background")
 
@@ -1786,8 +1796,8 @@ class FitsArray(DataArray):
 
         Returns
         -------
-        Self
-            Cleaned fits files
+        FitsArray
+            Cleaned `FitsArray`
         """
         self.logger.info("Cleaning the data")
 
