@@ -21,7 +21,6 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx.ext.mathjax',
     'numpydoc',
 ]
 
@@ -63,3 +62,4 @@ html_theme_options = {
 #
 html_title = "MYRaf V0.0.2B Documentation"
 html_favicon = '_static/myraf.png'
+autosummary_generate = True
