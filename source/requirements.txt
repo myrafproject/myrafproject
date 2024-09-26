@@ -1,0 +1,6 @@
+sphinx
+furo
+sphinx-astropy
+sphinx-astropy[confv2]
+sphinxcontrib-napoleon
+numpydoc
