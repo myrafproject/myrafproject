@@ -294,7 +294,7 @@
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved fits files.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="fits.html#myraflib.fits.Fits" title="myraflib.fits.Fits">Fits</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the length of other is wrong</p>
@@ -325,7 +325,7 @@ find the transformation. [1]</p></li>
 <dd class="field-even"><p><cite>FitsArray</cite> object of aligned images.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -345,6 +345,14 @@ find the transformation. [1]</p></li>
 <dt class="sig sig-object py" id="myraflib.fitsarray.FitsArray.background">
 <span class="sig-name descname"><span class="pre">background</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Background</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#myraflib.fitsarray.FitsArray.background" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a list of <cite>Background</cite> objects of the fits files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Lis of Background objects</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Background]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -363,7 +371,7 @@ find the transformation. [1]</p></li>
 <dd class="field-even"><p>binned <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -383,7 +391,7 @@ find the transformation. [1]</p></li>
 <dd class="field-odd"><p>the list of CCDData of the files</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>CDDData</p>
+<dd class="field-even"><p>List[CDDData]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -407,7 +415,7 @@ find the transformation. [1]</p></li>
 <dd class="field-even"><p>ccd corrected <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -522,10 +530,10 @@ Default is True to preserve backwards compatibility. see [1]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Cleaned fits files</p>
+<dd class="field-even"><p>Cleaned <cite>FitsArray</cite></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -548,7 +556,7 @@ Default is True to preserve backwards compatibility. see [1]</p></li>
 <dd class="field-even"><p>shifted <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -628,7 +636,7 @@ Gaussian kernel in units of pixels. [2]</p></li>
 <dd class="field-even"><p>Dark corrected <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -679,7 +687,7 @@ Gaussian kernel in units of pixels. [2]</p></li>
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved fits files.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="fits.html#myraflib.fits.Fits" title="myraflib.fits.Fits">Fits</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the length of other is wrong</p>
@@ -759,7 +767,7 @@ Gaussian kernel in units of pixels. [2]</p></li>
 <dd class="field-even"><p>Flat corrected <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -826,10 +834,10 @@ Gaussian kernel in units of pixels. [2]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a <cite>Fits</cite> object.</p>
+<dd class="field-even"><p>a <cite>FitsArray</cite> object.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>FileNotFoundError</strong> – when the file does not exist</p>
@@ -885,6 +893,12 @@ Would be ignored if delete is True.</p></li>
 delete is True.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the same <cite>FitsArray</cite> object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -938,7 +952,7 @@ delete is True.</p></li>
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved fits files.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="fits.html#myraflib.fits.Fits" title="myraflib.fits.Fits">Fits</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the length of other is wrong</p>
@@ -1029,7 +1043,7 @@ delete is True.</p></li>
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved fits files.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="fits.html#myraflib.fits.Fits" title="myraflib.fits.Fits">Fits</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the length of other is wrong</p>
@@ -1173,7 +1187,7 @@ delete is True.</p></li>
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved fits files.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="fits.html#myraflib.fits.Fits" title="myraflib.fits.Fits">Fits</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the length of other is wrong</p>
@@ -1210,7 +1224,7 @@ delete is True.</p></li>
 <dd class="field-even"><p>rotated <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1232,7 +1246,7 @@ see: <a class="reference external" href="https://www.astropy.org/astropy-data/tu
 <dd class="field-even"><p>a <cite>FitsArray</cite> object.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1249,7 +1263,7 @@ see: <a class="reference external" href="https://www.astropy.org/astropy-data/tu
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved <cite>FitsArray</cite>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the number of fits files is 0</p>
@@ -1273,7 +1287,7 @@ see: <a class="reference external" href="https://www.astropy.org/astropy-data/tu
 <dd class="field-even"><p>shifted <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1343,10 +1357,10 @@ find the transformation. [2]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><cite>Fits</cite> object of aligned image.</p>
+<dd class="field-even"><p><cite>Fits</cite> object of plate solved image.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>Unsolvable</strong> – when the reference data is unsolvable or timeout</p>
@@ -1386,7 +1400,7 @@ find the transformation. [2]</p></li>
 <dd class="field-even"><p>New <cite>FitsArray</cite> object of saved fits files.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="fits.html#myraflib.fits.Fits" title="myraflib.fits.Fits">Fits</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>NumberOfElementError</strong> – when the length of other is wrong</p>
@@ -1458,7 +1472,7 @@ find the transformation. [2]</p></li>
 <dd class="field-even"><p>Zero corrected <cite>FitsArray</cite> object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Self</p>
+<dd class="field-odd"><p><a class="reference internal" href="#myraflib.fitsarray.FitsArray" title="myraflib.fitsarray.FitsArray">FitsArray</a></p>
 </dd>
 </dl>
 </dd></dl>
