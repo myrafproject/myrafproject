@@ -17,3 +17,4 @@ sphinxcontrib-jsmath
 sphinxcontrib-qthelp
 sphinxcontrib-qthelp
 sphinxcontrib-serializinghtml
+sphinx-typo3-theme

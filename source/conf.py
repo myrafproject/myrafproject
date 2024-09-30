@@ -17,6 +17,7 @@ release = '0.0.2 Beta'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx_typo3_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
@@ -41,11 +42,6 @@ html_theme_options = {
     "source_repository": "https://github.com/myrafproject/myrafproject",
     "source_branch": "main",
     "source_directory": "source/",
-}
-
-pygments_style = "sphinx"
-pygments_dark_style = "monokai"
-html_theme_options = {
     "footer_icons": [
         {
             "name": "GitHub",
@@ -59,7 +55,11 @@ html_theme_options = {
         },
     ],
 }
-#
+
+pygments_style = "sphinx"
+pygments_dark_style = "monokai"
+# html_theme = 'sphinx_typo3_theme'
+
 html_title = "MYRaf V0.0.2B Documentation"
 html_favicon = '_static/myraf.png'
 autosummary_generate = True

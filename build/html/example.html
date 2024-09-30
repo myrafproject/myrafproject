@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="GUI" href="gui.html" /><link rel="prev" title="Understanding" href="understanding.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="8. GUI" href="gui.html" /><link rel="prev" title="6.15. map2sky" href="cli/cli_map2sky.html" />
 
     <link rel="shortcut icon" href="_static/myraf.png"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>Examples - MYRaf V0.0.2B Documentation</title>
+        <title>7. Examples - MYRaf V0.0.2B Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
@@ -203,12 +203,123 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="motivation.html">Motivation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="understanding.html">Understanding</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motivation.html">2. Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="understanding.html">3. Understanding</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="fits/fits.html">4. Fits</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of 4. Fits</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_from_image.html">4.1. from_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_from_path.html">4.2. from_path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_from_data_header.html">4.3. from_data_header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_sample.html">4.4. sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_save_as.html">4.5. save_as</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_header.html">4.6. header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_pure_header.html">4.7. pure_header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_hedit.html">4.8. hedit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_add.html">4.9. add</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_sub.html">4.10. sub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_mul.html">4.11. mul</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_div.html">4.12. div</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_pow.html">4.13. pow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_imarith.html">4.14. imarith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_data.html">4.15. data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_value.html">4.16. value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_ccd.html">4.17. ccd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_imstat.html">4.18. imstat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_cosmic_clean.html">4.19. cosmic_clean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_align.html">4.20. align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_show.html">4.21. show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_shift.html">4.22. fits_shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_rotate.html">4.23. fits_rotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_crop.html">4.24. fits_crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_bin.html">4.25. fits_bin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_zero_correction.html">4.26. zero_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_dark_correction.html">4.27. dark_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_flat_correction.html">4.28. flat_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_ccdproc.html">4.29. ccdproc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_background.html">4.30. background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_coordinate_picker.html">4.31. coordinate_picker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_pixels_to_skys.html">4.32. pixels_to_skys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_skys_to_pixels.html">4.33. skys_to_pixels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_map_to_sky.html">4.34. map_to_sky</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_daofind.html">4.35. daofind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_extract.html">4.36. extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_photometry_sep.html">4.37. photometry_sep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_photometry_phu.html">4.38. photometry_phu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_photometry.html">4.39. photometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fits/fits_solve_field.html">4.40. solve_field</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="fitsarray/fitsarray.html">5. FitsArray</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of 5. FitsArray</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_from_video.html">5.1. from_video</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_from_paths.html">5.2. from_paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_from_pattern.html">5.3. from_pattern</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_sample.html">5.4. sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_files.html">5.5. files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_save_as.html">5.6. save_as</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_header.html">5.7. header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_pure_header.html">5.8. pure_header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_hedit.html">5.9. hedit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_merge.html">5.10. merge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_append.html">5.11. append</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_add.html">5.12. add</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_sub.html">5.13. sub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_mul.html">5.14. mul</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_div.html">5.15. div</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_pow.html">5.16. pow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_imarith.html">5.17. imarith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_data.html">5.18. data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_value.html">5.19. value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_ccd.html">5.20. ccd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_imstat.html">5.21. imstat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_hselect.html">5.22. hselect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_shift.html">5.23. shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_rotate.html">5.24. rotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_crop.html">5.25. crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_bin.html">5.26. bin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_align.html">5.27. align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_zero_correction.html">5.28. zero_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_dark_correction.html">5.29. dark_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_flat_correction.html">5.30. flat_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_ccdproc.html">5.31. ccdproc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_background.html">5.32. background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_photometry_sep.html">5.33. photometry_sep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_photometry_phu.html">5.34. photometry_phu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_photometry.html">5.35. photometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_cosmic_clean.html">5.36. cosmic_clean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_show.html">5.37. show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_combine.html">5.38. combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_zero_combine.html">5.39. zero_combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_dark_combine.html">5.40. dark_combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_flat_combine.html">5.41. flat_combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_pixels_to_skys.html">5.42. pixels_to_skys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_skys_to_pixels.html">5.43. skys_to_pixels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_map_to_sky.html">5.44. map_to_sky</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_daofind.html">5.45. daofind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_extract.html">5.46. extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_solve_field.html">5.47. solve_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitsarray/fitsarray_group_by.html">5.48. group_by</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="cli/cli.html">6. CLI</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of 6. CLI</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_header.html">6.1. header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_hedit.html">6.2. hedit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_arith.html">6.3. arith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_value.html">6.4. value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_stat.html">6.5. stat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_bin.html">6.6. bin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_crop.html">6.7. crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_rotate.html">6.8. rotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_shift.html">6.9. shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_clean.html">6.10. clean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_show.html">6.11. show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_align.html">6.12. align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_p2s.html">6.13. p2s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_s2p.html">6.14. s2p</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/cli_map2sky.html">6.15. map2sky</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">7. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">8. GUI</a></li>
 </ul>
 
 </div>
@@ -229,12 +340,16 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="_sources/example.rst.txt" title="View this page">
+  <a class="muted-link" href="https://github.com/myrafproject/myrafproject/blob/main/source/example.rst?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
-</div>
-<div class="theme-toggle-container theme-toggle-content">
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/myrafproject/myrafproject/edit/main/source/example.rst" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
@@ -250,10 +365,10 @@
         </div>
         <article role="main" id="furo-main-content">
           <section id="examples">
-<span id="example"></span><h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
+<span id="example"></span><h1><span class="section-number">7. </span>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
 <p>Here, we present some examples illustrating the functionalities of both the <code class="docutils literal notranslate"><span class="pre">Fits</span></code> and <code class="docutils literal notranslate"><span class="pre">FitsArray</span></code> classes.</p>
 <section id="fits">
-<h2>Fits<a class="headerlink" href="#fits" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">7.1. </span>Fits<a class="headerlink" href="#fits" title="Link to this heading">¶</a></h2>
 <p>In this example, we demonstrate the process of updating the header of a FITS file and retrieving a list of coordinates of sources from the data.</p>
 <div class="literal-block-wrapper docutils container" id="lst-fits-code">
 <div class="code-block-caption"><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">Fits</span></code> updates header and finds sources on data of a FITS file.</span><a class="headerlink" href="#lst-fits-code" title="Link to this code">¶</a></div>
@@ -296,7 +411,7 @@
 </div>
 </section>
 <section id="fitsarray">
-<h2>FitsArray<a class="headerlink" href="#fitsarray" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">7.2. </span>FitsArray<a class="headerlink" href="#fitsarray" title="Link to this heading">¶</a></h2>
 <p>As mentioned before, <code class="docutils literal notranslate"><span class="pre">FitsArray</span></code> can perform operations on multiple FITS files. Below is an example where we update the header and align multiple FITS files.</p>
 <div class="literal-block-wrapper docutils container" id="lst-fits-array-code">
 <div class="code-block-caption"><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">FitsArray</span></code> updates header and aligns multiple FITS files.</span><a class="headerlink" href="#lst-fits-array-code" title="Link to this code">¶</a></div>
@@ -349,11 +464,11 @@
 <p>The code demonstrating how to perform operations without <code class="docutils literal notranslate"><span class="pre">MYRaf</span></code> essentially reflects the processes that <code class="docutils literal notranslate"><span class="pre">MYRaf</span></code> executes internally. <code class="docutils literal notranslate"><span class="pre">MYRaf</span></code> simplifies these operations by making them more human-readable and writable, while maintaining the same underlying functionality.</p>
 </section>
 <section id="video">
-<h2>Video<a class="headerlink" href="#video" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">7.3. </span>Video<a class="headerlink" href="#video" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">FitsArray</span></code> class extends its functionality to support the importation of video files. By utilizing the <code class="docutils literal notranslate"><span class="pre">FitsArray.from_video</span></code> class method, users can decompose a video into individual frames, with each frame being assigned corresponding time and exposure metadata in the FITS header. This feature has demonstrated significant utility, particularly in the context of occultation observations.</p>
 </section>
 <section id="photometry">
-<h2>Photometry<a class="headerlink" href="#photometry" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">7.4. </span>Photometry<a class="headerlink" href="#photometry" title="Link to this heading">¶</a></h2>
 <p>In theory, the following example is capable of performing both calibration and photometry on a given list of FITS files, even when the calibration data and image data are not stored separately.</p>
 <div class="literal-block-wrapper docutils container" id="lst-fits-array-photometry">
 <div class="code-block-caption"><span class="caption-text">Photometry With <code class="docutils literal notranslate"><span class="pre">MYRaf</span></code>.</span><a class="headerlink" href="#lst-fits-array-photometry" title="Link to this code">¶</a></div>
@@ -415,18 +530,18 @@
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">GUI</div>
+                <div class="title"><span class="section-number">8. </span>GUI</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="understanding.html">
+          <a class="prev-page" href="cli/cli_map2sky.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Understanding</div>
+                <div class="title"><span class="section-number">6.15. </span>map2sky</div>
                 
               </div>
             </a>
@@ -467,11 +582,11 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Examples</a><ul>
-<li><a class="reference internal" href="#fits">Fits</a></li>
-<li><a class="reference internal" href="#fitsarray">FitsArray</a></li>
-<li><a class="reference internal" href="#video">Video</a></li>
-<li><a class="reference internal" href="#photometry">Photometry</a></li>
+<li><a class="reference internal" href="#">7. Examples</a><ul>
+<li><a class="reference internal" href="#fits">7.1. Fits</a></li>
+<li><a class="reference internal" href="#fitsarray">7.2. FitsArray</a></li>
+<li><a class="reference internal" href="#video">7.3. Video</a></li>
+<li><a class="reference internal" href="#photometry">7.4. Photometry</a></li>
 </ul>
 </li>
 </ul>
@@ -483,7 +598,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=5d789ec0"></script>
+</div><script src="_static/documentation_options.js?v=00008ec3"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>

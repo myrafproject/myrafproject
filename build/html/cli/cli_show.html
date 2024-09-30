@@ -1,0 +1,477 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="6.12. align" href="cli_align.html" /><link rel="prev" title="6.10. clean" href="cli_clean.html" />
+
+    <link rel="shortcut icon" href="../_static/myraf.png"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
+        <title>6.11. show - MYRaf V0.0.2B Documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MYRaf V0.0.2B Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/myraf.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MYRaf V0.0.2B Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../motivation.html">2. Motivation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../understanding.html">3. Understanding</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../fits/fits.html">4. Fits</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of 4. Fits</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_from_image.html">4.1. from_image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_from_path.html">4.2. from_path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_from_data_header.html">4.3. from_data_header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_sample.html">4.4. sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_save_as.html">4.5. save_as</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_header.html">4.6. header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_pure_header.html">4.7. pure_header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_hedit.html">4.8. hedit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_add.html">4.9. add</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_sub.html">4.10. sub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_mul.html">4.11. mul</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_div.html">4.12. div</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_pow.html">4.13. pow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_imarith.html">4.14. imarith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_data.html">4.15. data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_value.html">4.16. value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_ccd.html">4.17. ccd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_imstat.html">4.18. imstat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_cosmic_clean.html">4.19. cosmic_clean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_align.html">4.20. align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_show.html">4.21. show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_shift.html">4.22. fits_shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_rotate.html">4.23. fits_rotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_crop.html">4.24. fits_crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_bin.html">4.25. fits_bin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_zero_correction.html">4.26. zero_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_dark_correction.html">4.27. dark_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_flat_correction.html">4.28. flat_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_ccdproc.html">4.29. ccdproc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_background.html">4.30. background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_coordinate_picker.html">4.31. coordinate_picker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_pixels_to_skys.html">4.32. pixels_to_skys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_skys_to_pixels.html">4.33. skys_to_pixels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_map_to_sky.html">4.34. map_to_sky</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_daofind.html">4.35. daofind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_extract.html">4.36. extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_photometry_sep.html">4.37. photometry_sep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_photometry_phu.html">4.38. photometry_phu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_photometry.html">4.39. photometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fits/fits_solve_field.html">4.40. solve_field</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../fitsarray/fitsarray.html">5. FitsArray</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of 5. FitsArray</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_from_video.html">5.1. from_video</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_from_paths.html">5.2. from_paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_from_pattern.html">5.3. from_pattern</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_sample.html">5.4. sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_files.html">5.5. files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_save_as.html">5.6. save_as</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_header.html">5.7. header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_pure_header.html">5.8. pure_header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_hedit.html">5.9. hedit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_merge.html">5.10. merge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_append.html">5.11. append</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_add.html">5.12. add</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_sub.html">5.13. sub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_mul.html">5.14. mul</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_div.html">5.15. div</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_pow.html">5.16. pow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_imarith.html">5.17. imarith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_data.html">5.18. data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_value.html">5.19. value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_ccd.html">5.20. ccd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_imstat.html">5.21. imstat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_hselect.html">5.22. hselect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_shift.html">5.23. shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_rotate.html">5.24. rotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_crop.html">5.25. crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_bin.html">5.26. bin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_align.html">5.27. align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_zero_correction.html">5.28. zero_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_dark_correction.html">5.29. dark_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_flat_correction.html">5.30. flat_correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_ccdproc.html">5.31. ccdproc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_background.html">5.32. background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_photometry_sep.html">5.33. photometry_sep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_photometry_phu.html">5.34. photometry_phu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_photometry.html">5.35. photometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_cosmic_clean.html">5.36. cosmic_clean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_show.html">5.37. show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_combine.html">5.38. combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_zero_combine.html">5.39. zero_combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_dark_combine.html">5.40. dark_combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_flat_combine.html">5.41. flat_combine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_pixels_to_skys.html">5.42. pixels_to_skys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_skys_to_pixels.html">5.43. skys_to_pixels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_map_to_sky.html">5.44. map_to_sky</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_daofind.html">5.45. daofind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_extract.html">5.46. extract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_solve_field.html">5.47. solve_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fitsarray/fitsarray_group_by.html">5.48. group_by</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="cli.html">6. CLI</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of 6. CLI</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cli_header.html">6.1. header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_hedit.html">6.2. hedit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_arith.html">6.3. arith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_value.html">6.4. value</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_stat.html">6.5. stat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_bin.html">6.6. bin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_crop.html">6.7. crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_rotate.html">6.8. rotate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_shift.html">6.9. shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_clean.html">6.10. clean</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">6.11. show</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_align.html">6.12. align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_p2s.html">6.13. p2s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_s2p.html">6.14. s2p</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_map2sky.html">6.15. map2sky</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">7. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui.html">8. GUI</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/myrafproject/myrafproject/blob/main/source/cli/cli_show.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/myrafproject/myrafproject/edit/main/source/cli/cli_show.rst" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="show">
+<span id="cli-show"></span><h1><span class="section-number">6.11. </span>show<a class="headerlink" href="#show" title="Link to this heading">¶</a></h1>
+<p>Shows the FITS files.</p>
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">im</span> <span class="pre">show</span></span></dt>
+<dd><p><strong>usage</strong></p>
+<blockquote>
+<div><p>im show [-h] file</p>
+</div></blockquote>
+<p><strong>positional arguments</strong></p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">file</span></code>        A file path or pattern (e.g., “*.fits”)</p>
+</div></blockquote>
+<p><strong>options</strong></p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">-h</span></code>, <code class="docutils literal notranslate"><span class="pre">--help</span></code>  show this help message and exit</p>
+</div></blockquote>
+</dd></dl>
+
+<hr class="docutils" />
+<section id="example">
+<h2><span class="section-number">6.11.1. </span>Example:<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>im<span class="w"> </span>imstat<span class="w"> </span>/PATH/TO/FILES*.fits
+</pre></div>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="cli_align.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><span class="section-number">6.12. </span>align</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="cli_clean.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><span class="section-number">6.10. </span>clean</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Mohammad Niaei, Yücel Kılıç
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/myrafproject/myrafproject" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">6.11. show</a><ul>
+<li><a class="reference internal" href="#example">6.11.1. Example:</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=00008ec3"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
