@@ -23,12 +23,15 @@ For further information, including source code, please visit the project's homep
 
 
 .. toctree::
-   :maxdepth: 2
+   :numbered:
+   :maxdepth: 1
    :caption: Contents:
 
    introduction
    motivation
    understanding
+   fits/fits
+   fitsarray/fitsarray
+   cli/cli
    example
    gui
-   cli
