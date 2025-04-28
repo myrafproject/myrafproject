@@ -542,7 +542,7 @@ class Fits(Data):
             psfbeta=psfbeta, gain_apply=gain_apply
         )
 
-        return self.from_data_header(cleaned_data.value, header=self.pure_header(), output=output, override=override)
+        return self.from_data_header(cleaned_data, header=self.pure_header(), output=output, override=override)
 
     def hedit(self, keys: Union[str, List[str]],
               values: Optional[Union[str, int, float, bool, List[Union[str, int, float, bool]]]] = None,

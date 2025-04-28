@@ -6,3 +6,5 @@ tst.py
 myraf.log
 **/__pycache__/
 /example/.ipynb_checkpoints/
+.venv
+main.py

@@ -17,7 +17,6 @@ PyQt5
 pyqtdarktheme
 tdqm
 tox
-argcomplete
 
 [testing]
 pytest
