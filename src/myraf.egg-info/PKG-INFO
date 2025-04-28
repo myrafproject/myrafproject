@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: myraf
-Version: 3.1
+Version: 3.1.4
 Summary: MYRaf; an astropy wrapper for astronomical photometry
 Home-page: https://github.com/myrafproject/myrafproject
 Author: Mohammad S.Niaei, Yücel KILIÇ

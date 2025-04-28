@@ -8,3 +8,4 @@ myraf.log
 /example/.ipynb_checkpoints/
 .venv
 main.py
+dist
