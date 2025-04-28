@@ -1580,9 +1580,9 @@ class Fits(Data):
 
             for phot_line in phot_table:
                 value = clean_d[
-                    int(phot_line["xcenter"].value)
+                    int(phot_line["xcenter"])
                 ][
-                    int(phot_line["ycenter"].value)
+                    int(phot_line["ycenter"])
                 ]
                 snr = np.nan if value < 0 else math.sqrt(value)
                 mag, mag_err = self.flux_to_mag(
@@ -1603,8 +1603,8 @@ class Fits(Data):
                 table.append(
                     [
                         abs(self), "phu",
-                        phot_line["xcenter"].value,
-                        phot_line["ycenter"].value,
+                        phot_line["xcenter"],
+                        phot_line["ycenter"],
                         ra, dec,
                         new_r,
                         phot_line["aperture_sum"],
