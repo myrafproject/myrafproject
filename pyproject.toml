@@ -1,24 +1,47 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-addopts = "--cov=myraflib"
-testpaths = [
-    "tests",
+[project]
+name = "myraf"
+version = "3.1.5"
+description = "MYRaf; an astropy wrapper for astronomical photometry"
+authors = [
+    { name = "Mohammad S.Niaei", email = "niaei@pardus.org.tr" },
+    { name = "Yücel KILIÇ", email = "ykilic@iaa.es" }
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = "==3.11.*"
+dependencies = [
+    "astroalign",
+    "astropy",
+    "astroquery",
+    "ccdproc",
+    "matplotlib",
+    "mpl_point_clicker",
+    "numpy==1.24.4",
+    "opencv-python-headless",
+    "pandas",
+    "photutils",
+    "python_dateutil",
+    "sep",
+    "typing_extensions",
+    "scipy",
+    "ginga",
+    "PyQt5",
+    "pyqtdarktheme",
+    "tqdm",
+    "tox"
 ]
 
-[tool.mypy]
-mypy_path = "src"
-exclude = ["src/myraf_gui.py", "src/myrafgui"]
-check_untyped_defs = true
-disallow_any_generics = true
-ignore_missing_imports = true
-no_implicit_optional = true
-show_error_codes = true
-strict_equality = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = false
-warn_unused_configs = true
-no_implicit_reexport = true
+[project.scripts]
+myraf = "myraflib.myraf_gui:main"
+im = "commands:main"
+
+[tool.setuptools]
+packages = ["myraflib"]
+package-dir = { "" = "src" }
+
+[tool.setuptools.package-data]
+"myraflib" = ["py.typed", "sample.fits"]
